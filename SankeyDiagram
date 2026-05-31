@@ -1,0 +1,1313 @@
+import os
+import webbrowser
+
+def generate_true_sankey_studio():
+    desktop_path = os.path.join(os.path.expanduser("~"), "Desktop", "Sankey_Studio.html")
+    
+    html_content = r"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>True Sankey CV Architecture Studio - Pro Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { --bg-main: #f8f9fa; --toolbar-bg: #1e272e; --text-light: #f1f2f6; --accent-blue: #1e90ff; }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; user-select: none; }
+        
+        /* CLEANED TOOLBAR ARCHITECTURE */
+        #toolbar { background-color: var(--toolbar-bg); padding: 10px 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; white-space: nowrap; }
+        #toolbar::-webkit-scrollbar { display: none; }
+        
+        .toolbar-group { display: flex; align-items: center; gap: 6px; border-right: 1px solid #57606f; padding-right: 15px; flex-shrink: 0; }
+        .toolbar-group:last-child { border-right: none; padding-right: 0; margin-left: auto; flex-shrink: 0; }
+        
+        button { padding: 8px 14px; border: none; border-radius: 6px; background-color: #353b48; color: var(--text-light); font-weight: 500; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+        button:hover { background-color: #57606f; }
+        button.active { background-color: var(--accent-blue); color: white; box-shadow: 0 0 10px rgba(30, 144, 255, 0.4); }
+        .btn-danger { background-color: #ff4757; color: white; } .btn-danger:hover { background-color: #ff6b81; }
+        .btn-success { background-color: #2ed573; color: #1e272e; font-weight: bold; } .btn-success:hover { background-color: #26af56; }
+        
+        .zoom-controls { display: flex; gap: 2px; background: #353b48; border-radius: 6px; padding: 2px; }
+        .zoom-controls button { background: transparent; padding: 6px 10px; margin: 0; }
+        .zoom-controls button:hover { background: #57606f; }
+        
+        #workspace-status { color: #a4b0be; font-size: 13px; font-weight: 500; }
+        
+        /* Zoomable Workspace */
+        #canvas-container { flex-grow: 1; position: relative; overflow: auto; background-color: #e4e7eb; outline: none; }
+        #canvas-board { position: absolute; top: 0; left: 0; width: 12000px; height: 12000px; background-color: #ffffff; transform-origin: 0 0; transition: transform 0.05s ease-out; }
+        #sankey-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        #sankey-svg path { pointer-events: auto; cursor: pointer; transition: opacity 0.2s; }
+        #sankey-svg path:hover { filter: drop-shadow(0px 0px 4px rgba(0,0,0,0.3)); }
+        
+        .alignment-grid { background-size: 30px 30px; background-image: linear-gradient(to right, #f1f2f6 1px, transparent 1px), linear-gradient(to bottom, #f1f2f6 1px, transparent 1px); }
+        
+        /* PAPER TRACE UI PANEL */
+        #paper-trace-panel { position: absolute; top: 80px; left: 20px; background: #ffffff; padding: 12px 16px; border-radius: 8px; box-shadow: 0 8px 25px rgba(0,0,0,0.25); z-index: 10000; font-size: 12px; color: #2f3542; border: 1px solid #ced6e0; display: flex; flex-direction: column; gap: 10px; width: 240px; transition: opacity 0.2s ease; }
+        #paper-trace-panel-header { font-weight: bold; font-size: 13px; border-bottom: 1px solid #f1f2f6; padding-bottom: 8px; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; cursor: move; user-select: none; }
+        .paper-control-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .paper-control-row select, .paper-control-row input[type="range"] { flex-grow: 1; }
+        .paper-control-row select { padding: 4px; border-radius: 4px; border: 1px solid #ced6e0; font-size: 11px; }
+        .paper-control-row input[type="checkbox"] { cursor: pointer; transform: scale(1.1); margin-right: 6px; }
+        
+        /* DRAGGABLE & PROPORTIONALLY RESIZABLE VIEWFINDER */
+        #paper-guide-box { position: absolute; top: 100px; left: 100px; border: 3px dashed #1e90ff; background: rgba(30, 144, 255, 0.05); z-index: 9995; pointer-events: none; display: none; }
+        #paper-guide-header { position: absolute; top: -25px; left: -3px; right: -3px; height: 25px; background: rgba(30, 144, 255, 0.9); color: white; display: flex; align-items: center; padding: 0 10px; font-weight: bold; font-size: 12px; pointer-events: auto; cursor: move; border-radius: 4px 4px 0 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2); user-select: none; }
+        #paper-guide-header:hover { background: #0984e3; }
+        #paper-guide-resizer { background: #1e90ff; color: white; opacity: 1.0; pointer-events: auto; box-shadow: -2px -2px 5px rgba(0,0,0,0.1); }
+
+        /* Custom Drag Resizer (General) */
+        .custom-resizer { position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; cursor: se-resize; z-index: 50; display: flex; align-items: flex-end; justify-content: flex-end; padding: 4px; box-sizing: border-box; border-radius: 0 0 6px 0; }
+        .custom-resizer:hover { background: rgba(30, 144, 255, 0.15); }
+        .custom-resizer::after { content: '↘'; font-size: 14px; color: inherit; pointer-events: none; }
+
+        /* Node Architecture */
+        .sankey-node { position: absolute; cursor: move; display: flex; flex-direction: column; box-sizing: border-box; padding: 14px; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: outline 0.1s; }
+        .sankey-node .rich-content { pointer-events: none; line-height: 1.5; width: 100%; height: 100%; overflow: hidden; white-space: normal; word-break: break-word; }
+        
+        .sankey-node .rich-content *, .floating-text-node *, .group-node .rich-content * { font-size: 1em !important; color: inherit !important; }
+        .sankey-node .rich-content ul { margin: 6px 0 6px 16px; padding: 0; }
+        .sankey-node .rich-content li { margin-bottom: 4px; }
+        
+        .sankey-node.selected { outline: 3px solid #ffa502; box-shadow: 0 0 15px rgba(255, 165, 2, 0.6); z-index: 9999 !important; }
+        .sankey-node.selected-anchor { outline: 4px solid #2ed573; box-shadow: 0 0 20px rgba(46, 213, 115, 0.8); z-index: 10000 !important; }
+        
+        .floating-text-node { position: absolute; cursor: move; padding: 5px; box-sizing: border-box; overflow: hidden; }
+        .floating-text-node .rich-content { pointer-events: none; white-space: pre-wrap; line-height: 1.5; width: 100%; height: 100%; }
+        .floating-text-node.selected { outline: 2px dashed #ffa502; z-index: 9999 !important; }
+        .floating-text-node.selected-anchor { outline: 3px dashed #2ed573; z-index: 10000 !important; }
+        
+        .group-node { position: absolute; cursor: move; border-style: dashed; border-radius: 8px; padding: 15px; box-sizing: border-box; overflow: hidden; }
+        .group-node .rich-content { pointer-events: none; font-weight: bold; line-height: 1.4; width: 100%; height: 100%; overflow: hidden; }
+        .group-node.selected { outline: 3px solid #ffa502; z-index: 9998 !important; }
+        .group-node.selected-anchor { outline: 4px solid #2ed573; z-index: 9999 !important; }
+
+        #marquee-box { position: absolute; border: 1px dashed #1e90ff; background: rgba(30, 144, 255, 0.15); z-index: 10000; display: none; pointer-events: none; }
+
+        #ruler-x-svg { position: absolute; top: 0; left: 0; width: 12000px; height: 30px; z-index: 9990; pointer-events: none; background: rgba(255,255,255,0.85); border-bottom: 1px solid #a4b0be; }
+        #ruler-y-svg { position: absolute; top: 0; left: 0; width: 30px; height: 12000px; z-index: 9990; pointer-events: none; background: rgba(255,255,255,0.85); border-right: 1px solid #a4b0be; }
+
+        .modal-mask { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.1); z-index: 9999; }
+        .floating-panel { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #ffffff; padding: 25px; border-radius: 14px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); z-index: 10000; width: 480px; border: 1px solid #e4e7eb; max-height: 90vh; overflow-y: auto; }
+        .floating-panel h3 { margin-top: 0; color: #2f3542; font-size: 18px; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; margin-bottom: 15px; }
+        
+        .rt-toolbar { display: flex; gap: 5px; margin-bottom: 5px; background: #f1f2f6; padding: 5px; border-radius: 4px; border: 1px solid #ced6e0; flex-wrap: wrap; align-items: center; }
+        .rt-toolbar button { background: white; color: #2f3542; border: 1px solid #bdc3c7; padding: 4px 8px; font-size: 12px; border-radius: 3px; cursor: pointer; height: 26px; box-sizing: border-box; }
+        .rt-toolbar button:hover { background: #e0e6ed; }
+        
+        .rt-editor { width: 100%; height: 160px; border: 1px solid #ced6e0; border-radius: 6px; padding: 10px; overflow-y: auto; font-size: 13px; box-sizing: border-box; outline: none; background: #ffffff; color: #2f3542; margin-bottom: 15px; }
+        .rt-editor:focus { border-color: #1e90ff; }
+        .rt-editor ul { margin: 5px 0 5px 20px; padding: 0; }
+        
+        .settings-grid { display: grid; grid-template-columns: 140px 1fr; gap: 12px; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f1f2f6; }
+        .settings-grid:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .settings-grid label { font-size: 11px; text-transform: uppercase; font-weight: bold; color: #57606f; margin: 0; }
+        .settings-grid input[type="range"] { width: 100%; cursor: pointer; }
+        .settings-grid input[type="color"] { width: 100%; height: 35px; border: 1px solid #ced6e0; border-radius: 4px; padding: 2px; cursor: pointer; background: #fff; box-sizing: border-box; }
+        .settings-grid input[type="number"] { width: 100%; height: 35px; border: 1px solid #ced6e0; border-radius: 4px; padding: 6px; box-sizing: border-box; font-family: inherit; font-size: 13px; color: #2f3542; }
+        
+        .layout-category-title { font-size: 11px; font-weight: bold; color: #7f8c8d; margin-top: 10px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .layout-toolbar { display: flex; flex-wrap: wrap; gap: 6px; }
+        .layout-btn { background: #f1f2f6; color: #2f3542; border: 1px solid #bdc3c7; font-size: 11px; padding: 6px 10px; border-radius: 4px; }
+        .layout-btn:hover { background: #dfe4ea; border-color: #a4b0be; }
+        
+        .panel-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .anchor-notice { font-size: 11px; color: #2ed573; font-weight: bold; display: block; margin-bottom: 10px; background: rgba(46, 213, 115, 0.1); padding: 6px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <div class="toolbar-group">
+            <button id="mode-move" class="active" onclick="switchEngineMode('move')">🖱️ Select / Move</button>
+            <button onclick="togglePaperPanel()" style="background:#57606f;">📄 Toggle Paper UI</button>
+        </div>
+        
+        <div class="toolbar-group">
+            <button onclick="spawnNewNode('structural')">➕ Box</button>
+            <button onclick="spawnNewNode('floating')">➕ Text</button>
+            <button onclick="spawnNewNode('group')">🔲 Nested Group</button>
+        </div>
+        
+        <div class="toolbar-group">
+            <button id="mode-connect" onclick="switchEngineMode('connect')">🔗 Route Connection</button>
+            <button id="mode-disconnect" onclick="triggerSmartCut()">⚡ Cut Selection</button>
+        </div>
+        
+        <div class="toolbar-group">
+            <button onclick="triggerUndo()" title="Ctrl+Z">↩ Undo</button>
+            <button class="btn-danger" onclick="executeDeletion()">🗑️ Delete</button>
+        </div>
+
+        <div class="toolbar-group">
+            <div class="zoom-controls">
+                <button onclick="setZoom(0.1)" title="Zoom In">🔍+</button>
+                <button onclick="setZoom(-0.1)" title="Zoom Out">🔍-</button>
+                <button onclick="resetZoom()" title="Reset Zoom">100%</button>
+            </div>
+            <button onclick="toggleGridSystem()">Toggle Grid</button>
+        </div>
+        
+        <div class="toolbar-group" style="margin-left: auto; border:none; padding:0;">
+            <span id="workspace-status" style="margin-right: 15px;"></span>
+            <button class="btn-success" onclick="openExportPortal()">💾 Save & Export</button>
+            <button onclick="clearLocalStorage()" style="background:#e74c3c; margin-left:10px;">Reset</button>
+        </div>
+    </div>
+
+    <div id="canvas-container" tabindex="0">
+        <div id="canvas-board" class="alignment-grid">
+            <svg id="ruler-x-svg"></svg>
+            <svg id="ruler-y-svg"></svg>
+            <svg id="sankey-svg"></svg>
+            
+            <div id="paper-guide-box">
+                <div id="paper-guide-header"><span id="paper-guide-title">Short / Letter - Portrait</span></div>
+                <div id="paper-guide-resizer" class="custom-resizer" title="Drag to Scale Viewfinder"></div>
+            </div>
+            
+            <div id="marquee-box"></div>
+        </div>
+    </div>
+
+    <div id="paper-trace-panel">
+        <div id="paper-trace-panel-header">
+            <span>📄 Paper Trace Controls</span>
+            <button onclick="togglePaperPanel()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #ff4757; padding: 0; line-height: 1;">&times;</button>
+        </div>
+        <div class="paper-control-row" style="justify-content: flex-start; cursor: pointer;">
+            <input type="checkbox" id="toggle-paper" onchange="updatePaperGuide()">
+            <label for="toggle-paper" style="font-weight: 500; cursor: pointer;">Show Page Boundary</label>
+        </div>
+        <div class="paper-control-row">
+            <span style="width: 70px; color: #57606f;">Dimensions:</span>
+            <select id="paper-size" onchange="updatePaperGuide()">
+                <option value="letter">Short / Letter</option>
+                <option value="a4">Standard A4</option>
+                <option value="legal">Long / Legal</option>
+            </select>
+        </div>
+        <div class="paper-control-row">
+            <span style="width: 70px; color: #57606f;">Orientation:</span>
+            <select id="paper-orientation" onchange="updatePaperGuide()">
+                <option value="portrait">Portrait</option>
+                <option value="landscape">Landscape</option>
+            </select>
+        </div>
+        <div class="paper-control-row">
+            <span style="width: 70px; color: #57606f;">Multiplier:</span>
+            <input type="range" id="paper-scale" min="0.2" max="10.0" step="0.05" value="1.0" oninput="updatePaperGuide(); document.getElementById('scale-val').innerText = parseFloat(this.value).toFixed(1) + 'x';">
+            <span id="scale-val" style="width: 30px; text-align: right; font-weight: bold; color: #1e90ff;">1.0x</span>
+        </div>
+        <div style="font-size: 10px; color: #7f8c8d; text-align: center; margin-top: 4px; line-height: 1.3;">
+            Grab the bottom-right corner of the blue frame on the canvas to visually scale it while locking the page's true aspect ratio.
+        </div>
+    </div>
+
+    <div id="modal-mask" class="modal-mask" onclick="dismissModal()"></div>
+    
+    <div id="node-editor-panel" class="floating-panel">
+        <h3 id="panel-title-header">Edit Box Data</h3>
+        
+        <div id="rt-container">
+            <div class="rt-toolbar">
+                <button onclick="document.execCommand('bold', false, null)"><b>B</b></button>
+                <button onclick="document.execCommand('italic', false, null)"><i>I</i></button>
+                <button onclick="document.execCommand('insertUnorderedList', false, null)">• List</button>
+                <button onclick="document.execCommand('justifyLeft', false, null)">Left</button>
+                <button onclick="document.execCommand('justifyCenter', false, null)">Center</button>
+            </div>
+            <div id="edit-node-rich" class="rt-editor" contenteditable="true"></div>
+        </div>
+        
+        <div id="layout-tools-container" style="display:none; margin-bottom: 15px;">
+            <span class="anchor-notice">🟢 Alignment based on the Green Anchor Box.</span>
+            <div class="layout-category-title">Alignment</div>
+            <div class="layout-toolbar">
+                <button class="layout-btn" onclick="executeBatchLayout('align-left')">Align Left</button>
+                <button class="layout-btn" onclick="executeBatchLayout('align-center')">Align Center</button>
+                <button class="layout-btn" onclick="executeBatchLayout('align-top')">Align Top</button>
+            </div>
+            <div class="layout-category-title">Box Size</div>
+            <div class="layout-toolbar">
+                <button class="layout-btn" style="background:#dff9fb;" onclick="executeBatchLayout('match-width')">Match Width</button>
+                <button class="layout-btn" style="background:#dff9fb;" onclick="executeBatchLayout('match-height')">Match Height</button>
+            </div>
+            <div class="layout-category-title">Distribution</div>
+            <div class="layout-toolbar">
+                <button class="layout-btn" style="background:#f6e58d;" onclick="executeBatchLayout('distribute-h')">Distribute Space (Horz)</button>
+                <button class="layout-btn" style="background:#f6e58d;" onclick="executeBatchLayout('distribute-v')">Distribute Space (Vert)</button>
+            </div>
+            <hr style="border:0; border-bottom: 1px solid #f1f2f6; margin: 15px 0;">
+        </div>
+
+        <div id="layering-container" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f1f2f6;">
+            <div class="layout-category-title">Layering (Z-Index)</div>
+            <div class="layout-toolbar">
+                <button class="layout-btn" style="font-weight:bold;" onclick="executeZIndexChange('front')">🔼 Bring to Front</button>
+                <button class="layout-btn" style="font-weight:bold;" onclick="executeZIndexChange('back')">🔽 Send to Back</button>
+            </div>
+        </div>
+
+        <div class="settings-grid" id="appearance-container">
+            <label>Background Color</label>
+            <input type="color" id="edit-node-color">
+            <label>Master Text Color</label>
+            <input type="color" id="edit-node-text-color">
+            <label>Opacity (Background)</label>
+            <input type="range" id="edit-node-opacity" min="0.0" max="1.0" step="0.05">
+            <label>Base Font Size (px)</label>
+            <input type="number" id="edit-node-font-size" min="8" max="72" value="12">
+            
+            <label id="label-border-color">Border Color</label>
+            <input type="color" id="edit-node-border-color">
+            <label id="label-border-width">Border Thickness</label>
+            <input type="number" id="edit-node-border-width" min="0" max="10" value="2">
+        </div>
+
+        <div class="panel-actions">
+            <button onclick="dismissModal()" style="background: #f1f2f6; color: #2f3542;">Cancel</button>
+            <button class="btn-success" style="color:white; background:#1e90ff;" onclick="commitNodeChanges()">Save Changes</button>
+        </div>
+    </div>
+
+    <div id="edge-editor-panel" class="floating-panel">
+        <h3 id="edge-panel-header">Edit Flow Ribbon</h3>
+        <div class="settings-grid" id="edge-settings-container">
+            <label>Line Color</label>
+            <input type="color" id="edit-edge-color" oninput="liveUpdateEdge()">
+            <label>Transparency</label>
+            <input type="range" id="edit-edge-opacity" min="0.1" max="1.0" step="0.05" oninput="liveUpdateEdge()">
+            <label>Curve Steepness</label>
+            <input type="range" id="edit-edge-curve" min="0.1" max="1.5" step="0.05" oninput="liveUpdateEdge()">
+            <label>Start Height (px)</label>
+            <input type="range" id="edit-edge-thick-src" min="2" max="1000" step="2" oninput="liveUpdateEdge()">
+            <label>End Height (px)</label>
+            <input type="range" id="edit-edge-thick-tgt" min="2" max="1000" step="2" oninput="liveUpdateEdge()">
+        </div>
+        <div class="panel-actions">
+            <button onclick="dismissModal()" style="background: #f1f2f6; color: #2f3542;">Cancel</button>
+            <button class="btn-success" style="color:white; background:#1e90ff;" onclick="commitEdgeChanges()">Save Line</button>
+        </div>
+    </div>
+
+    <div id="export-popup" class="floating-panel" style="width:340px;">
+        <h4>Save & Export</h4>
+        <div class="panel-actions" style="flex-direction:column;">
+            <button class="btn-success" style="color:white; background:#1e90ff; width:100%; font-weight:bold; padding:12px; margin-bottom: 10px;" onclick="downloadNativeHTML()">💾 Save Workspace (HTML)</button>
+            <button class="btn-success" style="color:white; background:#34495e; width:100%; font-weight:bold; padding:12px;" onclick="triggerCroppedExport('png')">📸 Download High-Res PNG</button>
+            <button class="btn-success" style="color:white; background:#9b59b6; width:100%; margin-top:5px;" onclick="triggerCroppedExport('pdf')">📄 Download Standard PDF</button>
+            <button onclick="dismissModal()" style="background:#f1f2f6; color:#2f3542; width:100%; margin-top:10px;">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        let operationalMode = 'move';
+        let connectionSourceNode = null;
+        let activeEditorTarget = null;
+        let zoomLevel = 1.0;
+        
+        let selectedNodeIds = new Set();
+        let selectedEdgeIds = new Set();
+        
+        let appState = { nodes: [], connections: [] };
+        let undoStack = []; 
+        
+        let isMarqueeDragging = false;
+        let mStartX = 0, mStartY = 0;
+
+        const container = document.getElementById('canvas-container');
+        const board = document.getElementById('canvas-board');
+        const svg = document.getElementById('sankey-svg');
+        const marqueeBox = document.getElementById('marquee-box');
+
+        // ==========================================
+        // TRUE DRAGGABLE/RESIZABLE PAPER VIEWFINDER (PROPORTIONAL)
+        // ==========================================
+        const paperBox = document.getElementById('paper-guide-box');
+        const paperBoxHeader = document.getElementById('paper-guide-header');
+        const paperBoxResizer = document.getElementById('paper-guide-resizer');
+        const paperSizeDropdown = document.getElementById('paper-size');
+        const paperScaleSlider = document.getElementById('paper-scale');
+        const paperTitleDisplay = document.getElementById('paper-guide-title');
+        
+        let isDraggingPaperBox = false;
+        let isResizingPaperBox = false;
+        let pbStartX, pbStartY, pbStartW, pbStartH, pbBaseW;
+
+        // 1. Dragging the Header Bar
+        paperBoxHeader.addEventListener('mousedown', (e) => {
+            if(operationalMode !== 'move') return;
+            e.stopPropagation(); // Prevent canvas marquee
+            isDraggingPaperBox = true;
+            const boardRect = board.getBoundingClientRect();
+            pbStartX = ((e.clientX - boardRect.left) / zoomLevel) - paperBox.offsetLeft;
+            pbStartY = ((e.clientY - boardRect.top) / zoomLevel) - paperBox.offsetTop;
+        });
+
+        // 2. Proportional Scaling via Corner Resizer
+        paperBoxResizer.addEventListener('mousedown', (e) => {
+            if(operationalMode !== 'move') return;
+            e.stopPropagation(); // Prevent canvas marquee
+            isResizingPaperBox = true;
+            pbStartX = e.clientX;
+            pbStartW = paperBox.offsetWidth;
+            
+            // Calculate what the true 1.0x width of the current paper format is
+            let size = paperSizeDropdown.value;
+            let orient = document.getElementById('paper-orientation').value;
+            let baseW = (size === 'letter') ? 850 : (size === 'a4' ? 827 : 850);
+            let baseH = (size === 'letter') ? 1100 : (size === 'a4' ? 1169 : 1400);
+            if (orient === 'landscape') { baseW = baseH; }
+            pbBaseW = baseW;
+        });
+
+        // ==========================================
+        // FLOATING UI PANEL DRAG LOGIC
+        // ==========================================
+        const paperPanel = document.getElementById('paper-trace-panel');
+        const paperPanelHeader = document.getElementById('paper-trace-panel-header');
+        let isDraggingPanel = false, pStartX, pStartY;
+
+        paperPanel.addEventListener('mousedown', (e) => e.stopPropagation()); 
+        
+        paperPanelHeader.addEventListener('mousedown', (e) => {
+            isDraggingPanel = true;
+            pStartX = e.clientX - paperPanel.offsetLeft;
+            pStartY = e.clientY - paperPanel.offsetTop;
+        });
+
+        // Global Mouse Move & Up logic for Paper Systems
+        document.addEventListener('mousemove', (e) => {
+            if (isDraggingPanel) {
+                paperPanel.style.left = (e.clientX - pStartX) + 'px';
+                paperPanel.style.top = (e.clientY - pStartY) + 'px';
+            }
+            if (isDraggingPaperBox) {
+                const boardRect = board.getBoundingClientRect();
+                let currentX = (e.clientX - boardRect.left) / zoomLevel;
+                let currentY = (e.clientY - boardRect.top) / zoomLevel;
+                paperBox.style.left = (currentX - pbStartX) + 'px';
+                paperBox.style.top = (currentY - pbStartY) + 'px';
+            }
+            if (isResizingPaperBox) {
+                // Determine new desired width based on mouse movement
+                let dx = (e.clientX - pbStartX) / zoomLevel;
+                let newW = Math.max(100, pbStartW + dx);
+                
+                // Calculate the true scale multiplier based on the strict paper format
+                let newScale = newW / pbBaseW;
+                
+                // Clamp the scale to sane limits
+                if (newScale < 0.2) newScale = 0.2;
+                if (newScale > 10.0) newScale = 10.0;
+                
+                // Drive the UI slider programmatically, acting like a physical scrubber
+                paperScaleSlider.value = newScale;
+                document.getElementById('scale-val').innerText = newScale.toFixed(1) + 'x';
+                
+                // Run the central update function which correctly enforces the ratio for both width and height
+                updatePaperGuide();
+            }
+        });
+        document.addEventListener('mouseup', () => { 
+            isDraggingPanel = false; 
+            isDraggingPaperBox = false;
+            isResizingPaperBox = false;
+        });
+
+        function togglePaperPanel() {
+            if (paperPanel.style.display === 'none') {
+                paperPanel.style.display = 'flex';
+                setTimeout(() => { paperPanel.style.opacity = '1'; }, 10);
+            } else {
+                paperPanel.style.opacity = '0';
+                setTimeout(() => { paperPanel.style.display = 'none'; }, 200);
+            }
+        }
+
+        function updatePaperGuide() {
+            const isEnabled = document.getElementById('toggle-paper').checked;
+            if (!isEnabled) { paperBox.style.display = 'none'; return; }
+            
+            const size = paperSizeDropdown.value;
+            const orientation = document.getElementById('paper-orientation').value;
+            const scale = parseFloat(paperScaleSlider.value);
+            
+            let w, h, labelText;
+            
+            if (size === 'letter') { w = 850; h = 1100; labelText = "Short / Letter"; }
+            else if (size === 'a4') { w = 827; h = 1169; labelText = "A4"; }
+            else if (size === 'legal') { w = 850; h = 1400; labelText = "Legal"; }
+            
+            if (orientation === 'landscape') {
+                let temp = w; w = h; h = temp;
+                labelText += " - Landscape";
+            } else {
+                labelText += " - Portrait";
+            }
+            
+            // Proportional Locking
+            w = w * scale;
+            h = h * scale;
+            labelText += ` @ ${scale.toFixed(1)}x Scale`;
+            
+            paperBox.style.width = w + 'px'; 
+            paperBox.style.height = h + 'px';
+            
+            paperTitleDisplay.innerText = labelText;
+            paperBox.style.display = 'block';
+        }
+
+        function pushToHistory() {
+            undoStack.push(JSON.stringify(appState));
+            if (undoStack.length > 50) undoStack.shift(); 
+        }
+
+        function triggerUndo() {
+            if (undoStack.length > 0) {
+                let previousState = undoStack.pop();
+                appState = JSON.parse(previousState);
+                rebuildCanvasFromState();
+                saveStateToBrowser();
+                document.getElementById('workspace-status').innerText = "Action undone.";
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+            const cmdOrCtrl = e.ctrlKey || e.metaKey;
+
+            if (cmdOrCtrl && e.key.toLowerCase() === 'a') {
+                e.preventDefault();
+                if (operationalMode !== 'move') return;
+                clearAllSelections();
+                let first = true;
+                appState.nodes.forEach(n => {
+                    selectedNodeIds.add(n.id);
+                    let el = document.getElementById(n.id);
+                    if(el) { el.classList.add('selected'); if (first) { el.classList.add('selected-anchor'); first = false; } }
+                });
+                appState.connections.forEach(c => selectedEdgeIds.add(c.id));
+                refreshEdgeSelectionVisuals();
+            } else if (cmdOrCtrl && e.key.toLowerCase() === 'z') {
+                e.preventDefault(); triggerUndo();
+            } else if (cmdOrCtrl && e.key.toLowerCase() === 's') {
+                e.preventDefault(); downloadNativeHTML();
+            } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                e.preventDefault(); executeDeletion();
+            }
+        });
+
+        document.addEventListener('copy', (e) => {
+            if (operationalMode !== 'move' || document.activeElement.isContentEditable) return;
+            let pack = [];
+            selectedNodeIds.forEach(id => {
+                const nodeData = appState.nodes.find(n => n.id === id);
+                if (nodeData) pack.push(nodeData);
+            });
+            if (pack.length > 0) {
+                e.clipboardData.setData('text/plain', JSON.stringify({ type: 'SANKEY_CLIPBOARD', data: pack }));
+                e.preventDefault();
+                document.getElementById('workspace-status').innerText = `Copied ${pack.length} item(s).`;
+                setTimeout(() => document.getElementById('workspace-status').innerText = "", 2000);
+            }
+        });
+
+        document.addEventListener('paste', (e) => {
+            if (operationalMode !== 'move' || document.activeElement.isContentEditable) return;
+            try {
+                let textData = e.clipboardData.getData('text/plain');
+                let payload = JSON.parse(textData);
+                if (payload && payload.type === 'SANKEY_CLIPBOARD') {
+                    pushToHistory(); 
+                    clearAllSelections();
+                    let first = true;
+                    
+                    let allZs = appState.nodes.map(n => n.zIndex || 10);
+                    let maxZ = allZs.length > 0 ? Math.max(...allZs) : 10;
+                    
+                    payload.data.forEach(nodeData => {
+                        let newNode = JSON.parse(JSON.stringify(nodeData));
+                        newNode.id = 'node_' + Date.now() + Math.floor(Math.random() * 1000);
+                        newNode.x += 60; newNode.y += 60;
+                        newNode.zIndex = ++maxZ; 
+                        
+                        appState.nodes.push(newNode);
+                        buildNodeDOM(newNode);
+                        selectedNodeIds.add(newNode.id);
+                        let el = document.getElementById(newNode.id);
+                        el.classList.add('selected');
+                        if (first) { el.classList.add('selected-anchor'); first = false; }
+                    });
+                    saveStateToBrowser();
+                }
+            } catch (err) { }
+        });
+
+        container.addEventListener('wheel', (e) => {
+            // Prevent wheel zooming if dragging paper elements to avoid glitches
+            if (isDraggingPaperBox || isResizingPaperBox) return; 
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault(); setZoom(e.deltaY * -0.005);
+            }
+        }, { passive: false });
+
+        function setZoom(dz) {
+            zoomLevel += dz;
+            if(zoomLevel < 0.05) zoomLevel = 0.05; 
+            if(zoomLevel > 3.0) zoomLevel = 3.0;
+            board.style.transform = `scale(${zoomLevel})`;
+        }
+        function resetZoom() { zoomLevel = 1.0; board.style.transform = `scale(${zoomLevel})`; }
+
+        function drawRulers() {
+            let rx = document.getElementById('ruler-x-svg');
+            let ry = document.getElementById('ruler-y-svg');
+            if(!rx || !ry) return;
+            let strX = '', strY = '';
+            const pxPerCm = 37.8; 
+            
+            for(let cm=0; cm<=310; cm++) {
+                let px = cm * pxPerCm;
+                let isMajor = (cm % 5 === 0);
+                let y1 = isMajor ? 12 : 22;
+                strX += `<line x1="${px}" y1="${y1}" x2="${px}" y2="30" stroke="#a4b0be" stroke-width="1"/>`;
+                if (cm > 0) strX += `<text x="${px+2}" y="12" font-size="${isMajor ? 11 : 9}" font-weight="${isMajor ? 'bold' : 'normal'}" fill="#a4b0be" font-family="sans-serif">${cm}</text>`;
+                let x1 = isMajor ? 12 : 22;
+                strY += `<line x1="${x1}" y1="${px}" x2="30" y2="${px}" stroke="#a4b0be" stroke-width="1"/>`;
+                if (cm > 0) strY += `<text x="2" y="${px-3}" font-size="${isMajor ? 10 : 8}" font-weight="${isMajor ? 'bold' : 'normal'}" fill="#a4b0be" font-family="sans-serif">${cm}</text>`;
+            }
+            rx.innerHTML = strX; ry.innerHTML = strY;
+        }
+
+        function bootstrapStudio() {
+            if (window.INJECTED_APP_STATE) {
+                appState = window.INJECTED_APP_STATE;
+                localStorage.setItem('true_sankey_cv', JSON.stringify(appState));
+            } else {
+                const savedData = localStorage.getItem('true_sankey_cv');
+                if (savedData) { appState = JSON.parse(savedData); } 
+                else { appState = { nodes: [], connections: [] }; spawnNewNode('structural'); }
+            }
+            drawRulers(); 
+            rebuildCanvasFromState(); 
+            updatePaperGuide(); 
+            container.focus();
+        }
+
+        function rebuildCanvasFromState() {
+            board.querySelectorAll('.sankey-node, .floating-text-node, .group-node').forEach(e => e.remove());
+            appState.nodes.forEach(buildNodeDOM);
+            recalculateSankeyCurves();
+            refreshEdgeSelectionVisuals();
+            
+            selectedNodeIds.forEach(id => {
+                let el = document.getElementById(id);
+                if (el) el.classList.add('selected');
+            });
+            if (selectedNodeIds.size > 0) {
+                let anchorId = Array.from(selectedNodeIds)[0];
+                let aEl = document.getElementById(anchorId);
+                if (aEl) aEl.classList.add('selected-anchor');
+            }
+        }
+
+        function saveStateToBrowser() {
+            appState.nodes.forEach(nData => {
+                const domEl = document.getElementById(nData.id);
+                if (domEl) { nData.x = domEl.offsetLeft; nData.y = domEl.offsetTop; nData.w = domEl.offsetWidth; nData.h = domEl.offsetHeight; }
+            });
+            localStorage.setItem('true_sankey_cv', JSON.stringify(appState));
+        }
+
+        function clearLocalStorage() {
+            if(confirm("Wipe canvas entirely?")) { localStorage.removeItem('true_sankey_cv'); location.reload(); }
+        }
+
+        function hexToRgbA(hex, alpha){
+            let c;
+            if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+                c= hex.substring(1).split('');
+                if(c.length== 3){ c= [c[0], c[0], c[1], c[1], c[2], c[2]]; }
+                c= '0x'+c.join('');
+                return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+','+alpha+')';
+            }
+            return hex; 
+        }
+
+        function buildNodeDOM(data) {
+            const el = document.createElement('div');
+            el.id = data.id; 
+            if (data.type === 'structural') el.className = 'sankey-node';
+            else if (data.type === 'group') el.className = 'group-node';
+            else el.className = 'floating-text-node';
+            
+            el.style.width = data.w + 'px'; el.style.height = data.h + 'px'; el.style.left = data.x + 'px'; el.style.top = data.y + 'px';
+            el.style.color = data.textColor || (data.type === 'floating' ? '#2f3542' : '#ffffff');
+            
+            let baseZ = data.type === 'group' ? 10 : (data.type === 'floating' ? 30 : 20);
+            if (data.zIndex === undefined) data.zIndex = baseZ; 
+            el.style.zIndex = data.zIndex;
+            let fs = data.fontSize || (data.type === 'group' ? 16 : 12);
+
+            if(data.type !== 'floating') {
+                el.style.backgroundColor = hexToRgbA(data.color, data.opacity !== undefined ? data.opacity : 1.0);
+                if (data.type === 'group' || data.type === 'structural') {
+                    el.style.borderColor = data.borderColor || data.color;
+                    el.style.borderWidth = (data.borderWidth !== undefined ? data.borderWidth : (data.type === 'group' ? 2 : 0)) + 'px';
+                    if(data.type === 'structural') el.style.borderStyle = 'solid';
+                }
+            } else {
+                el.style.fontSize = fs + 'px';
+            }
+            
+            el.innerHTML = `<div class="rich-content" style="${data.type !== 'floating' ? `font-size: ${fs}px;` : ''}">${data.content}</div><div class="custom-resizer" title="Drag to Resize"></div>`;
+            
+            attachDraggingController(el);
+            
+            el.addEventListener('dblclick', (e) => { 
+                e.stopPropagation(); 
+                if(operationalMode === 'move') { 
+                    if(e.ctrlKey || e.metaKey || selectedNodeIds.size > 1) {
+                        if(!selectedNodeIds.has(data.id)) { handleSelectionLogic(el, false); }
+                        openBatchNodeEditor();
+                    } else {
+                        activeEditorTarget = data; openNodeEditor(data); 
+                    }
+                } 
+            });
+            board.appendChild(el);
+        }
+
+        function handleSelectionLogic(el, isCtrlDown) {
+            if (isCtrlDown) {
+                if (selectedNodeIds.has(el.id)) {
+                    selectedNodeIds.delete(el.id); el.classList.remove('selected', 'selected-anchor');
+                    if (selectedNodeIds.size > 0) {
+                        let newAnchorId = Array.from(selectedNodeIds)[0];
+                        document.getElementById(newAnchorId).classList.add('selected-anchor');
+                    }
+                } else {
+                    let isFirst = selectedNodeIds.size === 0;
+                    selectedNodeIds.add(el.id); el.classList.add('selected');
+                    if (isFirst) el.classList.add('selected-anchor');
+                }
+            } else {
+                if (!selectedNodeIds.has(el.id)) {
+                    clearAllSelections();
+                    selectedNodeIds.add(el.id);
+                    el.classList.add('selected', 'selected-anchor');
+                }
+            }
+        }
+
+        function attachDraggingController(el) {
+            let dragging = false, resizing = false, startX, startY, moved = false;
+            let initialPositions = new Map();
+            let startW, startH;
+
+            let resizer = el.querySelector('.custom-resizer');
+            if (resizer) {
+                resizer.addEventListener('mousedown', (e) => {
+                    if(operationalMode !== 'move') return;
+                    e.stopPropagation(); 
+                    resizing = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    startW = el.offsetWidth;
+                    startH = el.offsetHeight;
+                });
+            }
+
+            el.addEventListener('mousedown', (e) => { 
+                if(operationalMode !== 'move') {
+                    if(operationalMode === 'connect' && (el.classList.contains('sankey-node') || el.classList.contains('group-node'))) {
+                        e.stopPropagation(); executeFlowWiring(el, el.id);
+                    }
+                    return;
+                }
+                e.stopPropagation(); handleSelectionLogic(el, (e.ctrlKey || e.metaKey));
+                dragging = true; moved = false;
+                const boardRect = board.getBoundingClientRect();
+                startX = (e.clientX - boardRect.left) / zoomLevel; 
+                startY = (e.clientY - boardRect.top) / zoomLevel;
+                initialPositions.clear();
+                selectedNodeIds.forEach(id => {
+                    let nodeEl = document.getElementById(id);
+                    if(nodeEl) initialPositions.set(id, { x: nodeEl.offsetLeft, y: nodeEl.offsetTop });
+                });
+            });
+
+            document.addEventListener('mousemove', (e) => { 
+                if (resizing) {
+                    let dx = (e.clientX - startX) / zoomLevel;
+                    let dy = (e.clientY - startY) / zoomLevel;
+                    el.style.width = Math.max(40, startW + dx) + 'px';
+                    el.style.height = Math.max(30, startH + dy) + 'px';
+                    recalculateSankeyCurves();
+                    return;
+                }
+                if(!dragging) return; 
+                moved = true;
+                const boardRect = board.getBoundingClientRect();
+                let dx = ((e.clientX - boardRect.left) / zoomLevel) - startX;
+                let dy = ((e.clientY - boardRect.top) / zoomLevel) - startY;
+                selectedNodeIds.forEach(id => {
+                    let nodeEl = document.getElementById(id); let initPos = initialPositions.get(id);
+                    if(nodeEl && initPos) {
+                        nodeEl.style.left = Math.max(0, initPos.x + dx) + 'px';
+                        nodeEl.style.top = Math.max(0, initPos.y + dy) + 'px';
+                    }
+                });
+                recalculateSankeyCurves(); 
+            });
+            document.addEventListener('mouseup', () => { 
+                if (resizing) { resizing = false; pushToHistory(); saveStateToBrowser(); }
+                if (dragging) { dragging = false; if(moved) { pushToHistory(); saveStateToBrowser(); } } 
+            });
+        }
+        
+        // Prevent marquee from firing if clicking on the paper box header or resizer
+        board.addEventListener('mousedown', (e) => {
+            if (e.target.id === 'paper-guide-header' || e.target.id === 'paper-guide-resizer' || e.target.id === 'paper-guide-title') return;
+            
+            if (operationalMode === 'move' && (e.target === board || e.target === svg || e.target.id === 'ruler-x-svg' || e.target.id === 'ruler-y-svg' || e.target.id === 'paper-guide-box')) {
+                clearAllSelections(); isMarqueeDragging = true;
+                const boardRect = board.getBoundingClientRect();
+                mStartX = (e.clientX - boardRect.left) / zoomLevel; mStartY = (e.clientY - boardRect.top) / zoomLevel;
+                marqueeBox.style.display = 'block'; marqueeBox.style.left = mStartX + 'px'; marqueeBox.style.top = mStartY + 'px'; marqueeBox.style.width = '0px'; marqueeBox.style.height = '0px';
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isMarqueeDragging) {
+                const boardRect = board.getBoundingClientRect();
+                let currentX = (e.clientX - boardRect.left) / zoomLevel; let currentY = (e.clientY - boardRect.top) / zoomLevel;
+                let x = Math.min(mStartX, currentX); let y = Math.min(mStartY, currentY);
+                let w = Math.abs(currentX - mStartX); let h = Math.abs(currentY - mStartY);
+                marqueeBox.style.left = x + 'px'; marqueeBox.style.top = y + 'px'; marqueeBox.style.width = w + 'px'; marqueeBox.style.height = h + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (isMarqueeDragging) {
+                isMarqueeDragging = false; marqueeBox.style.display = 'none';
+                let mx = parseFloat(marqueeBox.style.left); let my = parseFloat(marqueeBox.style.top);
+                let mw = parseFloat(marqueeBox.style.width); let mh = parseFloat(marqueeBox.style.height);
+                if (mw > 10 && mh > 10) {
+                    appState.nodes.forEach(n => {
+                        if (n.x < mx + mw && n.x + n.w > mx && n.y < my + mh && n.y + n.h > my) {
+                            selectedNodeIds.add(n.id); let el = document.getElementById(n.id); if(el) el.classList.add('selected');
+                        }
+                    });
+                    appState.connections.forEach(c => {
+                        let s = appState.nodes.find(n => n.id === c.source); let t = appState.nodes.find(n => n.id === c.target);
+                        if (s && t) {
+                            let px0 = s.x + s.w; let py0 = s.y + (s.h/2); let px1 = t.x; let py1 = t.y + (t.h/2);
+                            if ((px0 >= mx && px0 <= mx+mw && py0 >= my && py0 <= my+mh) || (px1 >= mx && px1 <= mx+mw && py1 >= my && py1 <= my+mh)) {
+                                selectedEdgeIds.add(c.id);
+                            }
+                        }
+                    });
+                    let first = true;
+                    selectedNodeIds.forEach(id => { let el = document.getElementById(id); if(first && el) { el.classList.add('selected-anchor'); first = false; } });
+                    refreshEdgeSelectionVisuals();
+                }
+            }
+        });
+
+        function refreshEdgeSelectionVisuals() {
+            appState.connections.forEach(c => {
+                let p = document.getElementById('edge_path_' + c.id);
+                if (p) {
+                    const isSelected = selectedEdgeIds.has(c.id);
+                    p.setAttribute('fill', isSelected ? '#ff4757' : (c.color || '#ced6e0'));
+                    p.setAttribute('opacity', isSelected ? '0.9' : (c.opacity !== undefined ? c.opacity : 0.6));
+                }
+            });
+        }
+
+        function recalculateSankeyCurves() {
+            svg.innerHTML = '';
+            let flowStats = {};
+            appState.nodes.forEach(n => { flowStats[n.id] = { totalOut: 0, totalIn: 0, currentOut: 0, currentIn: 0 }; });
+            
+            appState.connections.forEach(conn => {
+                if(flowStats[conn.source]) flowStats[conn.source].totalOut += (conn.thickSrc || 10);
+                if(flowStats[conn.target]) flowStats[conn.target].totalIn += (conn.thickTgt || 10);
+            });
+
+            appState.connections.forEach(conn => {
+                const src = document.getElementById(conn.source); const tgt = document.getElementById(conn.target);
+                if(!src || !tgt) return;
+                
+                const srcNodeData = appState.nodes.find(n => n.id === conn.source);
+                const tgtNodeData = appState.nodes.find(n => n.id === conn.target);
+                
+                let scaleOut = flowStats[conn.source].totalOut > src.offsetHeight ? src.offsetHeight / flowStats[conn.source].totalOut : 1;
+                let scaleIn = flowStats[conn.target].totalIn > tgt.offsetHeight ? tgt.offsetHeight / flowStats[conn.target].totalIn : 1;
+                
+                let tSrc = (conn.thickSrc || 10) * scaleOut; let tTgt = (conn.thickTgt || 10) * scaleIn;
+                let srcCenterY = src.offsetTop + (src.offsetHeight / 2); let tgtCenterY = tgt.offsetTop + (tgt.offsetHeight / 2);
+                
+                if (srcNodeData && srcNodeData.type === 'group') { srcCenterY = src.offsetTop + 40 + ((flowStats[conn.source].totalOut * scaleOut) / 2); }
+                if (tgtNodeData && tgtNodeData.type === 'group') { tgtCenterY = tgt.offsetTop + 40 + ((flowStats[conn.target].totalIn * scaleIn) / 2); }
+                
+                const y0_center = srcCenterY - ((flowStats[conn.source].totalOut * scaleOut) / 2) + flowStats[conn.source].currentOut + (tSrc / 2);
+                const y1_center = tgtCenterY - ((flowStats[conn.target].totalIn * scaleIn) / 2) + flowStats[conn.target].currentIn + (tTgt / 2);
+                
+                flowStats[conn.source].currentOut += tSrc; flowStats[conn.target].currentIn += tTgt;
+                
+                const x0 = src.offsetLeft + src.offsetWidth; const x1 = tgt.offsetLeft;
+                const y0_top = y0_center - (tSrc / 2); const y0_bot = y0_center + (tSrc / 2);
+                const y1_top = y1_center - (tTgt / 2); const y1_bot = y1_center + (tTgt / 2);
+                
+                const curveForce = conn.curvature !== undefined ? conn.curvature : 0.45;
+                const dx = Math.abs(x1 - x0) * curveForce;
+                
+                const pathData = `M ${x0} ${y0_top} C ${x0 + dx} ${y0_top}, ${x1 - dx} ${y1_top}, ${x1} ${y1_top} L ${x1} ${y1_bot} C ${x1 - dx} ${y1_bot}, ${x0 + dx} ${y0_bot}, ${x0} ${y0_bot} Z`;
+                
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.id = 'edge_path_' + conn.id; path.setAttribute('d', pathData);
+                
+                const isSelected = selectedEdgeIds.has(conn.id);
+                path.setAttribute('fill', isSelected ? '#ff4757' : (conn.color || '#ced6e0'));
+                path.setAttribute('opacity', isSelected ? '0.9' : (conn.opacity !== undefined ? conn.opacity : 0.6));
+                
+                path.addEventListener('mousedown', (e) => {
+                    e.stopPropagation();
+                    if(operationalMode === 'disconnect') {
+                        pushToHistory(); appState.connections = appState.connections.filter(c => c.id !== conn.id); recalculateSankeyCurves(); saveStateToBrowser();
+                    } else if (operationalMode === 'move') {
+                        if (e.ctrlKey || e.metaKey) {
+                            if (selectedEdgeIds.has(conn.id)) selectedEdgeIds.delete(conn.id); else selectedEdgeIds.add(conn.id);
+                        } else {
+                            if (!selectedEdgeIds.has(conn.id)) { clearAllSelections(); selectedEdgeIds.add(conn.id); }
+                        }
+                        refreshEdgeSelectionVisuals();
+                    }
+                });
+
+                path.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    if (operationalMode === 'move') { 
+                        if(e.ctrlKey || e.metaKey || selectedEdgeIds.size > 1) {
+                            if(!selectedEdgeIds.has(conn.id)) selectedEdgeIds.add(conn.id); openBatchEdgeEditor();
+                        } else { activeEditorTarget = conn; openEdgeEditor(conn); }
+                    }
+                });
+                svg.appendChild(path);
+            });
+        }
+
+        function triggerSmartCut() {
+            if (selectedEdgeIds.size > 0) {
+                if (selectedNodeIds.size > 0) { if (!confirm("⚠️ WARNING: You have boxes selected. Slice ONLY the lines?")) return; }
+                pushToHistory();
+                selectedEdgeIds.forEach(id => { appState.connections = appState.connections.filter(c => c.id !== id); });
+                selectedEdgeIds.clear(); recalculateSankeyCurves(); saveStateToBrowser();
+                document.getElementById('workspace-status').innerText = "Lines severed.";
+                setTimeout(() => document.getElementById('workspace-status').innerText = "", 2000);
+                switchEngineMode('move'); 
+            } else { switchEngineMode('disconnect'); }
+        }
+
+        function switchEngineMode(mode) {
+            if (operationalMode === mode) mode = 'move';
+            operationalMode = mode; connectionSourceNode = null; clearAllSelections();
+            document.querySelectorAll('#toolbar button').forEach(el => el.classList.remove('active'));
+            let targetEl = document.getElementById('mode-'+mode);
+            if(targetEl) targetEl.classList.add('active');
+        }
+
+        function clearAllSelections() { 
+            board.querySelectorAll('.sankey-node, .floating-text-node, .group-node').forEach(el => el.classList.remove('selected', 'selected-anchor')); 
+            selectedNodeIds.clear(); selectedEdgeIds.clear(); refreshEdgeSelectionVisuals(); 
+        }
+
+        function spawnNewNode(type) {
+            pushToHistory();
+            let allZs = appState.nodes.map(n => n.zIndex || 10);
+            let maxZ = allZs.length > 0 ? Math.max(...allZs) : 10;
+            const newNode = { 
+                id: 'node_' + Date.now(), 
+                content: type === 'floating' ? 'Floating Header' : (type === 'group' ? '<b>Group Title</b>' : '<b>New Box</b><br><ul><li>Description.</li></ul>'),
+                type: type, x: 300, y: 150, w: type === 'group' ? 300 : 200, h: type === 'floating' ? 40 : (type === 'group' ? 300 : 80), 
+                color: type === 'group' ? '#a55eea' : '#2f3542', 
+                textColor: type === 'floating' ? '#2f3542' : '#ffffff',
+                borderColor: type === 'group' ? '#a55eea' : '#2f3542',
+                borderWidth: type === 'group' ? 2 : 0,
+                opacity: type === 'group' ? 0.0 : 1.0, 
+                fontSize: type === 'group' ? 16 : 12,
+                zIndex: maxZ + 1 
+            };
+            appState.nodes.push(newNode); buildNodeDOM(newNode); saveStateToBrowser();
+        }
+
+        function executeDeletion() {
+            if(selectedNodeIds.size === 0 && selectedEdgeIds.size === 0) return; 
+            pushToHistory();
+            selectedNodeIds.forEach(id => {
+                let el = document.getElementById(id); if(el) el.remove();
+                appState.nodes = appState.nodes.filter(n => n.id !== id);
+                appState.connections = appState.connections.filter(c => c.source !== id && c.target !== id); 
+            });
+            selectedEdgeIds.forEach(id => { appState.connections = appState.connections.filter(c => c.id !== id); });
+            clearAllSelections(); recalculateSankeyCurves(); saveStateToBrowser();
+        }
+
+        function executeFlowWiring(domEl, targetId) {
+            if(!connectionSourceNode) { 
+                connectionSourceNode = domEl; domEl.classList.add('selected'); 
+            } else { 
+                if(connectionSourceNode.id !== targetId) {
+                    pushToHistory();
+                    let srcNodeDOM = document.getElementById(connectionSourceNode.id);
+                    let srcNodeData = appState.nodes.find(n => n.id === connectionSourceNode.id);
+                    let sH = srcNodeDOM ? srcNodeDOM.offsetHeight : 50;
+                    if (srcNodeData && srcNodeData.type === 'group') { sH = 20; }
+                    let tH = 15; 
+                    appState.connections.push({ id: 'w_' + Date.now(), source: connectionSourceNode.id, target: targetId, color: '#ced6e0', curvature: 0.45, thickSrc: sH, thickTgt: tH, opacity: 0.6 }); 
+                }
+                connectionSourceNode.classList.remove('selected'); connectionSourceNode = null; 
+                recalculateSankeyCurves(); saveStateToBrowser();
+            }
+        }
+
+        function toggleGridSystem() { board.classList.toggle('alignment-grid'); }
+
+        function executeZIndexChange(direction) {
+            pushToHistory();
+            let allZs = appState.nodes.map(n => n.zIndex || 10);
+            let maxZ = allZs.length > 0 ? Math.max(...allZs) : 10;
+            let minZ = allZs.length > 0 ? Math.min(...allZs) : 10;
+            let targetIds = activeEditorTarget ? [activeEditorTarget.id] : Array.from(selectedNodeIds);
+
+            if (direction === 'front') {
+                let newZ = maxZ + 1;
+                targetIds.forEach(id => {
+                    let n = appState.nodes.find(node => node.id === id);
+                    if(n) { n.zIndex = newZ++; let el = document.getElementById(id); if(el) el.style.zIndex = n.zIndex; }
+                });
+            } else if (direction === 'back') {
+                let newZ = minZ - 1;
+                targetIds.forEach(id => {
+                    let n = appState.nodes.find(node => node.id === id);
+                    if(n) { n.zIndex = newZ--; let el = document.getElementById(id); if(el) el.style.zIndex = n.zIndex; }
+                });
+            }
+            saveStateToBrowser();
+        }
+
+        function executeBatchLayout(action) {
+            if (selectedNodeIds.size < 2) { alert("Please select at least 2 boxes to use layout tools."); return; }
+            pushToHistory();
+            const selectedArray = Array.from(selectedNodeIds);
+            const anchorId = selectedArray[0]; 
+            const anchorData = appState.nodes.find(n => n.id === anchorId);
+            if (!anchorData) return;
+            let modified = false;
+
+            if (action === 'align-left') {
+                selectedArray.forEach(id => { if (id !== anchorId) { let n = appState.nodes.find(node => node.id === id); n.x = anchorData.x; document.getElementById(id).style.left = n.x + 'px'; } }); modified = true;
+            } else if (action === 'align-center') {
+                let anchorCenter = anchorData.x + (anchorData.w / 2);
+                selectedArray.forEach(id => { if (id !== anchorId) { let n = appState.nodes.find(node => node.id === id); n.x = anchorCenter - (n.w / 2); document.getElementById(id).style.left = n.x + 'px'; } }); modified = true;
+            } else if (action === 'align-top') {
+                selectedArray.forEach(id => { if (id !== anchorId) { let n = appState.nodes.find(node => node.id === id); n.y = anchorData.y; document.getElementById(id).style.top = n.y + 'px'; } }); modified = true;
+            } else if (action === 'match-width') {
+                selectedArray.forEach(id => { if (id !== anchorId) { let n = appState.nodes.find(node => node.id === id); n.w = anchorData.w; document.getElementById(id).style.width = n.w + 'px'; } }); modified = true;
+            } else if (action === 'match-height') {
+                selectedArray.forEach(id => { if (id !== anchorId) { let n = appState.nodes.find(node => node.id === id); n.h = anchorData.h; document.getElementById(id).style.height = n.h + 'px'; } }); modified = true;
+            } else if (action === 'distribute-h') {
+                if(selectedArray.length > 2) {
+                    let sortedNodes = selectedArray.map(id => appState.nodes.find(n => n.id === id)).sort((a,b) => a.x - b.x);
+                    let first = sortedNodes[0], last = sortedNodes[sortedNodes.length - 1];
+                    let totalSpace = (last.x) - (first.x + first.w);
+                    let totalInnerWidths = 0;
+                    for(let i=1; i<sortedNodes.length-1; i++) totalInnerWidths += sortedNodes[i].w;
+                    let gap = (totalSpace - totalInnerWidths) / (sortedNodes.length - 1);
+                    if(gap < 0) gap = 20; 
+                    let currX = first.x + first.w + gap;
+                    for (let i=1; i<sortedNodes.length-1; i++) { sortedNodes[i].x = currX; document.getElementById(sortedNodes[i].id).style.left = currX + 'px'; currX += sortedNodes[i].w + gap; }
+                    modified = true;
+                }
+            } else if (action === 'distribute-v') {
+                if(selectedArray.length > 2) {
+                    let sortedNodes = selectedArray.map(id => appState.nodes.find(n => n.id === id)).sort((a,b) => a.y - b.y);
+                    let first = sortedNodes[0], last = sortedNodes[sortedNodes.length - 1];
+                    let totalSpace = (last.y) - (first.y + first.h);
+                    let totalInnerHeights = 0;
+                    for(let i=1; i<sortedNodes.length-1; i++) totalInnerHeights += sortedNodes[i].h;
+                    let gap = (totalSpace - totalInnerHeights) / (sortedNodes.length - 1);
+                    if(gap < 0) gap = 20; 
+                    let currY = first.y + first.h + gap;
+                    for (let i=1; i<sortedNodes.length-1; i++) { sortedNodes[i].y = currY; document.getElementById(sortedNodes[i].id).style.top = currY + 'px'; currY += sortedNodes[i].h + gap; }
+                    modified = true;
+                }
+            }
+            if (modified) { saveStateToBrowser(); recalculateSankeyCurves(); }
+        }
+
+        function openNodeEditor(data) {
+            document.getElementById('panel-title-header').innerText = "Edit Box Data";
+            document.getElementById('rt-container').style.display = 'block';
+            document.getElementById('layout-tools-container').style.display = 'none';
+            document.getElementById('edit-node-rich').innerHTML = data.content;
+            document.getElementById('edit-node-font-size').value = data.fontSize || (data.type === 'group' ? 16 : 12);
+
+            if (data.type === 'floating') { 
+                document.getElementById('appearance-container').style.display = 'none'; 
+            } else {
+                document.getElementById('appearance-container').style.display = 'grid';
+                document.getElementById('edit-node-color').value = data.color || "#2f3542"; 
+                document.getElementById('edit-node-text-color').value = data.textColor || '#ffffff';
+                document.getElementById('edit-node-opacity').value = data.opacity !== undefined ? data.opacity : 1.0; 
+                
+                let bwInput = document.getElementById('edit-node-border-width');
+                let bcInput = document.getElementById('edit-node-border-color');
+                
+                if (data.type === 'group' || data.type === 'structural') {
+                    bwInput.style.display = 'block'; bcInput.style.display = 'block';
+                    document.getElementById('label-border-width').style.display = 'block'; document.getElementById('label-border-color').style.display = 'block';
+                    bwInput.value = data.borderWidth !== undefined ? data.borderWidth : (data.type === 'group' ? 2 : 0);
+                    bcInput.value = data.borderColor || data.color || "#2f3542";
+                } else {
+                    bwInput.style.display = 'none'; bcInput.style.display = 'none';
+                    document.getElementById('label-border-width').style.display = 'none'; document.getElementById('label-border-color').style.display = 'none';
+                }
+            }
+            document.getElementById('modal-mask').style.display = 'block'; document.getElementById('node-editor-panel').style.display = 'block';
+        }
+
+        function openBatchNodeEditor() {
+            activeEditorTarget = null; 
+            document.getElementById('panel-title-header').innerText = `Batch Edit (${selectedNodeIds.size} Items)`;
+            document.getElementById('rt-container').style.display = 'none'; 
+            document.getElementById('layout-tools-container').style.display = 'block'; 
+            document.getElementById('appearance-container').style.display = 'grid';
+            
+            const anchorId = Array.from(selectedNodeIds)[0];
+            const anchorData = appState.nodes.find(n => n.id === anchorId);
+            
+            document.getElementById('edit-node-color').value = (anchorData && anchorData.color) ? anchorData.color : "#1e90ff";
+            document.getElementById('edit-node-text-color').value = anchorData ? (anchorData.textColor || "#ffffff") : "#ffffff";
+            document.getElementById('edit-node-opacity').value = anchorData ? (anchorData.opacity || 1.0) : "1.0";
+            document.getElementById('edit-node-font-size').value = anchorData ? (anchorData.fontSize || (anchorData.type === 'group' ? 16 : 12)) : "12";
+            
+            document.getElementById('edit-node-border-width').style.display = 'block';
+            document.getElementById('edit-node-border-color').style.display = 'block';
+            document.getElementById('label-border-width').style.display = 'block';
+            document.getElementById('label-border-color').style.display = 'block';
+            document.getElementById('edit-node-border-width').value = anchorData ? (anchorData.borderWidth || 0) : "0";
+            document.getElementById('edit-node-border-color').value = anchorData ? (anchorData.borderColor || anchorData.color) : "#1e90ff";
+
+            document.getElementById('modal-mask').style.display = 'block'; document.getElementById('node-editor-panel').style.display = 'block';
+        }
+
+        function commitNodeChanges() {
+            pushToHistory();
+            
+            if(activeEditorTarget) {
+                activeEditorTarget.content = document.getElementById('edit-node-rich').innerHTML;
+                activeEditorTarget.fontSize = parseInt(document.getElementById('edit-node-font-size').value) || 12;
+
+                if(activeEditorTarget.type !== 'floating') {
+                    activeEditorTarget.color = document.getElementById('edit-node-color').value; 
+                    activeEditorTarget.textColor = document.getElementById('edit-node-text-color').value;
+                    activeEditorTarget.opacity = parseFloat(document.getElementById('edit-node-opacity').value);
+                    if(activeEditorTarget.type === 'group' || activeEditorTarget.type === 'structural') {
+                        activeEditorTarget.borderWidth = parseInt(document.getElementById('edit-node-border-width').value);
+                        activeEditorTarget.borderColor = document.getElementById('edit-node-border-color').value;
+                    }
+                }
+            } else {
+                let sharedColor = document.getElementById('edit-node-color').value;
+                let sharedTextColor = document.getElementById('edit-node-text-color').value;
+                let sharedOpacity = parseFloat(document.getElementById('edit-node-opacity').value);
+                let sharedFontSize = parseInt(document.getElementById('edit-node-font-size').value) || 12;
+                let sharedBW = parseInt(document.getElementById('edit-node-border-width').value);
+                let sharedBC = document.getElementById('edit-node-border-color').value;
+                
+                selectedNodeIds.forEach(id => {
+                    let nData = appState.nodes.find(n => n.id === id);
+                    if(nData) {
+                        nData.fontSize = sharedFontSize;
+                        if(nData.type !== 'floating') {
+                            nData.color = sharedColor; nData.textColor = sharedTextColor; nData.opacity = sharedOpacity;
+                            if(nData.type === 'group' || nData.type === 'structural') {
+                                nData.borderWidth = sharedBW; nData.borderColor = sharedBC;
+                            }
+                        }
+                    }
+                });
+            }
+            saveStateToBrowser(); rebuildCanvasFromState(); dismissModal(); 
+        }
+
+        function openEdgeEditor(connData) {
+            document.getElementById('edge-panel-header').innerText = "Edit Flow Ribbon";
+            document.getElementById('edit-edge-color').value = connData.color || '#ced6e0';
+            document.getElementById('edit-edge-opacity').value = connData.opacity !== undefined ? connData.opacity : 0.6;
+            document.getElementById('edit-edge-curve').value = connData.curvature !== undefined ? connData.curvature : 0.45;
+            document.getElementById('edit-edge-thick-src').value = connData.thickSrc || 10;
+            document.getElementById('edit-edge-thick-tgt').value = connData.thickTgt || 10;
+            document.getElementById('modal-mask').style.display = 'block'; document.getElementById('edge-editor-panel').style.display = 'block';
+        }
+
+        function openBatchEdgeEditor() {
+            activeEditorTarget = null; 
+            document.getElementById('edge-panel-header').innerText = `Batch Edit Lines (${selectedEdgeIds.size} Items)`;
+            const firstEdgeId = Array.from(selectedEdgeIds)[0];
+            const edgeData = appState.connections.find(c => c.id === firstEdgeId);
+            document.getElementById('edit-edge-color').value = edgeData ? edgeData.color : "#ced6e0";
+            document.getElementById('edit-edge-opacity').value = edgeData ? (edgeData.opacity || 0.6) : "0.6";
+            document.getElementById('edit-edge-curve').value = edgeData ? (edgeData.curvature || 0.45) : "0.45";
+            document.getElementById('edit-edge-thick-src').value = edgeData ? (edgeData.thickSrc || 50) : "50";
+            document.getElementById('edit-edge-thick-tgt').value = edgeData ? (edgeData.thickTgt || 15) : "15";
+            document.getElementById('modal-mask').style.display = 'block'; document.getElementById('edge-editor-panel').style.display = 'block';
+        }
+
+        function liveUpdateEdge() {
+            let color = document.getElementById('edit-edge-color').value;
+            let opacity = parseFloat(document.getElementById('edit-edge-opacity').value);
+            let curve = parseFloat(document.getElementById('edit-edge-curve').value);
+            let tSrc = parseInt(document.getElementById('edit-edge-thick-src').value);
+            let tTgt = parseInt(document.getElementById('edit-edge-thick-tgt').value);
+
+            if (activeEditorTarget) {
+                activeEditorTarget.color = color; activeEditorTarget.opacity = opacity; activeEditorTarget.curvature = curve; activeEditorTarget.thickSrc = tSrc; activeEditorTarget.thickTgt = tTgt;
+            } else {
+                selectedEdgeIds.forEach(id => {
+                    let cData = appState.connections.find(c => c.id === id);
+                    if(cData) { cData.color = color; cData.opacity = opacity; cData.curvature = curve; cData.thickSrc = tSrc; cData.thickTgt = tTgt; }
+                });
+            }
+            recalculateSankeyCurves();
+        }
+
+        function commitEdgeChanges() { pushToHistory(); liveUpdateEdge(); saveStateToBrowser(); dismissModal(); clearAllSelections(); }
+        
+        function dismissModal() { document.getElementById('modal-mask').style.display = 'none'; document.querySelectorAll('.floating-panel').forEach(p => p.style.display = 'none'); activeEditorTarget = null; }
+        function openExportPortal() { clearAllSelections(); document.getElementById('modal-mask').style.display = 'block'; document.getElementById('export-popup').style.display = 'block'; }
+        
+        function downloadNativeHTML() {
+            saveStateToBrowser();
+            let clone = document.documentElement.cloneNode(true);
+            
+            // Clean HTML for saving (exclude marquee, but keep paper box structure)
+            clone.querySelector('#canvas-board').innerHTML = '<svg id="ruler-x-svg"></svg><svg id="ruler-y-svg"></svg><svg id="sankey-svg"></svg><div id="paper-guide-box"><div id="paper-guide-header"><span id="paper-guide-title"></span></div><div id="paper-guide-resizer" class="custom-resizer"></div></div><div id="marquee-box"></div>'; 
+            
+            let existingScript = clone.querySelector('#injected-state');
+            if (existingScript) existingScript.remove();
+            let script = document.createElement('script'); script.id = 'injected-state'; script.textContent = 'window.INJECTED_APP_STATE = ' + JSON.stringify(appState) + ';';
+            clone.querySelector('head').appendChild(script);
+            let htmlBlob = new Blob(['<!DOCTYPE html>\n' + clone.outerHTML], {type: 'text/html'});
+            let a = document.createElement('a'); a.href = URL.createObjectURL(htmlBlob); a.download = 'Sankey_Studio_Save.html'; a.click();
+            dismissModal();
+        }
+
+        function triggerNativePrint() { dismissModal(); resetZoom(); setTimeout(() => { window.print(); }, 300); }
+
+        function triggerCroppedExport(format) {
+            dismissModal(); 
+            
+            // Temporarily hide the paper viewfinder so it doesn't appear in the final export
+            const exportPaperBox = document.getElementById('paper-guide-box');
+            const wasPaperVisible = exportPaperBox.style.display;
+            exportPaperBox.style.display = 'none';
+            
+            let minX = Infinity, minY = Infinity, maxX = 0, maxY = 0;
+            appState.nodes.forEach(n => {
+                let el = document.getElementById(n.id);
+                let liveW = el ? el.offsetWidth : n.w; let liveH = el ? el.offsetHeight : n.h;
+                if(n.x < minX) minX = n.x; if(n.y < minY) minY = n.y;
+                if(n.x + liveW > maxX) maxX = n.x + liveW; if(n.y + liveH > maxY) maxY = n.y + liveH;
+            });
+            appState.connections.forEach(c => {
+                let s = appState.nodes.find(n => n.id === c.source); let t = appState.nodes.find(n => n.id === c.target);
+                if(s && t) {
+                    let elS = document.getElementById(s.id); let wS = elS ? elS.offsetWidth : s.w;
+                    let x0 = s.x + wS; let x1 = t.x;
+                    let curveForce = c.curvature !== undefined ? c.curvature : 0.45; let dx = Math.abs(x1 - x0) * curveForce;
+                    let cMinX = Math.min(x0, x1, x0+dx, x1-dx); let cMaxX = Math.max(x0, x1, x0+dx, x1-dx);
+                    if (cMinX < minX) minX = cMinX; if (cMaxX > maxX) maxX = cMaxX;
+                }
+            });
+
+            if(minX === Infinity) { minX = 0; minY = 0; maxX = 800; maxY = 600; }
+            
+            const pad = 100;
+            minX = Math.max(0, minX - pad); minY = Math.max(0, minY - pad); 
+            maxX += pad; maxY += pad;
+            let cropW = maxX - minX; let cropH = maxY - minY;
+
+            let exportDiv = document.createElement('div');
+            exportDiv.style.position = 'fixed'; exportDiv.style.top = '0px'; exportDiv.style.left = '0px';
+            exportDiv.style.width = cropW + 'px'; exportDiv.style.height = cropH + 'px';
+            exportDiv.style.backgroundColor = 'transparent'; exportDiv.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+            exportDiv.style.zIndex = '-9999'; exportDiv.style.overflow = 'hidden';
+
+            let liveSvg = document.getElementById('sankey-svg');
+            let svgClone = liveSvg.cloneNode(true);
+            svgClone.style.position = 'absolute'; svgClone.style.top = '0'; svgClone.style.left = '0';
+            svgClone.style.width = cropW + 'px'; svgClone.style.height = cropH + 'px';
+            svgClone.setAttribute('viewBox', `${minX} ${minY} ${cropW} ${cropH}`);
+            exportDiv.appendChild(svgClone);
+
+            appState.nodes.forEach(n => {
+                let el = document.getElementById(n.id);
+                if (el) {
+                    let clone = el.cloneNode(true);
+                    clone.classList.remove('selected', 'selected-anchor'); 
+                    clone.style.left = (el.offsetLeft - minX) + 'px'; clone.style.top = (el.offsetTop - minY) + 'px';
+                    
+                    let resizerIcon = clone.querySelector('.custom-resizer');
+                    if (resizerIcon) resizerIcon.style.display = 'none';
+
+                    exportDiv.appendChild(clone);
+                }
+            });
+            document.body.appendChild(exportDiv);
+
+            let exportScale = 2; 
+            if (cropW * cropH > 6000000) { exportScale = 1.5; }
+            if (cropW * cropH > 10000000) { exportScale = 1.0; } 
+
+            setTimeout(() => {
+                html2canvas(exportDiv, { scale: exportScale, backgroundColor: null, logging: false }).then(canvas => {
+                    document.body.removeChild(exportDiv); 
+                    exportPaperBox.style.display = wasPaperVisible; // Restore paper box visibility
+                    
+                    if (format === 'png') {
+                        canvas.toBlob(function(blob) {
+                            if(!blob) { alert("Export failed. File is still too large for browser memory."); return; }
+                            let url = URL.createObjectURL(blob);
+                            let a = document.createElement('a'); a.href = url; a.download = 'Sankey_CV.png'; a.click(); 
+                            URL.revokeObjectURL(url);
+                        }, 'image/png');
+                    } else if (format === 'pdf') {
+                        const imgData = canvas.toDataURL('image/png');
+                        const pdf = new window.jspdf.jsPDF(cropW > cropH ? 'l' : 'p', 'px', [cropW, cropH]); 
+                        pdf.addImage(imgData, 'PNG', 0, 0, cropW, cropH); pdf.save('Sankey_CV.pdf');
+                    }
+                }).catch(err => {
+                    document.body.removeChild(exportDiv);
+                    exportPaperBox.style.display = wasPaperVisible;
+                    alert("Export Engine Error: " + err);
+                });
+            }, 200); 
+        }
+        window.onload = bootstrapStudio;
+    </script>
+</body>
+</html>"""
+
+    with open(desktop_path, "w", encoding="utf-8") as file:
+        file.write(html_content)
+        
+    print(f"Master file updated with Proportional Viewfinder scaling: {desktop_path}")
+    webbrowser.open("file://" + desktop_path)
+
+generate_true_sankey_studio()
