@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Switzerland Pollinator ABM Workflow</title>
+
+  <!-- D3 -->
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+
+  <!-- D3 Sankey -->
+  <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --border: #d8e0eb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background:
+        linear-gradient(
+          135deg,
+          #163d67,
+          #1f5f8b
+        );
+
+      color: white;
+      padding: 34px 24px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 48px);
+      letter-spacing: -1px;
+    }
+
+    header p {
+      margin: 10px auto 0;
+      max-width: 950px;
+      line-height: 1.55;
+      opacity: 0.9;
+    }
+
+    .page {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 22px;
+    }
+
+    .info {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 3px 12px rgba(25, 40, 70, 0.05);
+    }
+
+    .info strong {
+      color: #174b75;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .legend-color {
+      width: 15px;
+      height: 15px;
+      border-radius: 4px;
+    }
+
+    #chart-wrapper {
+      position: relative;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 5px 20px rgba(30, 50, 80, 0.07);
+      overflow: auto;
+      min-height: 820px;
+    }
+
+    #chart {
+      width: 1750px;
+      height: 1050px;
+      display: block;
+    }
+
+    .node rect {
+      stroke: rgba(25, 35, 50, 0.5);
+      stroke-width: 1px;
+      rx: 5px;
+      ry: 5px;
+      cursor: pointer;
+    }
+
+    .node text {
+      fill: #182230;
+      font-size: 13px;
+      font-weight: 600;
+      pointer-events: none;
+    }
+
+    .link {
+      fill: none;
+      stroke-opacity: 0.32;
+      transition: stroke-opacity 0.15s;
+    }
+
+    .link:hover {
+      stroke-opacity: 0.75;
+    }
+
+    #tooltip {
+      position: fixed;
+      z-index: 10000;
+
+      max-width: 420px;
+
+      background: rgba(20, 28, 40, 0.97);
+      color: white;
+
+      padding: 14px 16px;
+      border-radius: 9px;
+
+      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+
+      font-size: 13px;
+      line-height: 1.5;
+
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.12s;
+    }
+
+    #tooltip h3 {
+      margin: 0 0 7px;
+      font-size: 15px;
+      color: white;
+    }
+
+    #tooltip p {
+      margin: 0;
+    }
+
+    #tooltip .type {
+      margin-top: 9px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      opacity: 0.7;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      margin: 14px 4px 40px;
+    }
+
+    @media (max-width: 900px) {
+      .page {
+        padding: 10px;
+      }
+
+      header {
+        padding: 25px 14px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>🇨🇭 Switzerland Pollinator ABM Workflow</h1>
+
+  <p>
+    From bee and butterfly biodiversity data and Swiss landscape information
+    to ecological response modelling, representative land-management units,
+    conservation-policy allocation, participation constraints, and final
+    habitat-connectivity outcomes.
+  </p>
+</header>
+
+
+<div class="page">
+
+  <section class="info">
+
+    <strong>How to read this diagram:</strong>
+
+    Follow the ribbons from left to right.
+
+    Spatial landscape information, GBIF observations, and biological trait
+    information begin as separate data streams. They are combined only when
+    required by the ecological model.
+
+    <div class="legend">
+
+      <div class="legend-item">
+        <div class="legend-color" style="background:#4C9ED9"></div>
+        Observed spatial data
+      </div>
+
+      <div class="legend-item">
+        <div class="legend-color" style="background:#4EAD73"></div>
+        Biodiversity occurrence data
+      </div>
+
+      <div class="legend-item">
+        <div class="legend-color" style="background:#9066CC"></div>
+        Biological trait data
+      </div>
+
+      <div class="legend-item">
+        <div class="legend-color" style="background:#E08A54"></div>
+        Derived ecological model
+      </div>
+
+      <div class="legend-item">
+        <div class="legend-color" style="background:#D9A632"></div>
+        Management layer
+      </div>
+
+      <div class="legend-item">
+        <div class="legend-color" style="background:#D85B67"></div>
+        Policy / scenario parameters
+      </div>
+
+      <div class="legend-item">
+        <div class="legend-color" style="background:#367C69"></div>
+        Model outputs
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <div id="chart-wrapper">
+    <svg id="chart"></svg>
+  </div>
+
+
+  <div class="footer-note">
+
+    <strong>Important:</strong>
+    Sankey ribbon widths are used to visually organize the workflow and do not
+    represent record counts, probability, money, or ecological effect size.
+
+    The land-management units are synthetic representative units associated
+    with eligible agricultural 5-km cells; they are not individually observed
+    Swiss farmers.
+
+    Participation percentages are sensitivity scenarios rather than measured
+    Swiss farmer participation rates.
+
+  </div>
+
+</div>
+
+
+<div id="tooltip"></div>
+
+
+<script>
+
+// ============================================================================
+// COLOR SYSTEM
+// ============================================================================
+
+const colors = {
+
+  spatial: "#4C9ED9",
+
+  biodiversity: "#4EAD73",
+
+  traits: "#9066CC",
+
+  ecology: "#E08A54",
+
+  management: "#D9A632",
+
+  policy: "#D85B67",
+
+  output: "#367C69",
+
+  neutral: "#8391A8"
+
+};
+
+
+// ============================================================================
+// NODES
+// ============================================================================
+//
+// Each node has:
+//
+// name        = displayed label
+// category    = controls node color
+// description = explanation shown when hovering
+//
+// ============================================================================
+
+const nodes = [
+
+
+  // ------------------------------------------------------------------------
+  // DATA COLLECTION
+  // ------------------------------------------------------------------------
+
+  {
+    id: "spatial",
+    name: "Spatial landscape data",
+    category: "spatial",
+
+    description:
+      "Swiss ecological land-cover and habitat information used to describe " +
+      "the physical landscape. These data are separate from butterfly and bee " +
+      "trait reconstruction. Spatial information later provides habitat " +
+      "composition, agricultural eligibility, and the 5-km landscape framework."
+  },
+
+
+  {
+    id: "gbif",
+    name: "GBIF bee & butterfly occurrences",
+    category: "biodiversity",
+
+    description:
+      "Georeferenced occurrence records for bees and butterflies in Switzerland. " +
+      "The main modelling period was 2015–2021. Coordinates were used to place " +
+      "observations into the Swiss 5-km analytical grid."
+  },
+
+
+  {
+    id: "traits",
+    name: "Bee & butterfly trait sources",
+    category: "traits",
+
+    description:
+      "Independent biological trait sources containing butterfly morphology " +
+      "and movement information and bee body-size traits. These trait sources " +
+      "do not originate from the Swiss land-cover raster."
+  },
+
+
+  // ------------------------------------------------------------------------
+  // TRAIT RECONSTRUCTION
+  // ------------------------------------------------------------------------
+
+  {
+    id: "butterfly_traits",
+    name: "Butterfly morphology & movement reconstruction",
+    category: "traits",
+
+    description:
+      "Butterfly information included wing length, wing width, body length, " +
+      "body width, wingspan/form, and movement information where available. " +
+      "Species with direct movement evidence retained it. Species without direct " +
+      "movement labels were classified into five functional movement levels " +
+      "using the trait-based model. Migratory species were treated separately."
+  },
+
+
+  {
+    id: "bee_traits",
+    name: "Bee body size & mobility reconstruction",
+    category: "traits",
+
+    description:
+      "Intertegular distance (ITD) was used as the main bee body-size trait. " +
+      "Published allometric equations were used to estimate typical and maximum " +
+      "foraging/homing distances. Bees were then assigned to five relative " +
+      "functional mobility levels. Genus-level proxies were used only for a " +
+      "small number of missing species."
+  },
+
+
+  // ------------------------------------------------------------------------
+  // OCCURRENCE SPATIALIZATION
+  // ------------------------------------------------------------------------
+
+  {
+    id: "grid",
+    name: "Swiss 5-km analytical grid",
+    category: "spatial",
+
+    description:
+      "Switzerland was represented with 1,606 5-km landscape cells. " +
+      "The 5-km resolution is an observation and analysis scale chosen partly " +
+      "because GBIF coordinate uncertainty is often measured in kilometres. " +
+      "It is not interpreted as a biological movement radius."
+  },
+
+
+  {
+    id: "occurrence_cells",
+    name: "Species occurrences by 5-km cell",
+    category: "biodiversity",
+
+    description:
+      "Cleaned bee and butterfly GBIF observations were assigned to the 5-km " +
+      "landscape cells using their geographic coordinates."
+  },
+
+
+  {
+    id: "habitat_composition",
+    name: "Habitat composition by cell",
+    category: "spatial",
+
+    description:
+      "The land-cover raster was summarized inside each 5-km cell. Habitat " +
+      "classes included forest, shrubland, grassland, cropland, wetland, water, " +
+      "built-up/urban, bare/sparse land, and snow/ice."
+  },
+
+
+  {
+    id: "landscape_assoc",
+    name: "Species landscape associations",
+    category: "ecology",
+
+    description:
+      "Species occurrence patterns were compared with the habitat composition " +
+      "of occupied cells to derive empirical landscape-association profiles. " +
+      "These are associations in the observed data and should not be interpreted " +
+      "as experimentally demonstrated habitat preferences."
+  },
+
+
+  // ------------------------------------------------------------------------
+  // ECOLOGICAL PROFILES
+  // ------------------------------------------------------------------------
+
+  {
+    id: "profiles",
+    name: "Unified pollinator ecological profiles",
+    category: "ecology",
+
+    description:
+      "Trait information and empirical landscape associations were combined " +
+      "into standardized bee and butterfly ecological-response profiles. " +
+      "The final ABM-ready dataset contained 771 pollinator species: " +
+      "554 bees and 217 butterflies."
+  },
+
+
+  // ------------------------------------------------------------------------
+  // SPECIES × LANDSCAPE RESPONSE
+  // ------------------------------------------------------------------------
+
+  {
+    id: "suitability",
+    name: "Species × cell habitat suitability",
+    category: "ecology",
+
+    description:
+      "Each species' landscape-association profile was compared with the habitat " +
+      "composition of every 5-km cell. Local habitat match was calculated using " +
+      "histogram intersection. Mobility is not multiplied into local suitability."
+  },
+
+
+  {
+    id: "connectivity",
+    name: "Structural landscape connectivity",
+    category: "ecology",
+
+    description:
+      "The 5-km cells were represented as nodes in a landscape graph. " +
+      "Rook-adjacent cells were used as the primary structural-connectivity " +
+      "network. Connectivity reflects continuity of suitable neighbouring cells; " +
+      "it is not a literal species movement simulation."
+  },
+
+
+  // ------------------------------------------------------------------------
+  // MANAGEMENT LAYER
+  // ------------------------------------------------------------------------
+
+  {
+    id: "eligible",
+    name: "Eligible agricultural cells",
+    category: "management",
+
+    description:
+      "Cells containing relevant cropland and/or grassland were identified from " +
+      "the land-cover data. Agricultural structure determines whether a landscape " +
+      "cell can enter the management component of the model."
+  },
+
+
+  {
+    id: "manager",
+    name: "Representative land-management units",
+    category: "management",
+
+    description:
+      "One synthetic representative land-management unit was created for each " +
+      "eligible management cell. These are not observed individual farmers. " +
+      "Each unit represents the possibility of making a management decision " +
+      "within that 5-km agricultural landscape cell."
+  },
+
+
+  {
+    id: "capacity",
+    name: "Intervention capacity",
+    category: "management",
+
+    description:
+      "Maximum intervention capacity was derived from the cropland available in " +
+      "each eligible cell. The reference allocation experiments allowed up to " +
+      "3% of cropland within a cell to enter the beneficial-strip intervention. " +
+      "The 3% value is a modelling assumption, not a Swiss statutory requirement."
+  },
+
+
+  // ------------------------------------------------------------------------
+  // POLICY
+  // ------------------------------------------------------------------------
+
+  {
+    id: "policy",
+    name: "Beneficial-strip policy setup",
+    category: "policy",
+
+    description:
+      "The intervention represents beneficial strips on open cropland. " +
+      "The payment parameter used was CHF 3,300 per hectare per year. " +
+      "This payment rate was taken from the Swiss direct-payment framework."
+  },
+
+
+  {
+    id: "budget",
+    name: "Reference budget: CHF 9.22 million",
+    category: "policy",
+
+    description:
+      "The CHF 9,219,428.79 reference budget was constructed for the experiment. " +
+      "It represents 2,793.7663 ha of intervention multiplied by CHF 3,300/ha. " +
+      "The 2,793.7663 ha corresponds to 1% of the modelled total eligible cropland. " +
+      "It is not claimed to be the actual Swiss national programme budget."
+  },
+
+
+  // ------------------------------------------------------------------------
+  // POLICY OBJECTIVE SCENARIOS
+  // ------------------------------------------------------------------------
+
+  {
+    id: "objective",
+    name: "Ecological funding-priority scenarios",
+    category: "policy",
+
+    description:
+      "Eligible cells were ranked under alternative policy objectives: " +
+      "habitat-only, 75% habitat / 25% connectivity, 50/50, " +
+      "25% habitat / 75% connectivity, connectivity-only, and a random baseline."
+  },
+
+
+  {
+    id: "participation",
+    name: "Management availability scenarios",
+    category: "policy",
+
+    description:
+      "A separate implementation experiment held ecological prioritization at " +
+      "50% habitat / 50% connectivity while varying the proportion of eligible " +
+      "management units available to participate: 25%, 50%, 75%, and 100%. " +
+      "Availability was randomly sampled because observed Swiss farmer-level " +
+      "participation data were not available."
+  },
+
+
+  // ------------------------------------------------------------------------
+  // FUNDING ALLOCATION
+  // ------------------------------------------------------------------------
+
+  {
+    id: "allocation",
+    name: "Conservation funding allocation",
+    category: "output",
+
+    description:
+      "Among eligible and available management units, cells were ranked according " +
+      "to the relevant scenario and funded until the reference budget was exhausted " +
+      "or available intervention capacity was insufficient."
+  },
+
+
+  // ------------------------------------------------------------------------
+  // ECOLOGICAL RESPONSE
+  // ------------------------------------------------------------------------
+
+  {
+    id: "response",
+    name: "Habitat & connectivity response",
+    category: "output",
+
+    description:
+      "The model measured changes in mean local habitat match and structural " +
+      "rook connectivity resulting from the funded conservation intervention."
+  },
+
+
+  {
+    id: "robustness",
+    name: "Robustness & sensitivity analysis",
+    category: "output",
+
+    description:
+      "Targeting was tested across alternative budgets, intervention-effect " +
+      "strengths, participation constraints, and repeated random allocations. " +
+      "Targeted strategies consistently outperformed random allocation within " +
+      "the tested model structure."
+  },
+
+
+  {
+    id: "movement_diag",
+    name: "Movement-group diagnostic",
+    category: "output",
+
+    description:
+      "Bee and butterfly response patterns were compared among movement groups. " +
+      "Further analysis showed that the apparent movement-group differences were " +
+      "better explained by species habitat profiles than by movement rank itself. " +
+      "Movement level was therefore not used as an arbitrary local-response multiplier."
+  },
+
+
+  {
+    id: "consensus",
+    name: "Consensus conservation priorities",
+    category: "output",
+
+    description:
+      "Priority cells were compared across the five targeted habitat/connectivity " +
+      "weighting strategies. 75 cells were selected under all five strategies, " +
+      "forming a robust 5/5 consensus core under the tested objective weightings."
+  },
+
+
+  {
+    id: "results",
+    name: "Final policy results, maps & GIFs",
+    category: "output",
+
+    description:
+      "Final outputs include strategy comparisons, participation-budget frontiers, " +
+      "priority maps, consensus maps, and animated GIFs showing changes in spatial " +
+      "allocation under ecological-objective and management-availability scenarios."
+  }
+
+];
+
+
+// ============================================================================
+// LINKS
+// ============================================================================
+//
+// value only controls visual ribbon width.
+//
+// It does NOT represent sample size or ecological importance.
+//
+// ============================================================================
+
+const links = [
+
+
+  // ------------------------------------------------------------------------
+  // SPATIAL BRANCH
+  // ------------------------------------------------------------------------
+
+  {
+    source: "spatial",
+    target: "grid",
+    value: 8
+  },
+
+  {
+    source: "spatial",
+    target: "habitat_composition",
+    value: 10
+  },
+
+  {
+    source: "spatial",
+    target: "eligible",
+    value: 7
+  },
+
+
+  // ------------------------------------------------------------------------
+  // BIODIVERSITY OCCURRENCE BRANCH
+  // ------------------------------------------------------------------------
+
+  {
+    source: "gbif",
+    target: "occurrence_cells",
+    value: 10
+  },
+
+  {
+    source: "grid",
+    target: "occurrence_cells",
+    value: 5
+  },
+
+  {
+    source: "occurrence_cells",
+    target: "landscape_assoc",
+    value: 9
+  },
+
+  {
+    source: "habitat_composition",
+    target: "landscape_assoc",
+    value: 7
+  },
+
+
+  // ------------------------------------------------------------------------
+  // TRAIT BRANCH
+  // ------------------------------------------------------------------------
+
+  {
+    source: "traits",
+    target: "butterfly_traits",
+    value: 7
+  },
+
+  {
+    source: "traits",
+    target: "bee_traits",
+    value: 7
+  },
+
+
+  // ------------------------------------------------------------------------
+  // ECOLOGICAL PROFILE CONSTRUCTION
+  // ------------------------------------------------------------------------
+
+  {
+    source: "butterfly_traits",
+    target: "profiles",
+    value: 6
+  },
+
+  {
+    source: "bee_traits",
+    target: "profiles",
+    value: 6
+  },
+
+  {
+    source: "landscape_assoc",
+    target: "profiles",
+    value: 9
+  },
+
+
+  // ------------------------------------------------------------------------
+  // SPECIES × LANDSCAPE MODEL
+  // ------------------------------------------------------------------------
+
+  {
+    source: "profiles",
+    target: "suitability",
+    value: 12
+  },
+
+  {
+    source: "habitat_composition",
+    target: "suitability",
+    value: 8
+  },
+
+  {
+    source: "grid",
+    target: "connectivity",
+    value: 7
+  },
+
+  {
+    source: "suitability",
+    target: "connectivity",
+    value: 7
+  },
+
+
+  // ------------------------------------------------------------------------
+  // AGRICULTURAL MANAGEMENT
+  // ------------------------------------------------------------------------
+
+  {
+    source: "eligible",
+    target: "manager",
+    value: 8
+  },
+
+  {
+    source: "eligible",
+    target: "capacity",
+    value: 8
+  },
+
+  {
+    source: "manager",
+    target: "capacity",
+    value: 4
+  },
+
+
+  // ------------------------------------------------------------------------
+  // POLICY
+  // ------------------------------------------------------------------------
+
+  {
+    source: "capacity",
+    target: "policy",
+    value: 7
+  },
+
+  {
+    source: "policy",
+    target: "budget",
+    value: 7
+  },
+
+  {
+    source: "budget",
+    target: "objective",
+    value: 7
+  },
+
+  {
+    source: "budget",
+    target: "participation",
+    value: 6
+  },
+
+
+  // ------------------------------------------------------------------------
+  // ECOLOGICAL OBJECTIVES
+  // ------------------------------------------------------------------------
+
+  {
+    source: "suitability",
+    target: "objective",
+    value: 7
+  },
+
+  {
+    source: "connectivity",
+    target: "objective",
+    value: 7
+  },
+
+
+  // ------------------------------------------------------------------------
+  // MANAGEMENT AVAILABILITY
+  // ------------------------------------------------------------------------
+
+  {
+    source: "manager",
+    target: "participation",
+    value: 7
+  },
+
+
+  // ------------------------------------------------------------------------
+  // FUNDING ALLOCATION
+  // ------------------------------------------------------------------------
+
+  {
+    source: "objective",
+    target: "allocation",
+    value: 10
+  },
+
+  {
+    source: "participation",
+    target: "allocation",
+    value: 8
+  },
+
+  {
+    source: "capacity",
+    target: "allocation",
+    value: 6
+  },
+
+
+  // ------------------------------------------------------------------------
+  // RESPONSE
+  // ------------------------------------------------------------------------
+
+  {
+    source: "allocation",
+    target: "response",
+    value: 13
+  },
+
+  {
+    source: "suitability",
+    target: "response",
+    value: 4
+  },
+
+  {
+    source: "connectivity",
+    target: "response",
+    value: 4
+  },
+
+
+  // ------------------------------------------------------------------------
+  // ANALYSIS
+  // ------------------------------------------------------------------------
+
+  {
+    source: "response",
+    target: "robustness",
+    value: 8
+  },
+
+  {
+    source: "response",
+    target: "movement_diag",
+    value: 6
+  },
+
+  {
+    source: "objective",
+    target: "consensus",
+    value: 6
+  },
+
+  {
+    source: "allocation",
+    target: "consensus",
+    value: 5
+  },
+
+
+  // ------------------------------------------------------------------------
+  // FINAL RESULTS
+  // ------------------------------------------------------------------------
+
+  {
+    source: "response",
+    target: "results",
+    value: 8
+  },
+
+  {
+    source: "robustness",
+    target: "results",
+    value: 7
+  },
+
+  {
+    source: "movement_diag",
+    target: "results",
+    value: 5
+  },
+
+  {
+    source: "consensus",
+    target: "results",
+    value: 6
+  }
+
+];
+
+
+// ============================================================================
+// CHART SETUP
+// ============================================================================
+
+const width = 1750;
+const height = 1050;
+
+const margin = {
+  top: 45,
+  right: 250,
+  bottom: 45,
+  left: 30
+};
+
+
+const svg = d3
+  .select("#chart")
+  .attr("viewBox", [0, 0, width, height]);
+
+
+const sankey = d3
+  .sankey()
+  .nodeId(d => d.id)
+  .nodeWidth(24)
+  .nodePadding(18)
+  .nodeAlign(d3.sankeyJustify)
+  .extent([
+    [margin.left, margin.top],
+    [width - margin.right, height - margin.bottom]
+  ]);
+
+
+// Copy data so D3 can modify coordinates safely.
+
+const graph = sankey({
+
+  nodes: nodes.map(d => ({ ...d })),
+
+  links: links.map(d => ({ ...d }))
+
+});
+
+
+// ============================================================================
+// LINKS
+// ============================================================================
+
+const linkGroup = svg
+  .append("g")
+  .attr("fill", "none");
+
+
+const link = linkGroup
+  .selectAll("path")
+  .data(graph.links)
+  .join("path")
+
+  .attr("class", "link")
+
+  .attr(
+    "d",
+    d3.sankeyLinkHorizontal()
+  )
+
+  .attr(
+    "stroke",
+    d => colors[d.source.category] || colors.neutral
+  )
+
+  .attr(
+    "stroke-width",
+    d => Math.max(1, d.width)
+  );
+
+
+// ============================================================================
+// NODES
+// ============================================================================
+
+const node = svg
+  .append("g")
+
+  .selectAll("g")
+
+  .data(graph.nodes)
+
+  .join("g")
+
+  .attr("class", "node");
+
+
+node
+  .append("rect")
+
+  .attr("x", d => d.x0)
+
+  .attr("y", d => d.y0)
+
+  .attr("height", d => Math.max(4, d.y1 - d.y0))
+
+  .attr("width", d => d.x1 - d.x0)
+
+  .attr(
+    "fill",
+    d => colors[d.category] || colors.neutral
+  );
+
+
+// ============================================================================
+// NODE LABELS
+// ============================================================================
+
+node
+  .append("text")
+
+  .attr(
+    "x",
+    d => d.x0 < width / 2
+      ? d.x1 + 8
+      : d.x0 - 8
+  )
+
+  .attr(
+    "y",
+    d => (d.y0 + d.y1) / 2
+  )
+
+  .attr(
+    "dy",
+    "0.35em"
+  )
+
+  .attr(
+    "text-anchor",
+    d => d.x0 < width / 2
+      ? "start"
+      : "end"
+  )
+
+  .text(
+    d => d.name
+  )
+
+  .call(wrapText, 155);
+
+
+// ============================================================================
+// TOOLTIP
+// ============================================================================
+
+const tooltip =
+  document.getElementById("tooltip");
+
+
+function showTooltip(event, d) {
+
+  tooltip.innerHTML = `
+
+    <h3>${d.name}</h3>
+
+    <p>${d.description}</p>
+
+    <div class="type">
+      ${categoryLabel(d.category)}
+    </div>
+
+  `;
+
+  tooltip.style.opacity = 1;
+
+  moveTooltip(event);
+}
+
+
+function moveTooltip(event) {
+
+  const padding = 15;
+
+  let x =
+    event.clientX + padding;
+
+  let y =
+    event.clientY + padding;
+
+
+  const rect =
+    tooltip.getBoundingClientRect();
+
+
+  if (
+    x + rect.width >
+    window.innerWidth
+  ) {
+
+    x =
+      event.clientX -
+      rect.width -
+      padding;
+  }
+
+
+  if (
+    y + rect.height >
+    window.innerHeight
+  ) {
+
+    y =
+      event.clientY -
+      rect.height -
+      padding;
+  }
+
+
+  tooltip.style.left =
+    x + "px";
+
+  tooltip.style.top =
+    y + "px";
+}
+
+
+function hideTooltip() {
+
+  tooltip.style.opacity = 0;
+}
+
+
+// Node tooltip
+
+node
+  .on(
+    "mouseenter",
+    showTooltip
+  )
+
+  .on(
+    "mousemove",
+    moveTooltip
+  )
+
+  .on(
+    "mouseleave",
+    hideTooltip
+  );
+
+
+// Link tooltip
+
+link
+  .on(
+    "mouseenter",
+    function(event, d) {
+
+      tooltip.innerHTML = `
+
+        <h3>
+          ${d.source.name}
+          →
+          ${d.target.name}
+        </h3>
+
+        <p>
+          This ribbon indicates that information from
+          <strong>${d.source.name}</strong>
+          contributes to
+          <strong>${d.target.name}</strong>.
+        </p>
+
+        <div class="type">
+          Workflow connection
+        </div>
+
+      `;
+
+      tooltip.style.opacity = 1;
+
+      moveTooltip(event);
+    }
+  )
+
+  .on(
+    "mousemove",
+    moveTooltip
+  )
+
+  .on(
+    "mouseleave",
+    hideTooltip
+  );
+
+
+// ============================================================================
+// CATEGORY LABEL
+// ============================================================================
+
+function categoryLabel(category) {
+
+  const labels = {
+
+    spatial:
+      "Observed / derived spatial landscape information",
+
+    biodiversity:
+      "GBIF biodiversity occurrence information",
+
+    traits:
+      "Biological trait information",
+
+    ecology:
+      "Derived ecological model",
+
+    management:
+      "Representative management layer",
+
+    policy:
+      "Policy parameter or scenario",
+
+    output:
+      "Model result / derived output"
+
+  };
+
+  return labels[category] || category;
+}
+
+
+// ============================================================================
+// TEXT WRAPPING
+// ============================================================================
+
+function wrapText(selection, width) {
+
+  selection.each(function() {
+
+    const text =
+      d3.select(this);
+
+    const words =
+      text
+        .text()
+        .split(/\s+/)
+        .reverse();
+
+    let word;
+
+    let line = [];
+
+    let lineNumber = 0;
+
+    const lineHeight = 1.05;
+
+    const y =
+      text.attr("y");
+
+    const x =
+      text.attr("x");
+
+    const dy =
+      parseFloat(text.attr("dy")) || 0;
+
+
+    let tspan = text
+      .text(null)
+
+      .append("tspan")
+
+      .attr("x", x)
+
+      .attr("y", y)
+
+      .attr("dy", dy + "em");
+
+
+    while (
+      word = words.pop()
+    ) {
+
+      line.push(word);
+
+      tspan.text(
+        line.join(" ")
+      );
+
+
+      if (
+        tspan.node()
+          .getComputedTextLength() >
+        width
+      ) {
+
+        line.pop();
+
+        tspan.text(
+          line.join(" ")
+        );
+
+        line = [word];
+
+        tspan = text
+          .append("tspan")
+
+          .attr(
+            "x",
+            x
+          )
+
+          .attr(
+            "y",
+            y
+          )
+
+          .attr(
+            "dy",
+            ++lineNumber *
+            lineHeight +
+            dy +
+            "em"
+          )
+
+          .text(word);
+      }
+    }
+  });
+}
+
+
+// ============================================================================
+// HEADING LABELS
+// ============================================================================
+
+const headings = [
+
+  {
+    x: 55,
+    y: 25,
+    text: "DATA INPUTS"
+  },
+
+  {
+    x: 350,
+    y: 25,
+    text: "BIOLOGICAL & SPATIAL PROCESSING"
+  },
+
+  {
+    x: 760,
+    y: 25,
+    text: "ECOLOGICAL MODEL"
+  },
+
+  {
+    x: 1050,
+    y: 25,
+    text: "POLICY & MANAGEMENT"
+  },
+
+  {
+    x: 1375,
+    y: 25,
+    text: "RESULTS"
+  }
+
+];
+
+
+svg
+  .append("g")
+
+  .selectAll("text")
+
+  .data(headings)
+
+  .join("text")
+
+  .attr(
+    "x",
+    d => d.x
+  )
+
+  .attr(
+    "y",
+    d => d.y
+  )
+
+  .attr(
+    "font-size",
+    14
+  )
+
+  .attr(
+    "font-weight",
+    800
+  )
+
+  .attr(
+    "fill",
+    "#526170"
+  )
+
+  .attr(
+    "letter-spacing",
+    "1px"
+  )
+
+  .text(
+    d => d.text
+  );
+
+
+// ============================================================================
+// OPTIONAL NODE HIGHLIGHTING
+// ============================================================================
+
+node.on(
+  "click",
+  function(event, selectedNode) {
+
+    event.stopPropagation();
+
+
+    const connectedIds =
+      new Set([
+        selectedNode.id
+      ]);
+
+
+    graph.links.forEach(l => {
+
+      if (
+        l.source.id === selectedNode.id
+      ) {
+
+        connectedIds.add(
+          l.target.id
+        );
+      }
+
+
+      if (
+        l.target.id === selectedNode.id
+      ) {
+
+        connectedIds.add(
+          l.source.id
+        );
+      }
+
+    });
+
+
+    node
+      .transition()
+      .duration(150)
+
+      .style(
+        "opacity",
+        d =>
+          connectedIds.has(d.id)
+            ? 1
+            : 0.18
+      );
+
+
+    link
+      .transition()
+      .duration(150)
+
+      .style(
+        "stroke-opacity",
+        d =>
+          d.source.id === selectedNode.id ||
+          d.target.id === selectedNode.id
+            ? 0.78
+            : 0.05
+      );
+
+  }
+);
+
+
+svg.on(
+  "click",
+  function() {
+
+    node
+      .transition()
+      .duration(150)
+      .style(
+        "opacity",
+        1
+      );
+
+
+    link
+      .transition()
+      .duration(150)
+      .style(
+        "stroke-opacity",
+        0.32
+      );
+
+  }
+);
+
+</script>
+
+</body>
+</html>
