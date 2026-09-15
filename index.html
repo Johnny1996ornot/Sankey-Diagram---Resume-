@@ -13,8 +13,7 @@
 :root{
     --bg-main:#f8f9fa;
     --toolbar-bg:#1e272e;
-    --text-light:#f1f2f6;
-    --accent-blue:#1e90ff;
+    --accent:#1e90ff;
 }
 
 *{
@@ -23,42 +22,54 @@
 
 body{
     margin:0;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-    background:var(--bg-main);
-    display:flex;
-    flex-direction:column;
     height:100vh;
     overflow:hidden;
+    display:flex;
+    flex-direction:column;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+
+    background:var(--bg-main);
     user-select:none;
 }
 
-/* ============================================================
+
+/* ==========================================================
    TOOLBAR
-============================================================ */
+========================================================== */
 
 #toolbar{
     background:var(--toolbar-bg);
-    padding:10px 16px;
+
     display:flex;
     align-items:center;
-    gap:12px;
-    box-shadow:0 4px 12px rgba(0,0,0,.15);
-    z-index:10000;
+    gap:10px;
+
+    padding:9px 14px;
+
     overflow-x:auto;
     overflow-y:hidden;
     white-space:nowrap;
-}
 
-#toolbar::-webkit-scrollbar{
-    display:none;
+    box-shadow:0 3px 12px rgba(0,0,0,.22);
+
+    z-index:10000;
 }
 
 .toolbar-group{
     display:flex;
-    align-items:center;
     gap:6px;
-    border-right:1px solid #57606f;
-    padding-right:12px;
+    align-items:center;
+
+    padding-right:10px;
+    border-right:1px solid #59636b;
+
     flex-shrink:0;
 }
 
@@ -67,18 +78,22 @@ body{
 }
 
 button{
-    padding:8px 12px;
     border:none;
     border-radius:6px;
+
+    padding:8px 11px;
+
     background:#353b48;
     color:white;
-    font-size:13px;
-    font-weight:500;
+
+    font-size:12px;
+    font-weight:600;
+
     cursor:pointer;
+
     display:flex;
     align-items:center;
     gap:5px;
-    transition:.15s ease;
 }
 
 button:hover{
@@ -87,119 +102,151 @@ button:hover{
 
 button.active{
     background:#1e90ff;
-    box-shadow:0 0 10px rgba(30,144,255,.4);
+    box-shadow:0 0 10px rgba(30,144,255,.35);
 }
 
 .btn-danger{
-    background:#ff4757;
+    background:#d63031;
 }
 
 .btn-success{
     background:#2ed573;
-    color:#17202a;
-    font-weight:700;
+    color:#14261d;
 }
 
 .btn-copy{
-    background:#0097e6;
-    color:white;
-    font-weight:700;
+    background:#0088cc;
 }
 
 #workspace-status{
-    color:#a4b0be;
-    font-size:12px;
-    min-width:150px;
+    font-size:11px;
+    color:#ced6e0;
+    min-width:125px;
 }
 
-/* ============================================================
-   CANVAS
-============================================================ */
+
+/* ==========================================================
+   WORKSPACE
+========================================================== */
 
 #canvas-container{
-    flex-grow:1;
+    flex:1;
+
     position:relative;
     overflow:auto;
-    background:#e4e7eb;
+
+    background:#e7e9ec;
+
     outline:none;
 }
 
 #canvas-board{
     position:absolute;
+
     left:0;
     top:0;
 
-    width:7000px;
+    width:6500px;
     height:2200px;
 
-    background:white;
+    background:#fff;
+
     transform-origin:0 0;
 }
 
 .alignment-grid{
     background-size:30px 30px;
+
     background-image:
         linear-gradient(to right,#edf0f4 1px,transparent 1px),
         linear-gradient(to bottom,#edf0f4 1px,transparent 1px);
 }
 
-/* ============================================================
-   SANKEY RIBBONS
-============================================================ */
+
+/* ==========================================================
+   SANKEY SVG
+========================================================== */
 
 #sankey-svg{
     position:absolute;
-    top:0;
-    left:0;
+
+    inset:0;
+
     width:100%;
     height:100%;
+
     z-index:1;
+
     pointer-events:none;
 }
 
 #sankey-svg path{
     pointer-events:auto;
     cursor:pointer;
-    transition:opacity .15s,filter .15s;
+
+    transition:
+        opacity .15s,
+        filter .15s;
 }
 
 #sankey-svg path:hover{
-    filter:drop-shadow(0 0 4px rgba(0,0,0,.35));
+    filter:drop-shadow(0 0 5px rgba(0,0,0,.35));
 }
 
-/* ============================================================
-   BOXES
-============================================================ */
+
+/* ==========================================================
+   CARDS
+========================================================== */
 
 .sankey-node{
     position:absolute;
+
     cursor:move;
 
-    display:flex;
-    flex-direction:column;
-
-    padding:14px;
+    padding:17px 18px;
 
     border-radius:8px;
+
     overflow:hidden;
 
-    box-shadow:0 3px 8px rgba(0,0,0,.18);
+    box-shadow:
+        0 3px 9px rgba(0,0,0,.20);
 
     z-index:20;
 }
 
 .sankey-node .rich-content{
-    pointer-events:none;
     width:100%;
     height:100%;
+
+    pointer-events:none;
+
     overflow:hidden;
-    line-height:1.45;
+
+    line-height:1.48;
+
     white-space:normal;
     word-break:break-word;
 }
 
+.sankey-node .rich-content > b:first-child{
+    display:block;
+
+    font-size:
+        var(
+            --node-title-size,
+            22px
+        );
+
+    line-height:1.14;
+
+    margin-bottom:12px;
+
+    letter-spacing:-.2px;
+}
+
 .sankey-node .rich-content ul{
-    margin:8px 0 0 18px;
+    margin:7px 0 0 17px;
     padding:0;
 }
 
@@ -207,27 +254,47 @@ button.active{
     margin-bottom:5px;
 }
 
+
+/* ==========================================================
+   FLOATING TEXT / SECTION TITLES
+========================================================== */
+
 .floating-text-node{
     position:absolute;
+
     cursor:move;
+
     padding:5px;
+
     overflow:hidden;
-    z-index:30;
+
+    z-index:40;
 }
 
 .floating-text-node .rich-content{
     pointer-events:none;
+
+    line-height:1.25;
     white-space:normal;
-    line-height:1.4;
 }
+
+
+/* ==========================================================
+   GROUP BOX
+========================================================== */
 
 .group-node{
     position:absolute;
+
     cursor:move;
+
+    padding:12px;
+
     border-style:dashed;
     border-radius:10px;
-    padding:14px;
+
     overflow:hidden;
+
     z-index:10;
 }
 
@@ -235,72 +302,95 @@ button.active{
     pointer-events:none;
 }
 
+
+/* ==========================================================
+   SELECTED OBJECTS
+========================================================== */
+
 .sankey-node.selected,
 .floating-text-node.selected,
 .group-node.selected{
     outline:3px solid #ffa502;
-    box-shadow:0 0 16px rgba(255,165,2,.65);
+
+    box-shadow:
+        0 0 16px rgba(255,165,2,.62);
 }
 
 .sankey-node.selected-anchor,
 .floating-text-node.selected-anchor,
 .group-node.selected-anchor{
     outline:4px solid #2ed573;
-    box-shadow:0 0 20px rgba(46,213,115,.75);
 }
 
-/* ============================================================
-   RESIZER
-============================================================ */
+
+/* ==========================================================
+   RESIZE HANDLE
+========================================================== */
 
 .custom-resizer{
     position:absolute;
+
     right:0;
     bottom:0;
-    width:28px;
-    height:28px;
+
+    width:30px;
+    height:30px;
+
     cursor:se-resize;
+
     z-index:100;
 
     display:flex;
     justify-content:flex-end;
     align-items:flex-end;
 
-    padding:3px;
+    padding:4px;
 }
 
 .custom-resizer:hover{
-    background:rgba(30,144,255,.15);
+    background:rgba(255,255,255,.15);
 }
 
 .custom-resizer::after{
     content:"↘";
     font-size:14px;
-    opacity:.8;
+    opacity:.85;
 }
 
-/* ============================================================
+
+/* ==========================================================
    MARQUEE
-============================================================ */
+========================================================== */
 
 #marquee-box{
-    position:absolute;
     display:none;
+
+    position:absolute;
+
     border:1px dashed #1e90ff;
-    background:rgba(30,144,255,.12);
+
+    background:
+        rgba(30,144,255,.11);
+
     pointer-events:none;
+
     z-index:9999;
 }
 
-/* ============================================================
+
+/* ==========================================================
    MODALS
-============================================================ */
+========================================================== */
 
 .modal-mask{
     display:none;
+
     position:fixed;
+
     inset:0;
-    background:rgba(0,0,0,.14);
+
+    background:rgba(0,0,0,.15);
+
     z-index:20000;
 }
 
@@ -308,49 +398,66 @@ button.active{
     display:none;
 
     position:fixed;
-    top:50%;
+
     left:50%;
-    transform:translate(-50%,-50%);
+    top:50%;
+
+    transform:
+        translate(-50%,-50%);
+
+    width:540px;
+
+    max-height:90vh;
+
+    overflow-y:auto;
 
     background:white;
-
-    width:520px;
-    max-height:90vh;
-    overflow-y:auto;
 
     padding:24px;
 
     border-radius:14px;
 
-    box-shadow:0 18px 45px rgba(0,0,0,.3);
+    box-shadow:
+        0 18px 45px rgba(0,0,0,.30);
 
     z-index:21000;
 }
 
 .floating-panel h3{
     margin-top:0;
+
     padding-bottom:10px;
-    border-bottom:2px solid #f1f2f6;
+
+    border-bottom:
+        2px solid #f1f2f6;
 }
 
 .settings-grid{
     display:grid;
-    grid-template-columns:150px 1fr;
+
+    grid-template-columns:
+        160px 1fr;
+
     gap:12px;
+
     align-items:center;
-    margin-top:15px;
+
+    margin-top:14px;
 }
 
 .settings-grid label{
     font-size:11px;
+
     font-weight:700;
+
     text-transform:uppercase;
+
     color:#57606f;
 }
 
 .settings-grid input[type=color]{
     width:100%;
-    height:36px;
+    height:38px;
 }
 
 .settings-grid input[type=number],
@@ -360,29 +467,37 @@ button.active{
 
 .rt-toolbar{
     display:flex;
-    gap:5px;
     flex-wrap:wrap;
+    gap:5px;
 
-    padding:5px;
     background:#f1f2f6;
 
-    margin-bottom:6px;
+    padding:6px;
+
+    margin-bottom:7px;
+
     border-radius:5px;
 }
 
 .rt-toolbar button{
     background:white;
     color:#2f3542;
-    border:1px solid #bdc3c7;
+
+    border:
+        1px solid #bdc3c7;
+
     padding:5px 8px;
 }
 
 .rt-editor{
     width:100%;
-    height:190px;
+    height:220px;
+
     overflow:auto;
 
-    border:1px solid #ced6e0;
+    border:
+        1px solid #ced6e0;
+
     border-radius:6px;
 
     padding:10px;
@@ -395,42 +510,51 @@ button.active{
 .panel-actions{
     display:flex;
     justify-content:flex-end;
+
     gap:10px;
+
     margin-top:20px;
 }
 
-/* ============================================================
+
+/* ==========================================================
    HELP
-============================================================ */
+========================================================== */
 
 #help-box{
     position:fixed;
+
     right:18px;
     bottom:18px;
 
-    width:280px;
+    width:285px;
 
-    background:rgba(255,255,255,.95);
+    background:
+        rgba(255,255,255,.95);
 
     padding:13px 15px;
 
     border-radius:9px;
 
-    box-shadow:0 5px 20px rgba(0,0,0,.15);
+    box-shadow:
+        0 5px 20px rgba(0,0,0,.16);
 
     z-index:5000;
 
     font-size:11px;
+
+    line-height:1.5;
+
     color:#57606f;
-    line-height:1.45;
 }
 
 </style>
 
+
 <script id="injected-state">
 /*
-Saved workspace state is automatically inserted here
-when you use "Copy HTML" or export the HTML.
+Current edited workspace is inserted here
+when Copy HTML / Export HTML is used.
 */
 </script>
 
@@ -438,9 +562,10 @@ when you use "Copy HTML" or export the HTML.
 
 <body>
 
-<!-- ============================================================
+
+<!-- ==========================================================
      TOOLBAR
-============================================================ -->
+========================================================== -->
 
 <div id="toolbar">
 
@@ -451,11 +576,12 @@ when you use "Copy HTML" or export the HTML.
             class="active"
             onclick="switchEngineMode('move')">
 
-            🖱 Select / Move
+            🖱 Select
 
         </button>
 
     </div>
+
 
     <div class="toolbar-group">
 
@@ -472,6 +598,7 @@ when you use "Copy HTML" or export the HTML.
         </button>
 
     </div>
+
 
     <div class="toolbar-group">
 
@@ -493,6 +620,37 @@ when you use "Copy HTML" or export the HTML.
 
     </div>
 
+
+    <!-- Explicit editors restored -->
+
+    <div class="toolbar-group">
+
+        <button onclick="editSelectedNode()">
+            ✏️ Edit Box
+        </button>
+
+        <button onclick="editSelectedEdge()">
+            〰 Edit Line
+        </button>
+
+    </div>
+
+
+    <!-- Card layering -->
+
+    <div class="toolbar-group">
+
+        <button onclick="bringSelectedToFront()">
+            ⬆ Front
+        </button>
+
+        <button onclick="sendSelectedToBack()">
+            ⬇ Back
+        </button>
+
+    </div>
+
+
     <div class="toolbar-group">
 
         <button onclick="triggerUndo()">
@@ -508,6 +666,7 @@ when you use "Copy HTML" or export the HTML.
         </button>
 
     </div>
+
 
     <div class="toolbar-group">
 
@@ -529,6 +688,7 @@ when you use "Copy HTML" or export the HTML.
 
     </div>
 
+
     <div class="toolbar-group">
 
         <button
@@ -549,6 +709,7 @@ when you use "Copy HTML" or export the HTML.
 
     </div>
 
+
     <div class="toolbar-group">
 
         <span id="workspace-status"></span>
@@ -565,13 +726,18 @@ when you use "Copy HTML" or export the HTML.
 
 </div>
 
-<!-- ============================================================
+
+<!-- ==========================================================
      CANVAS
-============================================================ -->
+========================================================== -->
 
-<div id="canvas-container" tabindex="0">
+<div
+    id="canvas-container"
+    tabindex="0">
 
-    <div id="canvas-board" class="alignment-grid">
+    <div
+        id="canvas-board"
+        class="alignment-grid">
 
         <svg id="sankey-svg"></svg>
 
@@ -581,20 +747,23 @@ when you use "Copy HTML" or export the HTML.
 
 </div>
 
+
 <div id="help-box">
 
     <b>Editing</b><br>
 
-    • Drag boxes to move them.<br>
-    • Drag ↘ to resize.<br>
-    • Double-click a box to edit it.<br>
-    • Ctrl-click to select multiple boxes.<br>
-    • Connect: click source → target.<br>
-    • Cut: click a ribbon.<br>
-    • Double-click ribbon to edit it.<br>
-    • Copy HTML saves your current layout.
+    • Click a card → <b>Edit Box</b>.<br>
+    • Click a ribbon → <b>Edit Line</b>.<br>
+    • Double-click also opens its editor.<br>
+    • Drag cards to reposition them.<br>
+    • Drag ↘ to resize a card.<br>
+    • Ctrl-click for multi-selection.<br>
+    • Connect: select source → target.<br>
+    • Cut: click a connection.<br>
+    • Auto ribbon width makes flows fill/split between cards.
 
 </div>
+
 
 <div
     id="modal-mask"
@@ -602,13 +771,17 @@ when you use "Copy HTML" or export the HTML.
     onclick="dismissModal()">
 </div>
 
-<!-- ============================================================
-     NODE EDITOR
-============================================================ -->
 
-<div id="node-editor-panel" class="floating-panel">
+<!-- ==========================================================
+     BOX EDITOR
+========================================================== -->
 
-    <h3>Edit Box</h3>
+<div
+    id="node-editor-panel"
+    class="floating-panel">
+
+    <h3>Edit Box / Text</h3>
+
 
     <div class="rt-toolbar">
 
@@ -634,21 +807,32 @@ when you use "Copy HTML" or export the HTML.
 
     </div>
 
+
     <div
         id="edit-node-rich"
         class="rt-editor"
         contenteditable="true">
     </div>
 
+
     <div class="settings-grid">
 
         <label>Background</label>
-        <input type="color" id="edit-node-color">
+
+        <input
+            type="color"
+            id="edit-node-color">
+
 
         <label>Text Color</label>
-        <input type="color" id="edit-node-text-color">
 
-        <label>Opacity</label>
+        <input
+            type="color"
+            id="edit-node-text-color">
+
+
+        <label>Card Opacity</label>
+
         <input
             type="range"
             id="edit-node-opacity"
@@ -656,17 +840,34 @@ when you use "Copy HTML" or export the HTML.
             max="1"
             step=".05">
 
-        <label>Font Size</label>
+
+        <label>Body Text Size</label>
+
         <input
             type="number"
             id="edit-node-font-size"
             min="8"
             max="72">
 
+
+        <label>Card Title Size</label>
+
+        <input
+            type="number"
+            id="edit-node-title-size"
+            min="10"
+            max="72">
+
+
         <label>Border Color</label>
-        <input type="color" id="edit-node-border-color">
+
+        <input
+            type="color"
+            id="edit-node-border-color">
+
 
         <label>Border Width</label>
+
         <input
             type="number"
             id="edit-node-border-width"
@@ -674,6 +875,7 @@ when you use "Copy HTML" or export the HTML.
             max="10">
 
     </div>
+
 
     <div class="panel-actions">
 
@@ -697,20 +899,40 @@ when you use "Copy HTML" or export the HTML.
 
 </div>
 
-<!-- ============================================================
-     EDGE EDITOR
-============================================================ -->
 
-<div id="edge-editor-panel" class="floating-panel">
+<!-- ==========================================================
+     FLOW / LINE EDITOR
+========================================================== -->
 
-    <h3>Edit Flow Arrow</h3>
+<div
+    id="edge-editor-panel"
+    class="floating-panel">
+
+    <h3>Edit Flow Ribbon</h3>
+
 
     <div class="settings-grid">
 
+        <label>Automatic Width</label>
+
+        <input
+            type="checkbox"
+            id="edit-edge-auto"
+            style="
+                width:22px;
+                height:22px;
+            ">
+
+
         <label>Color</label>
-        <input type="color" id="edit-edge-color">
+
+        <input
+            type="color"
+            id="edit-edge-color">
+
 
         <label>Opacity</label>
+
         <input
             type="range"
             id="edit-edge-opacity"
@@ -718,7 +940,9 @@ when you use "Copy HTML" or export the HTML.
             max="1"
             step=".05">
 
+
         <label>Curve</label>
+
         <input
             type="range"
             id="edit-edge-curve"
@@ -726,23 +950,46 @@ when you use "Copy HTML" or export the HTML.
             max="1.5"
             step=".05">
 
-        <label>Start Width</label>
+
+        <label>Source Width</label>
+
         <input
             type="range"
             id="edit-edge-thick-src"
-            min="2"
-            max="500"
-            step="2">
+            min="5"
+            max="250"
+            step="5">
 
-        <label>End Width</label>
+
+        <label>Target Width</label>
+
         <input
             type="range"
             id="edit-edge-thick-tgt"
-            min="2"
-            max="500"
-            step="2">
+            min="5"
+            max="250"
+            step="5">
 
     </div>
+
+
+    <p
+        style="
+            font-size:12px;
+            color:#57606f;
+            line-height:1.5;
+        ">
+
+        <b>Automatic Width</b> makes a single flow use most of
+        the card's available vertical space. If two or more
+        flows leave or enter a card, that space is divided
+        automatically between them.
+
+        Turn Automatic Width off if you want to manually set
+        the ribbon width.
+
+    </p>
+
 
     <div class="panel-actions">
 
@@ -766,14 +1013,15 @@ when you use "Copy HTML" or export the HTML.
 
 </div>
 
-<!-- ============================================================
+
+<!-- ==========================================================
      EXPORT
-============================================================ -->
+========================================================== -->
 
 <div
     id="export-popup"
     class="floating-panel"
-    style="width:370px">
+    style="width:380px">
 
     <h3>Export Workspace</h3>
 
@@ -824,29 +1072,74 @@ when you use "Copy HTML" or export the HTML.
 
 </div>
 
+
 <script>
 
-/* ============================================================
+/* ==========================================================
    COLORS
-============================================================ */
+========================================================== */
 
 const COLOR = {
 
-    spatial:"#2878B5",
-    gbif:"#2E8B57",
-    trait:"#7D4FA3",
-    ecology:"#D97706",
-    management:"#A66F00",
-    policy:"#B9415A",
-    result:"#177E89",
-    final:"#0F5D5E",
-    heading:"#475569"
+    spatial:
+        "#2878B5",
+
+    gbif:
+        "#2E8B57",
+
+    trait:
+        "#7D4FA3",
+
+    ecology:
+        "#D97706",
+
+    management:
+        "#A66F00",
+
+    policy:
+        "#B9415A",
+
+    result:
+        "#177E89",
+
+    final:
+        "#0F5D5E",
+
+    heading:
+        "#475569"
 
 };
 
-/* ============================================================
-   NODE HELPERS
-============================================================ */
+
+/* ==========================================================
+   AUTOMATIC SANKEY WIDTH
+========================================================== */
+
+/*
+0.78 means the combined ribbons use up to ~78% of a card's
+height.
+
+Example:
+1 outgoing ribbon = ~78% of the available card height.
+2 outgoing ribbons = each receives ~39%.
+3 outgoing ribbons = each receives ~26%.
+
+Manual line widths still work when autoWidth = false.
+*/
+
+const AUTO_FLOW_FILL =
+    0.78;
+
+const AUTO_FLOW_MAX =
+    150;
+
+const AUTO_FLOW_MIN =
+    26;
+
+
+/* ==========================================================
+   HELPERS
+========================================================== */
 
 function node(
     id,
@@ -856,13 +1149,16 @@ function node(
     h,
     color,
     content,
-    fontSize=14
+    fontSize=13,
+    titleSize=22
 ){
 
     return {
 
         id:id,
+
         content:content,
+
         type:"structural",
 
         x:x,
@@ -876,17 +1172,21 @@ function node(
         textColor:"#ffffff",
 
         borderColor:color,
+
         borderWidth:2,
 
         opacity:.96,
 
         fontSize:fontSize,
 
+        titleSize:titleSize,
+
         zIndex:20
 
     };
 
 }
+
 
 function textNode(
     id,
@@ -895,13 +1195,14 @@ function textNode(
     w,
     h,
     content,
-    size=18,
+    size=24,
     color=COLOR.heading
 ){
 
     return {
 
         id:id,
+
         content:content,
 
         type:"floating",
@@ -917,11 +1218,14 @@ function textNode(
         textColor:color,
 
         borderColor:"#ffffff",
+
         borderWidth:0,
 
         opacity:0,
 
         fontSize:size,
+
+        titleSize:size,
 
         zIndex:40
 
@@ -929,13 +1233,12 @@ function textNode(
 
 }
 
+
 function edge(
     id,
     source,
     target,
-    color,
-    thickSrc=18,
-    thickTgt=18
+    color
 ){
 
     return {
@@ -943,636 +1246,770 @@ function edge(
         id:id,
 
         source:source,
+
         target:target,
 
         color:color,
 
-        curvature:.40,
+        curvature:.42,
 
-        thickSrc:thickSrc,
-        thickTgt:thickTgt,
+        thickSrc:70,
 
-        opacity:.60
+        thickTgt:70,
+
+        autoWidth:true,
+
+        opacity:.58
 
     };
 
 }
 
-/* ============================================================
-   DEFAULT PORTFOLIO FLOWCHART
-============================================================ */
+
+/* ==========================================================
+   DEFAULT WORKFLOW
+========================================================== */
 
 const DEFAULT_ABM_STATE = {
 
 nodes:[
 
-/* ============================================================
-   TITLE
-============================================================ */
+
+/* ==========================================================
+   MAIN TITLE
+========================================================== */
 
 textNode(
-    "title",
+    "main_title",
+
     120,
     45,
+
     3200,
-    70,
+    80,
+
     "<b>Switzerland Pollinator ABM Workflow</b>",
-    30,
-    "#16324f"
+
+    42,
+
+    "#173653"
 ),
+
 
 textNode(
     "subtitle",
+
     120,
-    110,
-    4000,
-    50,
-    "From biodiversity, trait and landscape data to conservation-policy prioritization",
-    16,
+    128,
+
+    4300,
+    60,
+
+    "Methodological workflow from Swiss landscape, biodiversity and trait data to ecological modelling, management scenarios and conservation-policy prioritization.",
+
+    18,
+
     "#52606d"
 ),
 
-/* ============================================================
-   HEADINGS
-============================================================ */
+
+/* ==========================================================
+   SECTION HEADINGS
+========================================================== */
 
 textNode(
-    "heading1",
+    "heading_1",
+
     120,
-    210,
-    380,
-    40,
+    240,
+
+    410,
+    55,
+
     "<b>1. DATA COLLECTION</b>",
-    17
+
+    25
 ),
 
-textNode(
-    "heading2",
-    720,
-    210,
-    480,
-    40,
-    "<b>2. DATA PROCESSING</b>",
-    17
-),
 
 textNode(
-    "heading3",
-    1400,
-    210,
-    480,
-    40,
-    "<b>3. SPECIES PROFILES</b>",
-    17
-),
+    "heading_2",
 
-textNode(
-    "heading4",
-    2050,
-    210,
+    690,
+    240,
+
     500,
-    40,
+    55,
+
+    "<b>2. DATA PROCESSING</b>",
+
+    25
+),
+
+
+textNode(
+    "heading_3",
+
+    1360,
+    240,
+
+    520,
+    55,
+
+    "<b>3. SPECIES PROFILES</b>",
+
+    25
+),
+
+
+textNode(
+    "heading_4",
+
+    2040,
+    240,
+
+    540,
+    55,
+
     "<b>4. LANDSCAPE INTEGRATION</b>",
-    17
+
+    25
 ),
 
+
 textNode(
-    "heading5",
+    "heading_5",
+
     2760,
-    210,
+    240,
+
     480,
-    40,
+    55,
+
     "<b>5. MANAGEMENT</b>",
-    17
+
+    25
 ),
 
+
 textNode(
-    "heading6",
-    3430,
-    210,
+    "heading_6",
+
+    3420,
+    240,
+
     420,
-    40,
+    55,
+
     "<b>6. POLICY SETUP</b>",
-    17
+
+    25
 ),
 
+
 textNode(
-    "heading7",
-    4100,
-    210,
-    470,
-    40,
+    "heading_7",
+
+    4070,
+    240,
+
+    450,
+    55,
+
     "<b>7. SCENARIOS</b>",
-    17
+
+    25
 ),
 
+
 textNode(
-    "heading8",
-    4800,
-    210,
-    470,
-    40,
+    "heading_8",
+
+    4720,
+    240,
+
+    440,
+    55,
+
     "<b>8. ALLOCATION</b>",
-    17
+
+    25
 ),
+
 
 textNode(
-    "heading9",
-    5470,
-    210,
+    "heading_9",
+
+    5360,
+    240,
+
     420,
-    40,
+    55,
+
     "<b>9. RESULTS</b>",
-    17
+
+    25
 ),
 
-/* ============================================================
+
+/* ==========================================================
    1. DATA COLLECTION
-============================================================ */
+========================================================== */
 
 node(
     "spatial_data",
+
     120,
-    310,
+    345,
+
     390,
-    190,
+    235,
+
     COLOR.spatial,
 
     `<b>Spatial Data</b>
+
     <ul>
-        <li>Swiss land-cover / habitat raster</li>
-        <li>LV95 spatial framework</li>
-        <li>Environmental and agricultural land-cover classes</li>
+        <li>Swiss ecological land-cover / habitat raster.</li>
+        <li>Projected to the Swiss LV95 coordinate system.</li>
+        <li>Includes forest, shrubland, grassland, cropland, wetland, water, built-up, bare/sparse land and snow/ice.</li>
+        <li>Provides the physical environmental structure used by the spatial model.</li>
     </ul>`
 ),
+
 
 node(
     "biodiversity_data",
+
     120,
-    570,
+    665,
+
     390,
-    205,
+    250,
+
     COLOR.gbif,
 
     `<b>Biodiversity Data</b>
+
     <ul>
-        <li>GBIF bee occurrence records</li>
-        <li>GBIF butterfly occurrence records</li>
-        <li>Species names and coordinates</li>
-        <li>Main period: 2015–2021</li>
+        <li>GBIF occurrence records for Swiss bees and butterflies.</li>
+        <li>Main contemporary analysis period: 2015–2021.</li>
+        <li>Species identity and geographic coordinates retained after cleaning.</li>
+        <li>Occurrences are observations, not individual ABM agents.</li>
     </ul>`
 ),
+
 
 node(
     "trait_data",
+
     120,
-    850,
+    995,
+
     390,
-    195,
+    250,
+
     COLOR.trait,
 
     `<b>Trait Data</b>
+
     <ul>
-        <li>Butterfly morphology and movement information</li>
-        <li>Bee body-size / ITD traits</li>
-        <li>Independent biological trait databases</li>
+        <li>Independent biological databases and literature sources.</li>
+        <li>Butterfly body, wing morphology and movement information.</li>
+        <li>Bee body-size information using intertegular distance (ITD).</li>
+        <li>Used to reconstruct functional movement characteristics where possible.</li>
     </ul>`
 ),
 
-/* ============================================================
+
+/* ==========================================================
    2A. SPATIAL PROCESSING
-============================================================ */
+========================================================== */
 
 node(
-    "environmental_framework",
-    720,
-    310,
-    450,
-    265,
+    "environment",
+
+    690,
+    355,
+
+    455,
+    330,
+
     COLOR.spatial,
 
     `<b>5-km Environmental Framework</b>
+
     <ul>
-        <li>1,606 Swiss 5-km cells</li>
-        <li>Habitat composition per cell</li>
-        <li>Agricultural land structure</li>
-        <li>Neighbouring-cell framework</li>
-        <li>5-km grid is an analytical scale, not a movement radius</li>
+        <li>Switzerland represented by 1,606 analytical 5-km landscape cells.</li>
+        <li>The 5-km resolution reflects the spatial uncertainty of the biodiversity observations; it is not a biological movement distance.</li>
+        <li>Habitat composition calculated within every cell.</li>
+        <li>Agricultural land structure quantified.</li>
+        <li>Neighbour relationships established between adjacent cells.</li>
     </ul>`
 ),
 
-/* ============================================================
+
+/* ==========================================================
    2B. BIOLOGICAL PROCESSING
-============================================================ */
+========================================================== */
 
 node(
-    "pollinator_reconstruction",
-    720,
-    670,
-    450,
-    390,
+    "pollinators",
+
+    690,
+    815,
+
+    455,
+    530,
+
     COLOR.trait,
 
     `<b>Butterflies & Bees</b>
-    <br><br>
 
-    <b>Butterflies</b>
+    <b>Butterfly reconstruction</b>
+
     <ul>
-        <li>Wing length / width</li>
-        <li>Body length / width</li>
-        <li>Wingspan / wing form</li>
-        <li>Five functional movement levels</li>
-        <li>Migratory species treated separately</li>
+        <li>Wing length, wing width, body length, body width and wing-form information assembled where available.</li>
+        <li>Direct movement labels retained when supported by reference data.</li>
+        <li>Species lacking direct mobility labels classified into five functional movement levels using the trait-based classifier.</li>
+        <li>Migratory species retained as a separate movement strategy.</li>
     </ul>
 
-    <b>Bees</b>
+    <b>Bee reconstruction</b>
+
     <ul>
-        <li>Intertegular distance (ITD)</li>
-        <li>Typical / maximum predicted mobility</li>
-        <li>Five relative mobility levels</li>
+        <li>Intertegular distance (ITD) used as the principal body-size trait.</li>
+        <li>Published allometric equations used to estimate typical and maximum movement / homing distances.</li>
+        <li>Bees grouped into five relative mobility levels.</li>
     </ul>`
 ),
 
-/* ============================================================
-   3. ECOLOGICAL SPECIES PROFILES
-============================================================ */
+
+/* ==========================================================
+   3. SPECIES PROFILES
+========================================================== */
 
 node(
-    "species_profiles",
-    1400,
-    690,
-    460,
-    335,
+    "profiles",
+
+    1360,
+    825,
+
+    470,
+    435,
+
     COLOR.ecology,
 
     `<b>Ecological Species Profiles</b>
+
     <ul>
-        <li>Standardize bee and butterfly biological information</li>
-        <li>Combine occurrence records and reconstructed traits</li>
-        <li>Retain mobility and morphology information</li>
-        <li>554 ABM-ready bee species</li>
-        <li>217 ABM-ready butterfly species</li>
-        <li>771 pollinator species total</li>
+        <li>Standardized biological profiles created for each model-ready pollinator species.</li>
+        <li>Profiles retain taxon, movement group, body-size / morphology information and evidence source.</li>
+        <li>Species occurrences are later used to derive empirical landscape associations.</li>
+        <li>554 ABM-ready bee species.</li>
+        <li>217 ABM-ready butterfly species.</li>
+        <li>771 pollinator species represented in the ecological response framework.</li>
     </ul>`
 ),
 
-/* ============================================================
-   4. BIOLOGICAL + SPATIAL MERGE
-============================================================ */
+
+/* ==========================================================
+   4. LANDSCAPE INTEGRATION
+========================================================== */
 
 node(
     "integration",
-    2050,
-    455,
-    510,
-    495,
+
+    2040,
+    485,
+
+    500,
+    650,
+
     COLOR.ecology,
 
     `<b>Integrate Biodiversity into the Spatial Landscape</b>
+
     <ul>
-        <li>Place bee and butterfly records into the 5-km grid</li>
-        <li>Compare occupied cells with habitat composition</li>
-        <li>Derive species landscape-association profiles</li>
-        <li>Compare each species with every landscape cell</li>
-        <li>Calculate species × cell habitat suitability</li>
-        <li>Connect neighbouring 5-km cells</li>
-        <li>Calculate structural landscape connectivity</li>
+        <li>Bee and butterfly occurrence records assigned to the Swiss 5-km grid.</li>
+        <li>Habitat composition summarized for each occupied cell.</li>
+        <li>Species-level landscape-association profiles derived from observed occurrence patterns.</li>
+        <li>Each species profile compared with the habitat composition of every landscape cell.</li>
+        <li>Local habitat match calculated using histogram intersection.</li>
+        <li>A species × cell suitability matrix produced for all 771 pollinator profiles.</li>
+        <li>Neighbouring 5-km cells connected into a landscape graph.</li>
+        <li>Structural connectivity measured using continuity of suitable neighbouring cells.</li>
+        <li>Mobility remains a functional trait and is not used as an arbitrary local-suitability multiplier.</li>
     </ul>`
 ),
 
-/* ============================================================
+
+/* ==========================================================
    5. MANAGEMENT
-============================================================ */
+========================================================== */
 
 node(
     "management",
+
     2760,
-    480,
-    480,
-    420,
+    520,
+
+    475,
+    535,
+
     COLOR.management,
 
     `<b>Eligible Management Areas</b>
+
     <ul>
-        <li>Identify 5-km cells containing relevant agricultural land</li>
-        <li>Create one representative land-management unit per eligible cell</li>
-        <li>Units are synthetic management representatives, not actual identified farmers</li>
-        <li>Management capacity derived from cropland area</li>
-        <li>Reference maximum intervention: 3% of cropland per cell</li>
+        <li>Landscape cells containing relevant agricultural land identified from the environmental framework.</li>
+        <li>One representative land-management unit created for each eligible management cell.</li>
+        <li>These are synthetic spatial management representatives—not identified individual Swiss farmers.</li>
+        <li>Management capacity derived from cropland area available in each cell.</li>
+        <li>Reference intervention capacity limited to a maximum of 3% of cropland within a cell.</li>
+        <li>The 3% value is a modelling assumption used for the policy-allocation experiments.</li>
     </ul>`
 ),
 
-/* ============================================================
-   6. POLICY
-============================================================ */
+
+/* ==========================================================
+   6. POLICY SETUP
+========================================================== */
 
 node(
     "policy",
-    3430,
-    455,
+
+    3420,
     500,
-    450,
+
+    480,
+    565,
+
     COLOR.policy,
 
     `<b>Policy Setup</b>
+
     <ul>
-        <li>Conservation measure: beneficial strips on open cropland</li>
-        <li>Payment parameter: CHF 3,300 per hectare per year</li>
-        <li>Reference intervention area: 2,793.77 ha</li>
-        <li>Reference modelling budget: CHF 9.22 million per year</li>
-        <li>Reference budget corresponds to 1% of modelled eligible cropland</li>
-        <li>CHF 9.22M is an experimental model budget, not a reported national programme budget</li>
+        <li>Modelled conservation measure: beneficial strips on open cropland.</li>
+        <li>Payment parameter: CHF 3,300 per intervention hectare per year.</li>
+        <li>Total modelled eligible cropland: approximately 279,376.63 ha.</li>
+        <li>Reference programme funds intervention equivalent to 1% of eligible cropland.</li>
+        <li>Reference intervention area: 2,793.77 ha.</li>
+        <li>Reference annual modelling budget: CHF 9.22 million.</li>
+        <li>The CHF 9.22M value is an experimental reference budget, not a claim about Switzerland's actual national expenditure.</li>
     </ul>`
 ),
 
-/* ============================================================
+
+/* ==========================================================
    7. SCENARIOS
-============================================================ */
+========================================================== */
 
 node(
     "scenarios",
-    4100,
-    420,
-    520,
-    520,
+
+    4070,
+    455,
+
+    500,
+    650,
+
     COLOR.policy,
 
     `<b>Scenario Modelling</b>
-    <br><br>
 
-    <b>A. Ecological Funding Priority</b>
+    <b>A. Ecological funding priority</b>
+
     <ul>
-        <li>Habitat only</li>
-        <li>75% habitat / 25% connectivity</li>
-        <li>50% habitat / 50% connectivity</li>
-        <li>25% habitat / 75% connectivity</li>
-        <li>Connectivity only</li>
-        <li>Random baseline</li>
+        <li>Habitat only: 100% habitat objective.</li>
+        <li>75% habitat / 25% connectivity.</li>
+        <li>50% habitat / 50% connectivity.</li>
+        <li>25% habitat / 75% connectivity.</li>
+        <li>Connectivity only: 100% structural-connectivity objective.</li>
+        <li>Random allocation used as the comparison baseline.</li>
     </ul>
 
-    <b>B. Management Availability</b>
+    <b>B. Management availability</b>
+
     <ul>
-        <li>Keep ecological ranking at 50 / 50</li>
-        <li>Test 25%, 50%, 75%, and 100% availability</li>
+        <li>Ecological ranking held at 50% habitat / 50% connectivity.</li>
+        <li>25%, 50%, 75% and 100% of eligible management units made available to participate.</li>
+        <li>Availability sampled randomly because observed farmer-participation behaviour was not available.</li>
     </ul>`
 ),
 
-/* ============================================================
-   8. ALLOCATION
-============================================================ */
+
+/* ==========================================================
+   8. FUNDING
+========================================================== */
 
 node(
     "allocation",
-    4800,
-    500,
-    470,
-    385,
+
+    4720,
+    535,
+
+    465,
+    520,
+
     COLOR.result,
 
     `<b>Funding Allocation</b>
+
     <ul>
-        <li>Apply management eligibility</li>
-        <li>Apply availability constraint where relevant</li>
-        <li>Rank locations according to the selected scenario</li>
-        <li>Fund highest-priority locations first</li>
-        <li>Allocate CHF 3,300 per intervention hectare</li>
-        <li>Continue until budget or available capacity is exhausted</li>
+        <li>Start with intervention-eligible agricultural management units.</li>
+        <li>Apply management availability when testing participation scenarios.</li>
+        <li>Rank available cells according to the selected ecological objective.</li>
+        <li>Fund the highest-ranked locations first.</li>
+        <li>Allocate CHF 3,300 for each funded intervention hectare.</li>
+        <li>Continue until the reference budget is exhausted or participating intervention capacity is insufficient.</li>
+        <li>The amount funded within each cell determines the intervention intensity shown in the allocation maps and GIFs.</li>
     </ul>`
 ),
 
-/* ============================================================
+
+/* ==========================================================
    9. RESULTS
-============================================================ */
+========================================================== */
 
 node(
     "results",
-    5470,
-    390,
-    560,
-    590,
+
+    5360,
+    435,
+
+    580,
+    700,
+
     COLOR.final,
 
     `<b>Final Results</b>
+
     <ul>
-        <li>Targeted strategies outperformed random allocation</li>
-        <li>Habitat-only produced the strongest local habitat response</li>
-        <li>Connectivity-only produced the strongest structural-connectivity response</li>
-        <li>Mixed strategies produced habitat-connectivity compromises</li>
-        <li>75 cells formed a 5/5 consensus priority core</li>
-        <li>Higher management availability increased spatial choice for ecological targeting</li>
-        <li>Movement-group response patterns were explained more strongly by habitat-profile differences than movement rank itself</li>
-        <li>Outputs include maps, tables, consensus priorities and animated GIFs</li>
+        <li>Targeted ecological allocation consistently outperformed random allocation within the tested model structure.</li>
+        <li>Habitat-only targeting generated the strongest local habitat response.</li>
+        <li>Connectivity-only targeting generated the strongest structural-connectivity response.</li>
+        <li>Mixed objective strategies provided compromise solutions between local habitat and landscape connectivity.</li>
+        <li>75 landscape cells were selected under all five targeted ecological strategies, forming the model's strongest consensus-priority core.</li>
+        <li>Low management availability constrained policy implementation and reduced the value of spatial targeting.</li>
+        <li>Higher management availability created spatial choice, allowing funding to concentrate in higher-priority locations.</li>
+        <li>Observed differences among movement groups were more strongly associated with habitat-profile differences than movement rank itself.</li>
+        <li>Outputs include strategy tables, robustness analyses, spatial priority maps, consensus maps and animated scenario GIFs.</li>
     </ul>`
 ),
 
-/* ============================================================
-   BOTTOM EXPLANATION
-============================================================ */
+
+/* ==========================================================
+   METHODOLOGY NOTE
+========================================================== */
 
 textNode(
-    "logic_note",
+    "method_note",
+
     120,
-    1190,
-    4550,
-    100,
+    1460,
 
-    `<b>Main flow:</b>
-    Spatial data independently create the environmental framework.
-    Biodiversity and trait data independently create the bee and butterfly biological profiles.
-    These two streams meet once in the landscape-integration stage.
-    From there, the model proceeds through management → policy → scenarios → funding → results.`,
+    5000,
+    120,
 
-    14,
+    `<b>Methodological logic:</b>
+    landscape data create the environmental framework;
+    biodiversity observations and trait information create pollinator profiles;
+    biological and spatial information meet at the species × landscape integration stage;
+    the resulting ecological model then supports management eligibility,
+    policy scenarios, funding allocation and final conservation-priority outputs.`,
+
+    17,
+
     "#334155"
 )
 
 ],
 
-/* ============================================================
-   CONNECTIONS
-
-   Equal ribbon widths = FLOW.
-   They do NOT represent amount, probability, money,
-   species count, or importance.
-============================================================ */
 
 connections:[
 
-/* Spatial branch */
+
+/* Spatial stream */
 
 edge(
-    "c1",
+    "flow_1",
     "spatial_data",
-    "environmental_framework",
-    COLOR.spatial,
-    18,
-    18
+    "environment",
+    COLOR.spatial
 ),
 
-/* Biological branch */
+
+/* Biological streams */
 
 edge(
-    "c2",
+    "flow_2",
     "biodiversity_data",
-    "pollinator_reconstruction",
-    COLOR.gbif,
-    18,
-    18
+    "pollinators",
+    COLOR.gbif
 ),
 
+
 edge(
-    "c3",
+    "flow_3",
     "trait_data",
-    "pollinator_reconstruction",
-    COLOR.trait,
-    18,
-    18
+    "pollinators",
+    COLOR.trait
 ),
 
+
 edge(
-    "c4",
-    "pollinator_reconstruction",
-    "species_profiles",
-    COLOR.trait,
-    18,
-    18
+    "flow_4",
+    "pollinators",
+    "profiles",
+    COLOR.trait
 ),
 
-/* ONE MERGE POINT */
+
+/* Main merge */
 
 edge(
-    "c5",
-    "environmental_framework",
+    "flow_5",
+    "environment",
     "integration",
-    COLOR.spatial,
-    18,
-    18
+    COLOR.spatial
 ),
 
+
 edge(
-    "c6",
-    "species_profiles",
+    "flow_6",
+    "profiles",
     "integration",
-    COLOR.ecology,
-    18,
-    18
+    COLOR.ecology
 ),
 
-/* LINEAR FLOW AFTER MERGE */
+
+/* Linear modelling flow */
 
 edge(
-    "c7",
+    "flow_7",
     "integration",
     "management",
-    COLOR.ecology,
-    18,
-    18
+    COLOR.ecology
 ),
 
+
 edge(
-    "c8",
+    "flow_8",
     "management",
     "policy",
-    COLOR.management,
-    18,
-    18
+    COLOR.management
 ),
 
+
 edge(
-    "c9",
+    "flow_9",
     "policy",
     "scenarios",
-    COLOR.policy,
-    18,
-    18
+    COLOR.policy
 ),
 
+
 edge(
-    "c10",
+    "flow_10",
     "scenarios",
     "allocation",
-    COLOR.policy,
-    18,
-    18
+    COLOR.policy
 ),
 
+
 edge(
-    "c11",
+    "flow_11",
     "allocation",
     "results",
-    COLOR.result,
-    18,
-    18
+    COLOR.result
 )
 
 ]
 
 };
 
-/* ============================================================
-   APP STATE
-============================================================ */
+
+/* ==========================================================
+   STATE
+========================================================== */
 
 const STORAGE_KEY =
-    "switzerland_pollinator_abm_portfolio_v6";
+    "switzerland_pollinator_abm_portfolio_v7";
+
 
 let appState = {
     nodes:[],
     connections:[]
 };
 
+
 let undoStack = [];
+
 
 let selectedNodeIds =
     new Set();
 
+
 let selectedEdgeIds =
     new Set();
+
 
 let operationalMode =
     "move";
 
+
 let connectionSourceNode =
     null;
+
 
 let activeEditorTarget =
     null;
 
+
 let zoomLevel =
     1;
 
-let isMarqueeDragging =
+
+let marqueeActive =
     false;
+
 
 let marqueeStartX =
     0;
 
+
 let marqueeStartY =
     0;
+
 
 const container =
     document.getElementById(
         "canvas-container"
     );
 
+
 const board =
     document.getElementById(
         "canvas-board"
     );
+
 
 const svg =
     document.getElementById(
         "sankey-svg"
     );
 
+
 const marqueeBox =
     document.getElementById(
         "marquee-box"
     );
 
-/* ============================================================
-   UTILITIES
-============================================================ */
+
+/* ==========================================================
+   GENERAL HELPERS
+========================================================== */
 
 function cloneObject(obj){
 
@@ -1582,6 +2019,7 @@ function cloneObject(obj){
 
 }
 
+
 function showStatus(text){
 
     const el =
@@ -1589,27 +2027,34 @@ function showStatus(text){
             "workspace-status"
         );
 
+
     el.textContent =
         text;
 
+
     setTimeout(
         ()=>{
+
             if(
                 el.textContent ===
                 text
             ){
+
                 el.textContent =
                     "";
+
             }
+
         },
         3000
     );
 
 }
 
-/* ============================================================
-   START
-============================================================ */
+
+/* ==========================================================
+   INITIALIZE
+========================================================== */
 
 function bootstrapStudio(){
 
@@ -1630,6 +2075,7 @@ function bootstrapStudio(){
                 STORAGE_KEY
             );
 
+
         if(saved){
 
             try{
@@ -1640,7 +2086,7 @@ function bootstrapStudio(){
                     );
 
             }
-            catch(err){
+            catch(error){
 
                 appState =
                     cloneObject(
@@ -1661,30 +2107,26 @@ function bootstrapStudio(){
 
     }
 
+
     rebuildCanvasFromState();
 
-    centerInitialView();
-
-    container.focus();
-
-}
-
-function centerInitialView(){
 
     zoomLevel =
-        .82;
+        .78;
+
 
     board.style.transform =
         `scale(${zoomLevel})`;
+
 
     setTimeout(
         ()=>{
 
             container.scrollLeft =
-                70;
+                40;
 
             container.scrollTop =
-                25;
+                20;
 
         },
         50
@@ -1692,21 +2134,26 @@ function centerInitialView(){
 
 }
 
-/* ============================================================
+
+/* ==========================================================
    HISTORY
-============================================================ */
+========================================================== */
 
 function pushToHistory(){
 
     syncNodePositions();
 
+
     undoStack.push(
-        JSON.stringify(appState)
+        JSON.stringify(
+            appState
+        )
     );
+
 
     if(
         undoStack.length >
-        50
+        60
     ){
 
         undoStack.shift();
@@ -1715,6 +2162,7 @@ function pushToHistory(){
 
 }
 
+
 function triggerUndo(){
 
     if(
@@ -1722,54 +2170,68 @@ function triggerUndo(){
         0
     ){
 
+        showStatus(
+            "Nothing to undo."
+        );
+
         return;
 
     }
+
 
     appState =
         JSON.parse(
             undoStack.pop()
         );
 
+
     saveStateToBrowser();
+
 
     rebuildCanvasFromState();
 
+
     showStatus(
-        "Action undone."
+        "Undone."
     );
 
 }
 
-/* ============================================================
-   SAVE STATE
-============================================================ */
+
+/* ==========================================================
+   SAVE POSITIONS
+========================================================== */
 
 function syncNodePositions(){
 
     appState.nodes.forEach(
 
-        nodeData => {
+        data => {
 
             const el =
                 document.getElementById(
-                    nodeData.id
+                    data.id
                 );
+
 
             if(!el){
                 return;
             }
 
-            nodeData.x =
+
+            data.x =
                 el.offsetLeft;
 
-            nodeData.y =
+
+            data.y =
                 el.offsetTop;
 
-            nodeData.w =
+
+            data.w =
                 el.offsetWidth;
 
-            nodeData.h =
+
+            data.h =
                 el.offsetHeight;
 
         }
@@ -1778,9 +2240,11 @@ function syncNodePositions(){
 
 }
 
+
 function saveStateToBrowser(){
 
     syncNodePositions();
+
 
     localStorage.setItem(
 
@@ -1794,9 +2258,10 @@ function saveStateToBrowser(){
 
 }
 
-/* ============================================================
-   REBUILD
-============================================================ */
+
+/* ==========================================================
+   REBUILD CANVAS
+========================================================== */
 
 function rebuildCanvasFromState(){
 
@@ -1808,20 +2273,26 @@ function rebuildCanvasFromState(){
             el => el.remove()
         );
 
+
     appState.nodes.forEach(
         buildNodeDOM
     );
 
+
     selectedNodeIds.clear();
+
+
     selectedEdgeIds.clear();
+
 
     recalculateSankeyCurves();
 
 }
 
-/* ============================================================
-   BUILD NODE
-============================================================ */
+
+/* ==========================================================
+   BUILD NODE DOM
+========================================================== */
 
 function buildNodeDOM(data){
 
@@ -1830,8 +2301,10 @@ function buildNodeDOM(data){
             "div"
         );
 
+
     el.id =
         data.id;
+
 
     if(
         data.type ===
@@ -1858,33 +2331,55 @@ function buildNodeDOM(data){
 
     }
 
+
     el.style.left =
         data.x + "px";
+
 
     el.style.top =
         data.y + "px";
 
+
     el.style.width =
         data.w + "px";
+
 
     el.style.height =
         data.h + "px";
 
+
     el.style.zIndex =
-        data.zIndex ||
+        data.zIndex ??
         20;
 
+
     el.style.color =
-        data.textColor ||
+        data.textColor ??
         "#ffffff";
+
 
     el.style.fontSize =
         (
-            data.fontSize ||
-            14
+            data.fontSize ??
+            13
         )
         +
         "px";
+
+
+    el.style.setProperty(
+
+        "--node-title-size",
+
+        (
+            data.titleSize ??
+            22
+        )
+        +
+        "px"
+
+    );
+
 
     if(
         data.type !==
@@ -1897,6 +2392,7 @@ function buildNodeDOM(data){
                 data.opacity ?? 1
             );
 
+
         el.style.border =
             (
                 data.borderWidth ??
@@ -1906,11 +2402,12 @@ function buildNodeDOM(data){
             "px solid "
             +
             (
-                data.borderColor ||
+                data.borderColor ??
                 data.color
             );
 
     }
+
 
     el.innerHTML =
 
@@ -1918,21 +2415,25 @@ function buildNodeDOM(data){
             ${data.content}
         </div>
 
-        <div class="custom-resizer"
-             title="Drag to resize">
+        <div
+            class="custom-resizer"
+            title="Resize">
         </div>`;
+
 
     attachDraggingController(
         el
     );
 
+
     el.addEventListener(
 
         "dblclick",
 
-        e => {
+        event => {
 
-            e.stopPropagation();
+            event.stopPropagation();
+
 
             if(
                 operationalMode !==
@@ -1941,8 +2442,10 @@ function buildNodeDOM(data){
                 return;
             }
 
+
             activeEditorTarget =
                 data;
+
 
             openNodeEditor(
                 data
@@ -1952,22 +2455,24 @@ function buildNodeDOM(data){
 
     );
 
+
     board.appendChild(
         el
     );
 
 }
 
-/* ============================================================
+
+/* ==========================================================
    SELECTION
-============================================================ */
+========================================================== */
 
 function handleSelectionLogic(
     el,
-    ctrl
+    controlHeld
 ){
 
-    if(ctrl){
+    if(controlHeld){
 
         if(
             selectedNodeIds.has(
@@ -1979,6 +2484,7 @@ function handleSelectionLogic(
                 el.id
             );
 
+
             el.classList.remove(
                 "selected",
                 "selected-anchor"
@@ -1987,19 +2493,22 @@ function handleSelectionLogic(
         }
         else{
 
-            const first =
+            const isFirst =
                 selectedNodeIds.size ===
                 0;
+
 
             selectedNodeIds.add(
                 el.id
             );
 
+
             el.classList.add(
                 "selected"
             );
 
-            if(first){
+
+            if(isFirst){
 
                 el.classList.add(
                     "selected-anchor"
@@ -2020,9 +2529,11 @@ function handleSelectionLogic(
 
             clearAllSelections();
 
+
             selectedNodeIds.add(
                 el.id
             );
+
 
             el.classList.add(
                 "selected",
@@ -2035,46 +2546,56 @@ function handleSelectionLogic(
 
 }
 
-/* ============================================================
-   DRAG + RESIZE
-============================================================ */
+
+/* ==========================================================
+   DRAG / RESIZE
+========================================================== */
 
 function attachDraggingController(el){
 
     let dragging =
         false;
 
+
     let resizing =
         false;
+
 
     let moved =
         false;
 
+
     let startX =
         0;
+
 
     let startY =
         0;
 
+
     let startW =
         0;
+
 
     let startH =
         0;
 
-    const initialPositions =
+
+    const startingPositions =
         new Map();
 
-    const resizer =
+
+    const resizeHandle =
         el.querySelector(
             ".custom-resizer"
         );
 
-    resizer.addEventListener(
+
+    resizeHandle.addEventListener(
 
         "mousedown",
 
-        e => {
+        event => {
 
             if(
                 operationalMode !==
@@ -2083,21 +2604,28 @@ function attachDraggingController(el){
                 return;
             }
 
-            e.stopPropagation();
+
+            event.stopPropagation();
+
 
             pushToHistory();
+
 
             resizing =
                 true;
 
+
             startX =
-                e.clientX;
+                event.clientX;
+
 
             startY =
-                e.clientY;
+                event.clientY;
+
 
             startW =
                 el.offsetWidth;
+
 
             startH =
                 el.offsetHeight;
@@ -2106,27 +2634,31 @@ function attachDraggingController(el){
 
     );
 
+
     el.addEventListener(
 
         "mousedown",
 
-        e => {
+        event => {
 
             if(
                 operationalMode ===
                 "connect"
             ){
 
-                e.stopPropagation();
+                event.stopPropagation();
+
 
                 executeFlowWiring(
                     el,
                     el.id
                 );
 
+
                 return;
 
             }
+
 
             if(
                 operationalMode !==
@@ -2135,64 +2667,80 @@ function attachDraggingController(el){
                 return;
             }
 
-            e.stopPropagation();
+
+            event.stopPropagation();
+
 
             handleSelectionLogic(
 
                 el,
 
-                e.ctrlKey ||
-                e.metaKey
+                event.ctrlKey ||
+                event.metaKey
 
             );
 
+
             pushToHistory();
+
 
             dragging =
                 true;
 
+
             moved =
                 false;
+
 
             const rect =
                 board.getBoundingClientRect();
 
+
             startX =
                 (
-                    e.clientX -
+                    event.clientX -
                     rect.left
                 )
                 /
                 zoomLevel;
 
+
             startY =
                 (
-                    e.clientY -
+                    event.clientY -
                     rect.top
                 )
                 /
                 zoomLevel;
 
-            initialPositions.clear();
+
+            startingPositions.clear();
+
 
             selectedNodeIds.forEach(
 
                 id => {
 
-                    const n =
+                    const nodeEl =
                         document.getElementById(
                             id
                         );
 
-                    if(n){
 
-                        initialPositions.set(
+                    if(nodeEl){
+
+                        startingPositions.set(
 
                             id,
 
                             {
-                                x:n.offsetLeft,
-                                y:n.offsetTop
+
+                                x:
+                                    nodeEl.offsetLeft,
+
+                                y:
+                                    nodeEl.offsetTop
+
                             }
 
                         );
@@ -2207,85 +2755,99 @@ function attachDraggingController(el){
 
     );
 
+
     document.addEventListener(
 
         "mousemove",
 
-        e => {
+        event => {
 
             if(resizing){
 
                 const dx =
                     (
-                        e.clientX -
+                        event.clientX -
                         startX
                     )
                     /
                     zoomLevel;
 
+
                 const dy =
                     (
-                        e.clientY -
+                        event.clientY -
                         startY
                     )
                     /
                     zoomLevel;
 
+
                 el.style.width =
                     Math.max(
-                        80,
+                        90,
                         startW + dx
                     )
                     +
                     "px";
 
+
                 el.style.height =
                     Math.max(
-                        35,
+                        45,
                         startH + dy
                     )
                     +
                     "px";
 
+
                 recalculateSankeyCurves();
+
 
                 return;
 
             }
+
 
             if(!dragging){
                 return;
             }
 
+
             moved =
                 true;
+
 
             const rect =
                 board.getBoundingClientRect();
 
+
             const currentX =
                 (
-                    e.clientX -
+                    event.clientX -
                     rect.left
                 )
                 /
                 zoomLevel;
 
+
             const currentY =
                 (
-                    e.clientY -
+                    event.clientY -
                     rect.top
                 )
                 /
                 zoomLevel;
 
+
             const dx =
                 currentX -
                 startX;
 
+
             const dy =
                 currentY -
                 startY;
+
 
             selectedNodeIds.forEach(
 
@@ -2296,28 +2858,31 @@ function attachDraggingController(el){
                             id
                         );
 
-                    const init =
-                        initialPositions.get(
+
+                    const original =
+                        startingPositions.get(
                             id
                         );
 
+
                     if(
                         nodeEl &&
-                        init
+                        original
                     ){
 
                         nodeEl.style.left =
                             Math.max(
                                 0,
-                                init.x + dx
+                                original.x + dx
                             )
                             +
                             "px";
 
+
                         nodeEl.style.top =
                             Math.max(
                                 0,
-                                init.y + dy
+                                original.y + dy
                             )
                             +
                             "px";
@@ -2328,11 +2893,13 @@ function attachDraggingController(el){
 
             );
 
+
             recalculateSankeyCurves();
 
         }
 
     );
+
 
     document.addEventListener(
 
@@ -2345,14 +2912,17 @@ function attachDraggingController(el){
                 resizing =
                     false;
 
+
                 saveStateToBrowser();
 
             }
+
 
             if(dragging){
 
                 dragging =
                     false;
+
 
                 if(moved){
 
@@ -2368,29 +2938,99 @@ function attachDraggingController(el){
 
 }
 
-/* ============================================================
-   FLOW RIBBONS
-============================================================ */
+
+/* ==========================================================
+   RIBBON WIDTH CALCULATION
+========================================================== */
+
+function clamp(
+    number,
+    minimum,
+    maximum
+){
+
+    return Math.max(
+        minimum,
+        Math.min(
+            maximum,
+            number
+        )
+    );
+
+}
+
+
+function countOutgoing(
+    nodeId
+){
+
+    return appState.connections.filter(
+
+        connection =>
+            connection.source ===
+            nodeId
+
+    ).length;
+
+}
+
+
+function countIncoming(
+    nodeId
+){
+
+    return appState.connections.filter(
+
+        connection =>
+            connection.target ===
+            nodeId
+
+    ).length;
+
+}
+
+
+/* ==========================================================
+   DRAW SANKEY RIBBONS
+========================================================== */
 
 function recalculateSankeyCurves(){
 
     svg.innerHTML =
         "";
 
+
     const stats =
         {};
 
+
     appState.nodes.forEach(
 
-        n => {
+        nodeData => {
 
-            stats[n.id] = {
+            stats[nodeData.id] = {
 
-                totalOut:0,
-                totalIn:0,
+                outgoing:
+                    countOutgoing(
+                        nodeData.id
+                    ),
 
-                currentOut:0,
-                currentIn:0
+                incoming:
+                    countIncoming(
+                        nodeData.id
+                    ),
+
+                currentOut:
+                    0,
+
+                currentIn:
+                    0,
+
+                totalOut:
+                    0,
+
+                totalIn:
+                    0
 
             };
 
@@ -2398,215 +3038,343 @@ function recalculateSankeyCurves(){
 
     );
 
+
+    /*
+    First pass:
+    calculate actual displayed thickness.
+    */
+
     appState.connections.forEach(
 
-        c => {
+        connection => {
+
+            const source =
+                document.getElementById(
+                    connection.source
+                );
+
+
+            const target =
+                document.getElementById(
+                    connection.target
+                );
+
 
             if(
-                stats[c.source]
+                !source ||
+                !target
+            ){
+                return;
+            }
+
+
+            let sourceWidth;
+
+
+            let targetWidth;
+
+
+            if(
+                connection.autoWidth !==
+                false
             ){
 
-                stats[c.source]
-                    .totalOut +=
-                    c.thickSrc ||
-                    10;
+                sourceWidth =
+                    clamp(
+
+                        source.offsetHeight
+                        *
+                        AUTO_FLOW_FILL
+                        /
+                        Math.max(
+                            1,
+                            stats[
+                                connection.source
+                            ].outgoing
+                        ),
+
+                        AUTO_FLOW_MIN,
+
+                        AUTO_FLOW_MAX
+
+                    );
+
+
+                targetWidth =
+                    clamp(
+
+                        target.offsetHeight
+                        *
+                        AUTO_FLOW_FILL
+                        /
+                        Math.max(
+                            1,
+                            stats[
+                                connection.target
+                            ].incoming
+                        ),
+
+                        AUTO_FLOW_MIN,
+
+                        AUTO_FLOW_MAX
+
+                    );
+
+            }
+            else{
+
+                sourceWidth =
+                    connection.thickSrc ??
+                    70;
+
+
+                targetWidth =
+                    connection.thickTgt ??
+                    70;
 
             }
 
-            if(
-                stats[c.target]
-            ){
 
-                stats[c.target]
-                    .totalIn +=
-                    c.thickTgt ||
-                    10;
+            connection._displaySrc =
+                sourceWidth;
 
-            }
+
+            connection._displayTgt =
+                targetWidth;
+
+
+            stats[
+                connection.source
+            ].totalOut +=
+                sourceWidth;
+
+
+            stats[
+                connection.target
+            ].totalIn +=
+                targetWidth;
 
         }
 
     );
 
+
+    /*
+    Second pass:
+    draw the actual wave shapes.
+    */
+
     appState.connections.forEach(
 
-        conn => {
+        connection => {
 
-            const src =
+            const source =
                 document.getElementById(
-                    conn.source
+                    connection.source
                 );
 
-            const tgt =
+
+            const target =
                 document.getElementById(
-                    conn.target
+                    connection.target
                 );
+
 
             if(
-                !src ||
-                !tgt
+                !source ||
+                !target
             ){
                 return;
             }
 
+
             const sourceStats =
                 stats[
-                    conn.source
+                    connection.source
                 ];
+
 
             const targetStats =
                 stats[
-                    conn.target
+                    connection.target
                 ];
 
-            let scaleOut =
-                1;
 
-            let scaleIn =
-                1;
+            let srcWidth =
+                connection._displaySrc;
 
-            if(
+
+            let tgtWidth =
+                connection._displayTgt;
+
+
+            /*
+            Safety scaling if manual widths exceed card height.
+            */
+
+            const sourceScale =
                 sourceStats.totalOut >
-                src.offsetHeight
-            ){
+                source.offsetHeight
+                    ?
+                    source.offsetHeight /
+                    sourceStats.totalOut
+                    :
+                    1;
 
-                scaleOut =
-                    src.offsetHeight /
-                    sourceStats.totalOut;
 
-            }
-
-            if(
+            const targetScale =
                 targetStats.totalIn >
-                tgt.offsetHeight
-            ){
+                target.offsetHeight
+                    ?
+                    target.offsetHeight /
+                    targetStats.totalIn
+                    :
+                    1;
 
-                scaleIn =
-                    tgt.offsetHeight /
-                    targetStats.totalIn;
 
-            }
+            srcWidth *=
+                sourceScale;
 
-            const tSrc =
-                (
-                    conn.thickSrc ||
-                    10
-                )
-                *
-                scaleOut;
 
-            const tTgt =
-                (
-                    conn.thickTgt ||
-                    10
-                )
-                *
-                scaleIn;
+            tgtWidth *=
+                targetScale;
 
-            const srcCenter =
-                src.offsetTop +
-                src.offsetHeight /
+
+            const sourceCenter =
+                source.offsetTop +
+                source.offsetHeight /
                 2;
 
-            const tgtCenter =
-                tgt.offsetTop +
-                tgt.offsetHeight /
+
+            const targetCenter =
+                target.offsetTop +
+                target.offsetHeight /
                 2;
 
-            const y0Center =
-                srcCenter
+
+            const y0 =
+
+                sourceCenter
+
                 -
+
                 (
                     sourceStats.totalOut *
-                    scaleOut
+                    sourceScale
                 )
                 /
                 2
+
                 +
+
                 sourceStats.currentOut
+
                 +
-                tSrc /
+
+                srcWidth /
                 2;
 
-            const y1Center =
-                tgtCenter
+
+            const y1 =
+
+                targetCenter
+
                 -
+
                 (
                     targetStats.totalIn *
-                    scaleIn
+                    targetScale
                 )
                 /
                 2
+
                 +
+
                 targetStats.currentIn
+
                 +
-                tTgt /
+
+                tgtWidth /
                 2;
+
 
             sourceStats.currentOut +=
-                tSrc;
+                srcWidth;
+
 
             targetStats.currentIn +=
-                tTgt;
+                tgtWidth;
+
 
             const x0 =
-                src.offsetLeft +
-                src.offsetWidth;
+                source.offsetLeft +
+                source.offsetWidth;
+
 
             const x1 =
-                tgt.offsetLeft;
+                target.offsetLeft;
+
 
             const y0Top =
-                y0Center -
-                tSrc /
+                y0 -
+                srcWidth /
                 2;
+
 
             const y0Bottom =
-                y0Center +
-                tSrc /
+                y0 +
+                srcWidth /
                 2;
+
 
             const y1Top =
-                y1Center -
-                tTgt /
+                y1 -
+                tgtWidth /
                 2;
+
 
             const y1Bottom =
-                y1Center +
-                tTgt /
+                y1 +
+                tgtWidth /
                 2;
 
-            const curve =
-                conn.curvature ??
-                .40;
 
-            const distance =
+            const curve =
+                connection.curvature ??
+                .42;
+
+
+            const horizontalDistance =
                 Math.abs(
-                    x1 - x0
+                    x1 -
+                    x0
                 );
 
-            const dx =
+
+            const curveDistance =
                 Math.max(
-                    40,
-                    distance *
+                    45,
+                    horizontalDistance *
                     curve
                 );
+
 
             const pathData =
 
                 `M ${x0} ${y0Top}
 
-                 C ${x0+dx} ${y0Top},
-                   ${x1-dx} ${y1Top},
+                 C ${x0+curveDistance} ${y0Top},
+                   ${x1-curveDistance} ${y1Top},
                    ${x1} ${y1Top}
 
                  L ${x1} ${y1Bottom}
 
-                 C ${x1-dx} ${y1Bottom},
-                   ${x0+dx} ${y0Bottom},
+                 C ${x1-curveDistance} ${y1Bottom},
+                   ${x0+curveDistance} ${y0Bottom},
                    ${x0} ${y0Bottom}
 
                  Z`;
+
 
             const path =
                 document.createElementNS(
@@ -2617,56 +3385,62 @@ function recalculateSankeyCurves(){
 
                 );
 
+
             path.id =
                 "edge_path_" +
-                conn.id;
+                connection.id;
+
 
             path.setAttribute(
                 "d",
                 pathData
             );
 
+
             path.setAttribute(
 
                 "fill",
 
                 selectedEdgeIds.has(
-                    conn.id
+                    connection.id
                 )
                     ?
                     "#ff4757"
                     :
                     (
-                        conn.color ||
-                        "#ced6e0"
+                        connection.color ??
+                        "#95a5a6"
                     )
 
             );
+
 
             path.setAttribute(
 
                 "opacity",
 
                 selectedEdgeIds.has(
-                    conn.id
+                    connection.id
                 )
                     ?
-                    ".9"
+                    ".92"
                     :
                     (
-                        conn.opacity ??
-                        .6
+                        connection.opacity ??
+                        .58
                     )
 
             );
+
 
             path.addEventListener(
 
                 "mousedown",
 
-                e => {
+                event => {
 
-                    e.stopPropagation();
+                    event.stopPropagation();
+
 
                     if(
                         operationalMode ===
@@ -2675,89 +3449,32 @@ function recalculateSankeyCurves(){
 
                         pushToHistory();
 
+
                         appState.connections =
                             appState.connections.filter(
 
-                                x =>
-                                    x.id !==
-                                    conn.id
+                                item =>
+                                    item.id !==
+                                    connection.id
 
                             );
 
-                        recalculateSankeyCurves();
 
                         saveStateToBrowser();
+
+
+                        recalculateSankeyCurves();
+
 
                         showStatus(
                             "Connection removed."
                         );
 
+
                         return;
 
                     }
 
-                    if(
-                        operationalMode ===
-                        "move"
-                    ){
-
-                        if(
-                            !e.ctrlKey &&
-                            !e.metaKey
-                        ){
-
-                            selectedEdgeIds.clear();
-
-                            board
-                                .querySelectorAll(
-                                    ".sankey-node,.floating-text-node,.group-node"
-                                )
-                                .forEach(
-                                    el =>
-                                        el.classList.remove(
-                                            "selected",
-                                            "selected-anchor"
-                                        )
-                                );
-
-                            selectedNodeIds.clear();
-
-                        }
-
-                        if(
-                            selectedEdgeIds.has(
-                                conn.id
-                            )
-                        ){
-
-                            selectedEdgeIds.delete(
-                                conn.id
-                            );
-
-                        }
-                        else{
-
-                            selectedEdgeIds.add(
-                                conn.id
-                            );
-
-                        }
-
-                        recalculateSankeyCurves();
-
-                    }
-
-                }
-
-            );
-
-            path.addEventListener(
-
-                "dblclick",
-
-                e => {
-
-                    e.stopPropagation();
 
                     if(
                         operationalMode !==
@@ -2766,16 +3483,68 @@ function recalculateSankeyCurves(){
                         return;
                     }
 
+
+                    if(
+                        !event.ctrlKey &&
+                        !event.metaKey
+                    ){
+
+                        clearNodeSelectionsOnly();
+
+
+                        selectedEdgeIds.clear();
+
+                    }
+
+
+                    if(
+                        selectedEdgeIds.has(
+                            connection.id
+                        )
+                    ){
+
+                        selectedEdgeIds.delete(
+                            connection.id
+                        );
+
+                    }
+                    else{
+
+                        selectedEdgeIds.add(
+                            connection.id
+                        );
+
+                    }
+
+
+                    recalculateSankeyCurves();
+
+                }
+
+            );
+
+
+            path.addEventListener(
+
+                "dblclick",
+
+                event => {
+
+                    event.stopPropagation();
+
+
                     activeEditorTarget =
-                        conn;
+                        connection;
+
 
                     openEdgeEditor(
-                        conn
+                        connection
                     );
 
                 }
 
             );
+
 
             svg.appendChild(
                 path
@@ -2787,12 +3556,13 @@ function recalculateSankeyCurves(){
 
 }
 
-/* ============================================================
-   CONNECTION MODE
-============================================================ */
+
+/* ==========================================================
+   CONNECT MODE
+========================================================== */
 
 function executeFlowWiring(
-    domEl,
+    domElement,
     targetId
 ){
 
@@ -2801,19 +3571,23 @@ function executeFlowWiring(
     ){
 
         connectionSourceNode =
-            domEl;
+            domElement;
 
-        domEl.classList.add(
+
+        domElement.classList.add(
             "selected"
         );
 
+
         showStatus(
-            "Select target box..."
+            "Select target..."
         );
+
 
         return;
 
     }
+
 
     if(
         connectionSourceNode.id ===
@@ -2823,25 +3597,31 @@ function executeFlowWiring(
         connectionSourceNode =
             null;
 
+
         clearAllSelections();
+
 
         return;
 
     }
 
+
     pushToHistory();
+
 
     const sourceId =
         connectionSourceNode.id;
 
+
     const sourceData =
         appState.nodes.find(
 
-            n =>
-                n.id ===
+            node =>
+                node.id ===
                 sourceId
 
         );
+
 
     appState.connections.push({
 
@@ -2856,35 +3636,41 @@ function executeFlowWiring(
             targetId,
 
         color:
-            sourceData?.color ||
+            sourceData?.color ??
             "#95a5a6",
 
         curvature:
-            .40,
+            .42,
 
         thickSrc:
-            18,
+            70,
 
         thickTgt:
-            18,
+            70,
+
+        autoWidth:
+            true,
 
         opacity:
-            .60
+            .58
 
     });
 
-    connectionSourceNode
-        .classList
-        .remove(
-            "selected"
-        );
 
     connectionSourceNode =
         null;
 
-    recalculateSankeyCurves();
 
     saveStateToBrowser();
+
+
+    switchEngineMode(
+        "move"
+    );
+
+
+    recalculateSankeyCurves();
+
 
     showStatus(
         "Connection created."
@@ -2892,17 +3678,20 @@ function executeFlowWiring(
 
 }
 
-/* ============================================================
+
+/* ==========================================================
    MODES
-============================================================ */
+========================================================== */
 
 function switchEngineMode(mode){
 
     operationalMode =
         mode;
 
+
     connectionSourceNode =
         null;
+
 
     document
         .querySelectorAll(
@@ -2910,17 +3699,19 @@ function switchEngineMode(mode){
         )
         .forEach(
 
-            b =>
-                b.classList.remove(
+            button =>
+                button.classList.remove(
                     "active"
                 )
 
         );
 
+
     const active =
         document.getElementById(
             "mode-" + mode
         );
+
 
     if(active){
 
@@ -2930,15 +3721,17 @@ function switchEngineMode(mode){
 
     }
 
+
     clearAllSelections();
 
 }
 
-/* ============================================================
-   CLEAR SELECTION
-============================================================ */
 
-function clearAllSelections(){
+/* ==========================================================
+   SELECTION HELPERS
+========================================================== */
+
+function clearNodeSelectionsOnly(){
 
     board
         .querySelectorAll(
@@ -2946,35 +3739,260 @@ function clearAllSelections(){
         )
         .forEach(
 
-            el =>
-                el.classList.remove(
+            element =>
+                element.classList.remove(
                     "selected",
                     "selected-anchor"
                 )
 
         );
 
+
     selectedNodeIds.clear();
 
+}
+
+
+function clearAllSelections(){
+
+    clearNodeSelectionsOnly();
+
+
     selectedEdgeIds.clear();
+
 
     recalculateSankeyCurves();
 
 }
 
-/* ============================================================
-   CREATE NEW NODE
-============================================================ */
+
+/* ==========================================================
+   TOOLBAR EDIT BUTTONS
+========================================================== */
+
+function editSelectedNode(){
+
+    if(
+        selectedNodeIds.size !==
+        1
+    ){
+
+        showStatus(
+            "Select exactly one box."
+        );
+
+
+        return;
+
+    }
+
+
+    const id =
+        [...selectedNodeIds][0];
+
+
+    const data =
+        appState.nodes.find(
+
+            node =>
+                node.id ===
+                id
+
+        );
+
+
+    if(!data){
+        return;
+    }
+
+
+    activeEditorTarget =
+        data;
+
+
+    openNodeEditor(
+        data
+    );
+
+}
+
+
+function editSelectedEdge(){
+
+    if(
+        selectedEdgeIds.size !==
+        1
+    ){
+
+        showStatus(
+            "Select exactly one ribbon."
+        );
+
+
+        return;
+
+    }
+
+
+    const id =
+        [...selectedEdgeIds][0];
+
+
+    const data =
+        appState.connections.find(
+
+            connection =>
+                connection.id ===
+                id
+
+        );
+
+
+    if(!data){
+        return;
+    }
+
+
+    activeEditorTarget =
+        data;
+
+
+    openEdgeEditor(
+        data
+    );
+
+}
+
+
+/* ==========================================================
+   LAYER CONTROLS
+========================================================== */
+
+function bringSelectedToFront(){
+
+    if(
+        selectedNodeIds.size ===
+        0
+    ){
+
+        showStatus(
+            "Select a box first."
+        );
+
+
+        return;
+
+    }
+
+
+    pushToHistory();
+
+
+    selectedNodeIds.forEach(
+
+        id => {
+
+            const node =
+                appState.nodes.find(
+                    item =>
+                        item.id ===
+                        id
+                );
+
+
+            if(node){
+
+                node.zIndex =
+                    100;
+
+            }
+
+        }
+
+    );
+
+
+    saveStateToBrowser();
+
+
+    rebuildCanvasFromState();
+
+}
+
+
+function sendSelectedToBack(){
+
+    if(
+        selectedNodeIds.size ===
+        0
+    ){
+
+        showStatus(
+            "Select a box first."
+        );
+
+
+        return;
+
+    }
+
+
+    pushToHistory();
+
+
+    selectedNodeIds.forEach(
+
+        id => {
+
+            const node =
+                appState.nodes.find(
+                    item =>
+                        item.id ===
+                        id
+                );
+
+
+            if(node){
+
+                node.zIndex =
+                    node.type ===
+                    "group"
+                        ?
+                        5
+                        :
+                        12;
+
+            }
+
+        }
+
+    );
+
+
+    saveStateToBrowser();
+
+
+    rebuildCanvasFromState();
+
+}
+
+
+/* ==========================================================
+   ADD OBJECT
+========================================================== */
 
 function spawnNewNode(type){
 
     pushToHistory();
 
+
     const id =
         "node_" +
         Date.now();
 
+
     let newNode;
+
 
     if(
         type ===
@@ -2985,27 +4003,30 @@ function spawnNewNode(type){
 
             id:id,
 
+            type:"floating",
+
             content:
                 "<b>New Text</b>",
 
-            type:"floating",
+            x:600,
+            y:450,
 
-            x:500,
-            y:400,
-
-            w:300,
-            h:60,
+            w:320,
+            h:70,
 
             color:"#ffffff",
 
             textColor:"#2f3542",
 
             borderColor:"#ffffff",
+
             borderWidth:0,
 
             opacity:0,
 
-            fontSize:18,
+            fontSize:22,
+
+            titleSize:22,
 
             zIndex:40
 
@@ -3021,29 +4042,32 @@ function spawnNewNode(type){
 
             id:id,
 
+            type:"group",
+
             content:
                 "<b>New Group</b>",
 
-            type:"group",
+            x:600,
+            y:450,
 
-            x:500,
-            y:400,
-
-            w:500,
-            h:350,
+            w:600,
+            h:420,
 
             color:"#a55eea",
 
             textColor:"#2f3542",
 
             borderColor:"#a55eea",
+
             borderWidth:2,
 
-            opacity:.05,
+            opacity:.06,
 
-            fontSize:16,
+            fontSize:15,
 
-            zIndex:10
+            titleSize:22,
+
+            zIndex:5
 
         };
 
@@ -3054,27 +4078,35 @@ function spawnNewNode(type){
 
             id:id,
 
-            content:
-                "<b>New Box</b><ul><li>Edit this content.</li></ul>",
-
             type:"structural",
 
-            x:500,
-            y:400,
+            content:
 
-            w:300,
-            h:140,
+                `<b>New Methodology Box</b>
+
+                 <ul>
+                    <li>Add methodology information here.</li>
+                 </ul>`,
+
+            x:600,
+            y:450,
+
+            w:360,
+            h:180,
 
             color:"#34495e",
 
             textColor:"#ffffff",
 
             borderColor:"#34495e",
+
             borderWidth:2,
 
             opacity:1,
 
-            fontSize:14,
+            fontSize:13,
+
+            titleSize:22,
 
             zIndex:20
 
@@ -3082,21 +4114,23 @@ function spawnNewNode(type){
 
     }
 
+
     appState.nodes.push(
         newNode
     );
 
-    buildNodeDOM(
-        newNode
-    );
 
     saveStateToBrowser();
 
+
+    rebuildCanvasFromState();
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    DELETE
-============================================================ */
+========================================================== */
 
 function executeDeletion(){
 
@@ -3107,41 +4141,42 @@ function executeDeletion(){
         selectedEdgeIds.size ===
         0
     ){
+
+        showStatus(
+            "Nothing selected."
+        );
+
+
         return;
+
     }
 
+
     pushToHistory();
+
 
     selectedNodeIds.forEach(
 
         id => {
 
-            const el =
-                document.getElementById(
-                    id
-                );
-
-            if(el){
-                el.remove();
-            }
-
             appState.nodes =
                 appState.nodes.filter(
 
-                    n =>
-                        n.id !==
+                    node =>
+                        node.id !==
                         id
 
                 );
+
 
             appState.connections =
                 appState.connections.filter(
 
-                    c =>
-                        c.source !==
+                    connection =>
+                        connection.source !==
                         id
                         &&
-                        c.target !==
+                        connection.target !==
                         id
 
                 );
@@ -3149,6 +4184,7 @@ function executeDeletion(){
         }
 
     );
+
 
     selectedEdgeIds.forEach(
 
@@ -3157,8 +4193,8 @@ function executeDeletion(){
             appState.connections =
                 appState.connections.filter(
 
-                    c =>
-                        c.id !==
+                    connection =>
+                        connection.id !==
                         id
 
                 );
@@ -3167,18 +4203,18 @@ function executeDeletion(){
 
     );
 
-    selectedNodeIds.clear();
-    selectedEdgeIds.clear();
 
     saveStateToBrowser();
+
 
     rebuildCanvasFromState();
 
 }
 
-/* ============================================================
+
+/* ==========================================================
    NODE EDITOR
-============================================================ */
+========================================================== */
 
 function openNodeEditor(data){
 
@@ -3189,21 +4225,24 @@ function openNodeEditor(data){
         .innerHTML =
         data.content;
 
+
     document
         .getElementById(
             "edit-node-color"
         )
         .value =
-        data.color ||
+        data.color ??
         "#34495e";
+
 
     document
         .getElementById(
             "edit-node-text-color"
         )
         .value =
-        data.textColor ||
+        data.textColor ??
         "#ffffff";
+
 
     document
         .getElementById(
@@ -3213,22 +4252,34 @@ function openNodeEditor(data){
         data.opacity ??
         1;
 
+
     document
         .getElementById(
             "edit-node-font-size"
         )
         .value =
-        data.fontSize ||
-        14;
+        data.fontSize ??
+        13;
+
+
+    document
+        .getElementById(
+            "edit-node-title-size"
+        )
+        .value =
+        data.titleSize ??
+        22;
+
 
     document
         .getElementById(
             "edit-node-border-color"
         )
         .value =
-        data.borderColor ||
-        data.color ||
+        data.borderColor ??
+        data.color ??
         "#34495e";
+
 
     document
         .getElementById(
@@ -3238,12 +4289,14 @@ function openNodeEditor(data){
         data.borderWidth ??
         0;
 
+
     document
         .getElementById(
             "modal-mask"
         )
         .style.display =
         "block";
+
 
     document
         .getElementById(
@@ -3254,15 +4307,16 @@ function openNodeEditor(data){
 
 }
 
+
 function commitNodeChanges(){
 
-    if(
-        !activeEditorTarget
-    ){
+    if(!activeEditorTarget){
         return;
     }
 
+
     pushToHistory();
+
 
     activeEditorTarget.content =
         document
@@ -3271,6 +4325,7 @@ function commitNodeChanges(){
             )
             .innerHTML;
 
+
     activeEditorTarget.color =
         document
             .getElementById(
@@ -3278,12 +4333,14 @@ function commitNodeChanges(){
             )
             .value;
 
+
     activeEditorTarget.textColor =
         document
             .getElementById(
                 "edit-node-text-color"
             )
             .value;
+
 
     activeEditorTarget.opacity =
         parseFloat(
@@ -3296,6 +4353,7 @@ function commitNodeChanges(){
 
         );
 
+
     activeEditorTarget.fontSize =
         parseInt(
 
@@ -3307,12 +4365,26 @@ function commitNodeChanges(){
 
         );
 
+
+    activeEditorTarget.titleSize =
+        parseInt(
+
+            document
+                .getElementById(
+                    "edit-node-title-size"
+                )
+                .value
+
+        );
+
+
     activeEditorTarget.borderColor =
         document
             .getElementById(
                 "edit-node-border-color"
             )
             .value;
+
 
     activeEditorTarget.borderWidth =
         parseInt(
@@ -3325,27 +4397,41 @@ function commitNodeChanges(){
 
         );
 
+
     saveStateToBrowser();
 
+
     rebuildCanvasFromState();
+
 
     dismissModal();
 
 }
 
-/* ============================================================
+
+/* ==========================================================
    EDGE EDITOR
-============================================================ */
+========================================================== */
 
 function openEdgeEditor(data){
+
+    document
+        .getElementById(
+            "edit-edge-auto"
+        )
+        .checked =
+        data.autoWidth !==
+        false;
+
 
     document
         .getElementById(
             "edit-edge-color"
         )
         .value =
-        data.color ||
+        data.color ??
         "#95a5a6";
+
 
     document
         .getElementById(
@@ -3353,7 +4439,8 @@ function openEdgeEditor(data){
         )
         .value =
         data.opacity ??
-        .6;
+        .58;
+
 
     document
         .getElementById(
@@ -3361,23 +4448,29 @@ function openEdgeEditor(data){
         )
         .value =
         data.curvature ??
-        .40;
+        .42;
+
 
     document
         .getElementById(
             "edit-edge-thick-src"
         )
         .value =
-        data.thickSrc ||
-        18;
+        data.thickSrc ??
+        70;
+
 
     document
         .getElementById(
             "edit-edge-thick-tgt"
         )
         .value =
-        data.thickTgt ||
-        18;
+        data.thickTgt ??
+        70;
+
+
+    updateManualWidthInputs();
+
 
     document
         .getElementById(
@@ -3385,6 +4478,7 @@ function openEdgeEditor(data){
         )
         .style.display =
         "block";
+
 
     document
         .getElementById(
@@ -3395,15 +4489,62 @@ function openEdgeEditor(data){
 
 }
 
+
+function updateManualWidthInputs(){
+
+    const automatic =
+        document
+            .getElementById(
+                "edit-edge-auto"
+            )
+            .checked;
+
+
+    document
+        .getElementById(
+            "edit-edge-thick-src"
+        )
+        .disabled =
+        automatic;
+
+
+    document
+        .getElementById(
+            "edit-edge-thick-tgt"
+        )
+        .disabled =
+        automatic;
+
+}
+
+
+document
+    .getElementById(
+        "edit-edge-auto"
+    )
+    .addEventListener(
+        "change",
+        updateManualWidthInputs
+    );
+
+
 function commitEdgeChanges(){
 
-    if(
-        !activeEditorTarget
-    ){
+    if(!activeEditorTarget){
         return;
     }
 
+
     pushToHistory();
+
+
+    activeEditorTarget.autoWidth =
+        document
+            .getElementById(
+                "edit-edge-auto"
+            )
+            .checked;
+
 
     activeEditorTarget.color =
         document
@@ -3411,6 +4552,7 @@ function commitEdgeChanges(){
                 "edit-edge-color"
             )
             .value;
+
 
     activeEditorTarget.opacity =
         parseFloat(
@@ -3423,6 +4565,7 @@ function commitEdgeChanges(){
 
         );
 
+
     activeEditorTarget.curvature =
         parseFloat(
 
@@ -3433,6 +4576,7 @@ function commitEdgeChanges(){
                 .value
 
         );
+
 
     activeEditorTarget.thickSrc =
         parseInt(
@@ -3445,6 +4589,7 @@ function commitEdgeChanges(){
 
         );
 
+
     activeEditorTarget.thickTgt =
         parseInt(
 
@@ -3456,17 +4601,21 @@ function commitEdgeChanges(){
 
         );
 
+
     saveStateToBrowser();
 
+
     recalculateSankeyCurves();
+
 
     dismissModal();
 
 }
 
-/* ============================================================
+
+/* ==========================================================
    MODALS
-============================================================ */
+========================================================== */
 
 function dismissModal(){
 
@@ -3477,26 +4626,30 @@ function dismissModal(){
         .style.display =
         "none";
 
+
     document
         .querySelectorAll(
             ".floating-panel"
         )
         .forEach(
 
-            p =>
-                p.style.display =
+            panel =>
+                panel.style.display =
                 "none"
 
         );
+
 
     activeEditorTarget =
         null;
 
 }
 
+
 function openExportPortal(){
 
     clearAllSelections();
+
 
     document
         .getElementById(
@@ -3504,6 +4657,7 @@ function openExportPortal(){
         )
         .style.display =
         "block";
+
 
     document
         .getElementById(
@@ -3514,42 +4668,61 @@ function openExportPortal(){
 
 }
 
-/* ============================================================
+
+/* ==========================================================
    ZOOM
-============================================================ */
+========================================================== */
 
 function setZoom(amount){
 
     zoomLevel +=
         amount;
 
+
     zoomLevel =
-        Math.max(
-            .1,
-            Math.min(
-                3,
-                zoomLevel
-            )
+        clamp(
+            zoomLevel,
+            .15,
+            3
         );
+
 
     board.style.transform =
         `scale(${zoomLevel})`;
 
+
+    showStatus(
+        Math.round(
+            zoomLevel *
+            100
+        )
+        +
+        "%"
+    );
+
 }
+
 
 function resetZoom(){
 
     zoomLevel =
         1;
 
+
     board.style.transform =
         "scale(1)";
 
+
+    showStatus(
+        "100%"
+    );
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    GRID
-============================================================ */
+========================================================== */
 
 function toggleGridSystem(){
 
@@ -3559,90 +4732,100 @@ function toggleGridSystem(){
 
 }
 
-/* ============================================================
+
+/* ==========================================================
    RESET
-============================================================ */
+========================================================== */
 
 function resetProject(){
 
-    const answer =
+    const confirmation =
         confirm(
-            "Reset to the original simplified Switzerland Pollinator ABM workflow?"
+
+            "Reset to the original portfolio workflow?"
+
         );
 
-    if(!answer){
+
+    if(!confirmation){
         return;
     }
+
 
     localStorage.removeItem(
         STORAGE_KEY
     );
+
 
     appState =
         cloneObject(
             DEFAULT_ABM_STATE
         );
 
+
     undoStack =
         [];
 
-    selectedNodeIds.clear();
-    selectedEdgeIds.clear();
 
     rebuildCanvasFromState();
 
-    centerInitialView();
 
     showStatus(
-        "ABM workflow reset."
+        "Workflow reset."
     );
 
 }
 
-/* ============================================================
-   CREATE SELF-CONTAINED HTML
-============================================================ */
+
+/* ==========================================================
+   SELF-CONTAINED HTML
+========================================================== */
 
 function buildCurrentHTML(){
 
     saveStateToBrowser();
+
 
     const clone =
         document.documentElement.cloneNode(
             true
         );
 
+
     const clonedBoard =
         clone.querySelector(
             "#canvas-board"
         );
 
-    /*
-       Remove rendered DOM boxes from the exported copy.
-       They will rebuild automatically from appState.
-    */
 
     clonedBoard.innerHTML =
 
         `<svg id="sankey-svg"></svg>
          <div id="marquee-box"></div>`;
 
+
     const existingState =
         clone.querySelector(
             "#injected-state"
         );
 
+
     if(existingState){
+
         existingState.remove();
+
     }
+
 
     const stateScript =
         document.createElement(
             "script"
         );
 
+
     stateScript.id =
         "injected-state";
+
 
     stateScript.textContent =
 
@@ -3658,6 +4841,7 @@ function buildCurrentHTML(){
 
         ";";
 
+
     clone
         .querySelector(
             "head"
@@ -3666,22 +4850,29 @@ function buildCurrentHTML(){
             stateScript
         );
 
+
     return (
+
         "<!DOCTYPE html>\n"
+
         +
+
         clone.outerHTML
+
     );
 
 }
 
-/* ============================================================
+
+/* ==========================================================
    COPY HTML
-============================================================ */
+========================================================== */
 
 async function copyCurrentHTML(){
 
     const html =
         buildCurrentHTML();
+
 
     try{
 
@@ -3689,161 +4880,200 @@ async function copyCurrentHTML(){
             html
         );
 
+
         dismissModal();
 
+
         showStatus(
-            "✓ Full HTML copied."
+            "✓ HTML copied."
         );
 
     }
-    catch(err){
+    catch(error){
 
         const textarea =
             document.createElement(
                 "textarea"
             );
 
+
         textarea.value =
             html;
+
 
         textarea.style.position =
             "fixed";
 
+
         textarea.style.left =
             "-999999px";
+
 
         document.body.appendChild(
             textarea
         );
 
+
         textarea.focus();
+
+
         textarea.select();
+
 
         document.execCommand(
             "copy"
         );
 
+
         textarea.remove();
+
 
         dismissModal();
 
+
         showStatus(
-            "✓ Full HTML copied."
+            "✓ HTML copied."
         );
 
     }
 
 }
 
-/* ============================================================
+
+/* ==========================================================
    DOWNLOAD HTML
-============================================================ */
+========================================================== */
 
 function downloadNativeHTML(){
 
     const html =
         buildCurrentHTML();
 
+
     const blob =
         new Blob(
+
             [html],
+
             {
-                type:"text/html"
+                type:
+                    "text/html"
             }
+
         );
+
 
     const url =
         URL.createObjectURL(
             blob
         );
 
-    const a =
+
+    const link =
         document.createElement(
             "a"
         );
 
-    a.href =
+
+    link.href =
         url;
 
-    a.download =
+
+    link.download =
         "Switzerland_Pollinator_ABM_Workflow.html";
 
-    a.click();
+
+    link.click();
+
 
     URL.revokeObjectURL(
         url
     );
 
+
     dismissModal();
 
 }
 
-/* ============================================================
-   EXPORT PNG / PDF
-============================================================ */
+
+/* ==========================================================
+   PNG / PDF EXPORT
+========================================================== */
 
 function triggerCroppedExport(format){
 
     dismissModal();
 
+
     clearAllSelections();
 
+
     syncNodePositions();
+
 
     let minX =
         Infinity;
 
+
     let minY =
         Infinity;
+
 
     let maxX =
         0;
 
+
     let maxY =
         0;
 
+
     appState.nodes.forEach(
 
-        n => {
+        nodeData => {
 
-            const el =
+            const element =
                 document.getElementById(
-                    n.id
+                    nodeData.id
                 );
 
-            if(!el){
+
+            if(!element){
                 return;
             }
+
 
             minX =
                 Math.min(
                     minX,
-                    el.offsetLeft
+                    element.offsetLeft
                 );
+
 
             minY =
                 Math.min(
                     minY,
-                    el.offsetTop
+                    element.offsetTop
                 );
+
 
             maxX =
                 Math.max(
 
                     maxX,
 
-                    el.offsetLeft +
-                    el.offsetWidth
+                    element.offsetLeft +
+                    element.offsetWidth
 
                 );
+
 
             maxY =
                 Math.max(
 
                     maxY,
 
-                    el.offsetTop +
-                    el.offsetHeight
+                    element.offsetTop +
+                    element.offsetHeight
 
                 );
 
@@ -3851,122 +5081,153 @@ function triggerCroppedExport(format){
 
     );
 
-    const pad =
+
+    const padding =
         80;
+
 
     minX =
         Math.max(
             0,
-            minX - pad
+            minX -
+            padding
         );
+
 
     minY =
         Math.max(
             0,
-            minY - pad
+            minY -
+            padding
         );
 
+
     maxX +=
-        pad;
+        padding;
+
 
     maxY +=
-        pad;
+        padding;
 
-    const exportWidth =
+
+    const width =
         maxX -
         minX;
 
-    const exportHeight =
+
+    const height =
         maxY -
         minY;
+
 
     const exportDiv =
         document.createElement(
             "div"
         );
 
+
     exportDiv.style.position =
         "fixed";
+
 
     exportDiv.style.left =
         "0";
 
+
     exportDiv.style.top =
         "0";
 
+
     exportDiv.style.width =
-        exportWidth +
+        width +
         "px";
+
 
     exportDiv.style.height =
-        exportHeight +
+        height +
         "px";
 
+
     exportDiv.style.background =
-        "white";
+        "#ffffff";
+
 
     exportDiv.style.zIndex =
         "-99999";
 
+
     exportDiv.style.overflow =
         "hidden";
+
 
     const svgClone =
         svg.cloneNode(
             true
         );
 
+
     svgClone.style.position =
         "absolute";
+
 
     svgClone.style.left =
         "0";
 
+
     svgClone.style.top =
         "0";
 
+
     svgClone.style.width =
-        exportWidth +
+        width +
         "px";
 
+
     svgClone.style.height =
-        exportHeight +
+        height +
         "px";
+
 
     svgClone.setAttribute(
 
         "viewBox",
 
-        `${minX} ${minY} ${exportWidth} ${exportHeight}`
+        `${minX} ${minY} ${width} ${height}`
 
     );
+
 
     exportDiv.appendChild(
         svgClone
     );
 
+
     appState.nodes.forEach(
 
-        n => {
+        nodeData => {
 
             const original =
                 document.getElementById(
-                    n.id
+                    nodeData.id
                 );
+
 
             if(!original){
                 return;
             }
+
 
             const copy =
                 original.cloneNode(
                     true
                 );
 
+
             copy.classList.remove(
                 "selected",
                 "selected-anchor"
             );
+
 
             copy.style.left =
                 (
@@ -3976,6 +5237,7 @@ function triggerCroppedExport(format){
                 +
                 "px";
 
+
             copy.style.top =
                 (
                     original.offsetTop -
@@ -3984,10 +5246,12 @@ function triggerCroppedExport(format){
                 +
                 "px";
 
+
             const resizeHandle =
                 copy.querySelector(
                     ".custom-resizer"
                 );
+
 
             if(resizeHandle){
 
@@ -3995,6 +5259,7 @@ function triggerCroppedExport(format){
                     "none";
 
             }
+
 
             exportDiv.appendChild(
                 copy
@@ -4004,18 +5269,27 @@ function triggerCroppedExport(format){
 
     );
 
+
     document.body.appendChild(
         exportDiv
     );
+
 
     html2canvas(
 
         exportDiv,
 
         {
-            scale:1.5,
-            backgroundColor:"#ffffff",
-            logging:false
+
+            scale:
+                1.5,
+
+            backgroundColor:
+                "#ffffff",
+
+            logging:
+                false
+
         }
 
     )
@@ -4024,6 +5298,7 @@ function triggerCroppedExport(format){
         canvas => {
 
             exportDiv.remove();
+
 
             if(
                 format ===
@@ -4039,18 +5314,23 @@ function triggerCroppedExport(format){
                                 blob
                             );
 
-                        const a =
+
+                        const anchor =
                             document.createElement(
                                 "a"
                             );
 
-                        a.href =
+
+                        anchor.href =
                             url;
 
-                        a.download =
+
+                        anchor.download =
                             "Switzerland_Pollinator_ABM_Workflow.png";
 
-                        a.click();
+
+                        anchor.click();
+
 
                         URL.revokeObjectURL(
                             url
@@ -4070,11 +5350,12 @@ function triggerCroppedExport(format){
                         "image/png"
                     );
 
+
                 const pdf =
                     new window.jspdf.jsPDF(
 
-                        exportWidth >
-                        exportHeight
+                        width >
+                        height
                             ?
                             "l"
                             :
@@ -4083,20 +5364,27 @@ function triggerCroppedExport(format){
                         "px",
 
                         [
-                            exportWidth,
-                            exportHeight
+                            width,
+                            height
                         ]
 
                     );
 
+
                 pdf.addImage(
+
                     image,
+
                     "PNG",
+
                     0,
                     0,
-                    exportWidth,
-                    exportHeight
+
+                    width,
+                    height
+
                 );
+
 
                 pdf.save(
                     "Switzerland_Pollinator_ABM_Workflow.pdf"
@@ -4110,9 +5398,10 @@ function triggerCroppedExport(format){
 
 }
 
-/* ============================================================
-   HEX TO RGBA
-============================================================ */
+
+/* ==========================================================
+   COLOR HELPER
+========================================================== */
 
 function hexToRGBA(
     hex,
@@ -4125,6 +5414,7 @@ function hexToRGBA(
             ""
         );
 
+
     if(
         clean.length ===
         3
@@ -4134,18 +5424,21 @@ function hexToRGBA(
             clean
                 .split("")
                 .map(
-                    x =>
-                        x + x
+                    character =>
+                        character +
+                        character
                 )
                 .join("");
 
     }
+
 
     const value =
         parseInt(
             clean,
             16
         );
+
 
     const red =
         (
@@ -4155,6 +5448,7 @@ function hexToRGBA(
         &
         255;
 
+
     const green =
         (
             value >>
@@ -4163,9 +5457,11 @@ function hexToRGBA(
         &
         255;
 
+
     const blue =
         value &
         255;
+
 
     return (
         `rgba(${red},${green},${blue},${alpha})`
@@ -4173,15 +5469,16 @@ function hexToRGBA(
 
 }
 
-/* ============================================================
-   EMPTY CANVAS CLICK
-============================================================ */
+
+/* ==========================================================
+   EMPTY CANVAS + MARQUEE
+========================================================== */
 
 board.addEventListener(
 
     "mousedown",
 
-    e => {
+    event => {
 
         if(
             operationalMode !==
@@ -4190,95 +5487,107 @@ board.addEventListener(
             return;
         }
 
+
         if(
-            e.target ===
+            event.target !==
             board
-            ||
-            e.target ===
+            &&
+            event.target !==
             svg
-        ){
-
-            clearAllSelections();
-
-            isMarqueeDragging =
-                true;
-
-            const rect =
-                board.getBoundingClientRect();
-
-            marqueeStartX =
-                (
-                    e.clientX -
-                    rect.left
-                )
-                /
-                zoomLevel;
-
-            marqueeStartY =
-                (
-                    e.clientY -
-                    rect.top
-                )
-                /
-                zoomLevel;
-
-            marqueeBox.style.left =
-                marqueeStartX +
-                "px";
-
-            marqueeBox.style.top =
-                marqueeStartY +
-                "px";
-
-            marqueeBox.style.width =
-                "0px";
-
-            marqueeBox.style.height =
-                "0px";
-
-            marqueeBox.style.display =
-                "block";
-
-        }
-
-    }
-
-);
-
-/* ============================================================
-   MARQUEE SELECTION
-============================================================ */
-
-document.addEventListener(
-
-    "mousemove",
-
-    e => {
-
-        if(
-            !isMarqueeDragging
         ){
             return;
         }
 
+
+        clearAllSelections();
+
+
+        marqueeActive =
+            true;
+
+
         const rect =
             board.getBoundingClientRect();
 
-        const currentX =
+
+        marqueeStartX =
             (
-                e.clientX -
+                event.clientX -
                 rect.left
             )
             /
             zoomLevel;
 
-        const currentY =
+
+        marqueeStartY =
             (
-                e.clientY -
+                event.clientY -
                 rect.top
             )
             /
             zoomLevel;
+
+
+        marqueeBox.style.left =
+            marqueeStartX +
+            "px";
+
+
+        marqueeBox.style.top =
+            marqueeStartY +
+            "px";
+
+
+        marqueeBox.style.width =
+            "0px";
+
+
+        marqueeBox.style.height =
+            "0px";
+
+
+        marqueeBox.style.display =
+            "block";
+
+    }
+
+);
+
+
+document.addEventListener(
+
+    "mousemove",
+
+    event => {
+
+        if(
+            !marqueeActive
+        ){
+            return;
+        }
+
+
+        const rect =
+            board.getBoundingClientRect();
+
+
+        const currentX =
+            (
+                event.clientX -
+                rect.left
+            )
+            /
+            zoomLevel;
+
+
+        const currentY =
+            (
+                event.clientY -
+                rect.top
+            )
+            /
+            zoomLevel;
+
 
         const x =
             Math.min(
@@ -4286,11 +5595,13 @@ document.addEventListener(
                 currentX
             );
 
+
         const y =
             Math.min(
                 marqueeStartY,
                 currentY
             );
+
 
         const width =
             Math.abs(
@@ -4298,23 +5609,28 @@ document.addEventListener(
                 marqueeStartX
             );
 
+
         const height =
             Math.abs(
                 currentY -
                 marqueeStartY
             );
 
+
         marqueeBox.style.left =
             x +
             "px";
+
 
         marqueeBox.style.top =
             y +
             "px";
 
+
         marqueeBox.style.width =
             width +
             "px";
+
 
         marqueeBox.style.height =
             height +
@@ -4324,6 +5640,7 @@ document.addEventListener(
 
 );
 
+
 document.addEventListener(
 
     "mouseup",
@@ -4331,36 +5648,43 @@ document.addEventListener(
     ()=>{
 
         if(
-            !isMarqueeDragging
+            !marqueeActive
         ){
             return;
         }
 
-        isMarqueeDragging =
+
+        marqueeActive =
             false;
+
 
         const x =
             parseFloat(
                 marqueeBox.style.left
             );
 
+
         const y =
             parseFloat(
                 marqueeBox.style.top
             );
+
 
         const width =
             parseFloat(
                 marqueeBox.style.width
             );
 
+
         const height =
             parseFloat(
                 marqueeBox.style.height
             );
 
+
         marqueeBox.style.display =
             "none";
+
 
         if(
             width <
@@ -4372,62 +5696,73 @@ document.addEventListener(
             return;
         }
 
+
         let first =
             true;
 
+
         appState.nodes.forEach(
 
-            n => {
+            data => {
 
                 const intersects =
 
-                    n.x <
+                    data.x <
                     x + width
 
                     &&
 
-                    n.x + n.w >
+                    data.x +
+                    data.w >
                     x
 
                     &&
 
-                    n.y <
+                    data.y <
                     y + height
 
                     &&
 
-                    n.y + n.h >
+                    data.y +
+                    data.h >
                     y;
 
-                if(intersects){
 
-                    selectedNodeIds.add(
-                        n.id
+                if(!intersects){
+                    return;
+                }
+
+
+                selectedNodeIds.add(
+                    data.id
+                );
+
+
+                const el =
+                    document.getElementById(
+                        data.id
                     );
 
-                    const el =
-                        document.getElementById(
-                            n.id
-                        );
 
-                    if(el){
+                if(!el){
+                    return;
+                }
 
-                        el.classList.add(
-                            "selected"
-                        );
 
-                        if(first){
+                el.classList.add(
+                    "selected"
+                );
 
-                            el.classList.add(
-                                "selected-anchor"
-                            );
 
-                            first =
-                                false;
+                if(first){
 
-                        }
+                    el.classList.add(
+                        "selected-anchor"
+                    );
 
-                    }
+
+                    first =
+                        false;
 
                 }
 
@@ -4439,67 +5774,75 @@ document.addEventListener(
 
 );
 
-/* ============================================================
+
+/* ==========================================================
    KEYBOARD
-============================================================ */
+========================================================== */
 
 document.addEventListener(
 
     "keydown",
 
-    e => {
+    event => {
 
         if(
-            e.target.tagName ===
+            event.target.tagName ===
             "INPUT"
             ||
-            e.target.tagName ===
+            event.target.tagName ===
             "TEXTAREA"
             ||
-            e.target.isContentEditable
+            event.target.isContentEditable
         ){
             return;
         }
 
-        const control =
-            e.ctrlKey ||
-            e.metaKey;
+
+        const ctrl =
+            event.ctrlKey ||
+            event.metaKey;
+
 
         if(
-            control
+            ctrl
             &&
-            e.key.toLowerCase() ===
+            event.key.toLowerCase() ===
             "z"
         ){
 
-            e.preventDefault();
+            event.preventDefault();
+
 
             triggerUndo();
 
         }
 
+
         if(
-            control
+            ctrl
             &&
-            e.key.toLowerCase() ===
+            event.key.toLowerCase() ===
             "s"
         ){
 
-            e.preventDefault();
+            event.preventDefault();
+
 
             copyCurrentHTML();
 
         }
 
+
         if(
-            e.key ===
+            event.key ===
             "Delete"
             ||
-            e.key ===
+            event.key ===
             "Backspace"
         ){
 
-            e.preventDefault();
+            event.preventDefault();
+
 
             executeDeletion();
 
@@ -4509,35 +5852,38 @@ document.addEventListener(
 
 );
 
-/* ============================================================
-   MOUSE-WHEEL ZOOM
-============================================================ */
+
+/* ==========================================================
+   CTRL + WHEEL ZOOM
+========================================================== */
 
 container.addEventListener(
 
     "wheel",
 
-    e => {
+    event => {
 
         if(
-            e.ctrlKey ||
-            e.metaKey
+            !event.ctrlKey &&
+            !event.metaKey
         ){
-
-            e.preventDefault();
-
-            setZoom(
-
-                e.deltaY <
-                0
-                    ?
-                    .08
-                    :
-                    -.08
-
-            );
-
+            return;
         }
+
+
+        event.preventDefault();
+
+
+        setZoom(
+
+            event.deltaY <
+            0
+                ?
+                .08
+                :
+                -.08
+
+        );
 
     },
 
@@ -4547,9 +5893,10 @@ container.addEventListener(
 
 );
 
-/* ============================================================
-   START APPLICATION
-============================================================ */
+
+/* ==========================================================
+   START
+========================================================== */
 
 window.addEventListener(
     "load",
