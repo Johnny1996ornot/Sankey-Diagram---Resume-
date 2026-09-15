@@ -1,1624 +1,3909 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Switzerland Pollinator ABM Workflow</title>
+<meta charset="UTF-8">
 
-  <!-- D3 -->
-  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+>
 
-  <!-- D3 Sankey -->
-  <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+<title>
+    John Paolo Ramirez | Environmental · Geospatial · Data
+</title>
 
-  <style>
-    :root {
-      --bg: #f4f7fb;
-      --card: #ffffff;
-      --text: #172033;
-      --muted: #667085;
-      --border: #d8e0eb;
-    }
+<meta
+    name="description"
+    content="Portfolio of John Paolo Ramirez — environmental, geospatial and data analyst working with GIS, remote sensing, Google Earth Engine, Python, R and environmental research."
+>
 
-    * {
-      box-sizing: border-box;
-    }
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+>
 
-    body {
-      margin: 0;
-      font-family:
-        Inter,
+<style>
+
+/* =========================================================
+   ROOT
+========================================================= */
+
+:root {
+
+    --bg:
+        #070c09;
+
+    --panel:
+        #101713;
+
+    --panel-soft:
+        #151f19;
+
+    --panel-hover:
+        #18231d;
+
+    --text:
+        #f4f7f4;
+
+    --muted:
+        #95a199;
+
+    --line:
+        rgba(255,255,255,.09);
+
+    --green:
+        #86dc91;
+
+    --green-soft:
+        #5fbf73;
+
+    --blue:
+        #173f72;
+
+    --modal:
+        rgba(7,12,9,.86);
+
+    --radius:
+        30px;
+
+}
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+    box-sizing:
+        border-box;
+}
+
+html,
+body {
+    margin:
+        0;
+
+    width:
+        100%;
+
+    min-height:
+        100%;
+
+    overflow:
+        hidden;
+}
+
+body {
+
+    background:
+        var(--bg);
+
+    color:
+        var(--text);
+
+    font-family:
         -apple-system,
         BlinkMacSystemFont,
         "Segoe UI",
         Roboto,
+        Helvetica,
         Arial,
         sans-serif;
 
-      background: var(--bg);
-      color: var(--text);
-    }
+    -webkit-font-smoothing:
+        antialiased;
 
-    header {
-      background:
-        linear-gradient(
-          135deg,
-          #163d67,
-          #1f5f8b
+    text-rendering:
+        optimizeLegibility;
+}
+
+button,
+a {
+    font:
+        inherit;
+}
+
+button {
+    color:
+        inherit;
+}
+
+
+/* =========================================================
+   BACKGROUND
+========================================================= */
+
+.background-glow {
+
+    position:
+        fixed;
+
+    inset:
+        0;
+
+    pointer-events:
+        none;
+
+    overflow:
+        hidden;
+
+    z-index:
+        0;
+}
+
+.background-glow::before {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    width:
+        700px;
+
+    height:
+        700px;
+
+    left:
+        -220px;
+
+    top:
+        -230px;
+
+    border-radius:
+        50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(83,190,110,.13),
+            transparent 70%
         );
 
-      color: white;
-      padding: 34px 24px;
-      text-align: center;
+    filter:
+        blur(30px);
+
+    animation:
+        bgMoveOne 16s ease-in-out infinite alternate;
+}
+
+.background-glow::after {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    width:
+        650px;
+
+    height:
+        650px;
+
+    right:
+        -230px;
+
+    bottom:
+        -260px;
+
+    border-radius:
+        50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(33,88,150,.18),
+            transparent 70%
+        );
+
+    filter:
+        blur(35px);
+
+    animation:
+        bgMoveTwo 18s ease-in-out infinite alternate;
+}
+
+@keyframes bgMoveOne {
+
+    from {
+        transform:
+            translate(0,0);
     }
 
-    header h1 {
-      margin: 0;
-      font-size: clamp(28px, 4vw, 48px);
-      letter-spacing: -1px;
+    to {
+        transform:
+            translate(100px,70px);
+    }
+}
+
+@keyframes bgMoveTwo {
+
+    from {
+        transform:
+            translate(0,0);
     }
 
-    header p {
-      margin: 10px auto 0;
-      max-width: 950px;
-      line-height: 1.55;
-      opacity: 0.9;
+    to {
+        transform:
+            translate(-120px,-80px);
+    }
+}
+
+
+/* =========================================================
+   APP SHELL
+========================================================= */
+
+.app {
+
+    position:
+        relative;
+
+    z-index:
+        2;
+
+    width:
+        100%;
+
+    height:
+        100svh;
+
+    padding:
+        clamp(14px,2vw,28px);
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        clamp(12px,1.5vw,20px);
+}
+
+
+/* =========================================================
+   TOP BAR
+========================================================= */
+
+.topbar {
+
+    min-height:
+        44px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    gap:
+        20px;
+}
+
+.topbar-left {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        10px;
+
+    color:
+        var(--green);
+
+    font-size:
+        .72rem;
+
+    font-weight:
+        850;
+
+    letter-spacing:
+        .18em;
+
+    text-transform:
+        uppercase;
+}
+
+.topbar-right {
+
+    color:
+        var(--muted);
+
+    font-size:
+        .7rem;
+
+    font-weight:
+        650;
+}
+
+
+/* =========================================================
+   GRID
+========================================================= */
+
+.dashboard {
+
+    min-height:
+        0;
+
+    flex:
+        1;
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(12, minmax(0,1fr));
+
+    grid-template-rows:
+        repeat(2, minmax(0,1fr));
+
+    gap:
+        clamp(12px,1.4vw,20px);
+}
+
+
+/* =========================================================
+   PANEL BASE
+========================================================= */
+
+.panel {
+
+    position:
+        relative;
+
+    overflow:
+        hidden;
+
+    min-width:
+        0;
+
+    min-height:
+        0;
+
+    padding:
+        clamp(20px,2.2vw,34px);
+
+    border:
+        1px solid
+        var(--line);
+
+    border-radius:
+        var(--radius);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.025),
+            rgba(255,255,255,.007)
+        ),
+        var(--panel);
+
+    cursor:
+        pointer;
+
+    transition:
+        transform .4s cubic-bezier(.2,.8,.2,1),
+        border-color .4s ease,
+        background .4s ease;
+
+    isolation:
+        isolate;
+}
+
+.panel:hover {
+
+    transform:
+        translateY(-5px);
+
+    border-color:
+        rgba(134,220,145,.25);
+
+    background:
+        var(--panel-hover);
+}
+
+.panel:focus-visible {
+
+    outline:
+        2px solid
+        var(--green);
+
+    outline-offset:
+        3px;
+}
+
+
+/* =========================================================
+   PANEL GRID SIZES
+========================================================= */
+
+.panel-profile {
+
+    grid-column:
+        span 7;
+}
+
+.panel-work {
+
+    grid-column:
+        span 5;
+}
+
+.panel-skills {
+
+    grid-column:
+        span 5;
+}
+
+.panel-portfolio {
+
+    grid-column:
+        span 7;
+}
+
+
+/* =========================================================
+   PANEL SHARED
+========================================================= */
+
+.panel-kicker {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        8px;
+
+    color:
+        var(--green);
+
+    font-size:
+        .66rem;
+
+    font-weight:
+        850;
+
+    text-transform:
+        uppercase;
+
+    letter-spacing:
+        .15em;
+}
+
+.panel-arrow {
+
+    position:
+        absolute;
+
+    top:
+        24px;
+
+    right:
+        26px;
+
+    width:
+        42px;
+
+    height:
+        42px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border-radius:
+        50%;
+
+    border:
+        1px solid
+        var(--line);
+
+    color:
+        var(--muted);
+
+    transition:
+        transform .35s ease,
+        color .35s ease,
+        border-color .35s ease;
+}
+
+.panel:hover
+.panel-arrow {
+
+    transform:
+        rotate(45deg);
+
+    color:
+        var(--green);
+
+    border-color:
+        rgba(134,220,145,.25);
+}
+
+
+/* =========================================================
+   PROFILE PANEL
+========================================================= */
+
+.panel-profile {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    justify-content:
+        space-between;
+
+    background:
+        radial-gradient(
+            circle at 80% 10%,
+            rgba(134,220,145,.11),
+            transparent 38%
+        ),
+        var(--panel);
+}
+
+.profile-name {
+
+    margin:
+        0;
+
+    max-width:
+        700px;
+
+    font-size:
+        clamp(3rem,6vw,7rem);
+
+    line-height:
+        .86;
+
+    letter-spacing:
+        -.072em;
+
+    font-weight:
+        900;
+}
+
+.profile-name span {
+
+    color:
+        var(--green);
+}
+
+.profile-role {
+
+    margin-top:
+        18px;
+
+    max-width:
+        650px;
+
+    color:
+        var(--muted);
+
+    font-size:
+        clamp(.86rem,1.25vw,1.12rem);
+
+    line-height:
+        1.55;
+}
+
+.profile-bottom {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    gap:
+        20px;
+}
+
+.profile-bottom-label {
+
+    color:
+        var(--muted);
+
+    font-size:
+        .72rem;
+}
+
+
+/* profile animated geometry */
+
+.profile-orbit {
+
+    position:
+        absolute;
+
+    right:
+        -40px;
+
+    bottom:
+        -75px;
+
+    width:
+        260px;
+
+    height:
+        260px;
+
+    border-radius:
+        50%;
+
+    border:
+        1px solid
+        rgba(134,220,145,.10);
+
+    animation:
+        orbitRotate 18s linear infinite;
+}
+
+.profile-orbit::before {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    left:
+        30px;
+
+    top:
+        30px;
+
+    width:
+        160px;
+
+    height:
+        160px;
+
+    border-radius:
+        50%;
+
+    border:
+        1px solid
+        rgba(134,220,145,.12);
+}
+
+.profile-orbit::after {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    width:
+        12px;
+
+    height:
+        12px;
+
+    left:
+        15px;
+
+    top:
+        112px;
+
+    border-radius:
+        50%;
+
+    background:
+        var(--green);
+
+    box-shadow:
+        0 0 22px
+        rgba(134,220,145,.45);
+}
+
+@keyframes orbitRotate {
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+}
+
+
+/* =========================================================
+   WORK PANEL
+========================================================= */
+
+.panel-work {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    justify-content:
+        space-between;
+}
+
+.work-heading {
+
+    max-width:
+        360px;
+
+    margin:
+        0;
+
+    font-size:
+        clamp(2rem,3.8vw,4.5rem);
+
+    line-height:
+        .92;
+
+    letter-spacing:
+        -.055em;
+
+    font-weight:
+        850;
+}
+
+.work-heading span {
+
+    color:
+        var(--green);
+}
+
+.work-mini-list {
+
+    display:
+        grid;
+
+    gap:
+        8px;
+}
+
+.work-mini {
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    gap:
+        14px;
+
+    padding-top:
+        10px;
+
+    border-top:
+        1px solid
+        var(--line);
+
+    color:
+        var(--muted);
+
+    font-size:
+        .7rem;
+}
+
+.work-mini strong {
+
+    color:
+        var(--text);
+
+    font-weight:
+        750;
+}
+
+
+/* =========================================================
+   SKILLS PANEL
+========================================================= */
+
+.panel-skills {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    justify-content:
+        space-between;
+
+    background:
+        radial-gradient(
+            circle at 20% 90%,
+            rgba(23,63,114,.18),
+            transparent 40%
+        ),
+        var(--panel);
+}
+
+.skills-heading {
+
+    margin:
+        0;
+
+    font-size:
+        clamp(2.4rem,4.7vw,5.6rem);
+
+    line-height:
+        .9;
+
+    letter-spacing:
+        -.06em;
+
+    font-weight:
+        850;
+}
+
+.skill-cloud {
+
+    display:
+        flex;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        7px;
+
+    max-width:
+        500px;
+}
+
+.skill-cloud span {
+
+    padding:
+        7px 10px;
+
+    border:
+        1px solid
+        var(--line);
+
+    border-radius:
+        999px;
+
+    color:
+        var(--muted);
+
+    font-size:
+        .68rem;
+
+    font-weight:
+        700;
+}
+
+
+/* =========================================================
+   PORTFOLIO PANEL
+========================================================= */
+
+.panel-portfolio {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        minmax(0,.75fr)
+        minmax(0,1.25fr);
+
+    gap:
+        20px;
+
+    padding-right:
+        18px;
+}
+
+.portfolio-copy {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    justify-content:
+        space-between;
+}
+
+.portfolio-heading {
+
+    margin:
+        14px 0 0;
+
+    font-size:
+        clamp(2.4rem,4.5vw,5.5rem);
+
+    line-height:
+        .9;
+
+    letter-spacing:
+        -.06em;
+
+    font-weight:
+        850;
+}
+
+.portfolio-heading span {
+
+    color:
+        var(--green);
+}
+
+.portfolio-caption {
+
+    color:
+        var(--muted);
+
+    font-size:
+        .72rem;
+
+    line-height:
+        1.55;
+}
+
+
+/* image collage */
+
+.portfolio-preview {
+
+    position:
+        relative;
+
+    min-height:
+        0;
+
+    overflow:
+        hidden;
+
+    border-radius:
+        22px;
+
+    background:
+        #0c120f;
+}
+
+.preview-img {
+
+    position:
+        absolute;
+
+    overflow:
+        hidden;
+
+    border-radius:
+        16px;
+
+    border:
+        1px solid
+        rgba(255,255,255,.09);
+
+    background:
+        #121916;
+
+    box-shadow:
+        0 16px 30px
+        rgba(0,0,0,.28);
+
+    transition:
+        transform .4s ease;
+}
+
+.preview-img img {
+
+    width:
+        100%;
+
+    height:
+        100%;
+
+    display:
+        block;
+
+    object-fit:
+        cover;
+}
+
+.preview-one {
+
+    width:
+        58%;
+
+    height:
+        63%;
+
+    top:
+        8%;
+
+    left:
+        5%;
+
+    transform:
+        rotate(-3deg);
+
+    z-index:
+        3;
+}
+
+.preview-two {
+
+    width:
+        52%;
+
+    height:
+        56%;
+
+    top:
+        32%;
+
+    right:
+        4%;
+
+    transform:
+        rotate(4deg);
+
+    z-index:
+        4;
+}
+
+.preview-three {
+
+    width:
+        42%;
+
+    height:
+        42%;
+
+    top:
+        5%;
+
+    right:
+        7%;
+
+    transform:
+        rotate(6deg);
+
+    z-index:
+        2;
+}
+
+.panel-portfolio:hover
+.preview-one {
+
+    transform:
+        rotate(-5deg)
+        translate(-6px,-5px);
+}
+
+.panel-portfolio:hover
+.preview-two {
+
+    transform:
+        rotate(6deg)
+        translate(8px,5px);
+}
+
+.panel-portfolio:hover
+.preview-three {
+
+    transform:
+        rotate(9deg)
+        translate(5px,-6px);
+}
+
+
+/* =========================================================
+   MODAL BASE
+========================================================= */
+
+.modal {
+
+    position:
+        fixed;
+
+    inset:
+        0;
+
+    z-index:
+        5000;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    padding:
+        clamp(12px,2.4vw,34px);
+
+    background:
+        var(--modal);
+
+    backdrop-filter:
+        blur(24px);
+
+    -webkit-backdrop-filter:
+        blur(24px);
+
+    opacity:
+        0;
+
+    visibility:
+        hidden;
+
+    pointer-events:
+        none;
+
+    transition:
+        opacity .35s ease,
+        visibility .35s ease;
+}
+
+.modal.open {
+
+    opacity:
+        1;
+
+    visibility:
+        visible;
+
+    pointer-events:
+        auto;
+}
+
+.modal-shell {
+
+    position:
+        relative;
+
+    width:
+        min(1180px,100%);
+
+    max-height:
+        min(850px,94svh);
+
+    overflow:
+        auto;
+
+    padding:
+        clamp(28px,4vw,58px);
+
+    border:
+        1px solid
+        var(--line);
+
+    border-radius:
+        clamp(24px,3vw,38px);
+
+    background:
+        #0e1511;
+
+    box-shadow:
+        0 40px 100px
+        rgba(0,0,0,.55);
+
+    transform:
+        scale(.94)
+        translateY(25px);
+
+    transition:
+        transform .45s cubic-bezier(.2,.8,.2,1);
+}
+
+.modal.open
+.modal-shell {
+
+    transform:
+        scale(1)
+        translateY(0);
+}
+
+.modal-close {
+
+    position:
+        sticky;
+
+    top:
+        0;
+
+    float:
+        right;
+
+    z-index:
+        8;
+
+    width:
+        46px;
+
+    height:
+        46px;
+
+    border:
+        1px solid
+        var(--line);
+
+    border-radius:
+        50%;
+
+    background:
+        rgba(20,30,24,.9);
+
+    color:
+        white;
+
+    cursor:
+        pointer;
+
+    transition:
+        transform .25s ease;
+}
+
+.modal-close:hover {
+
+    transform:
+        rotate(90deg);
+}
+
+.modal-kicker {
+
+    color:
+        var(--green);
+
+    font-size:
+        .68rem;
+
+    font-weight:
+        850;
+
+    letter-spacing:
+        .16em;
+
+    text-transform:
+        uppercase;
+}
+
+.modal-title {
+
+    max-width:
+        900px;
+
+    margin:
+        18px 0 0;
+
+    font-size:
+        clamp(2.7rem,6vw,6.5rem);
+
+    line-height:
+        .9;
+
+    letter-spacing:
+        -.065em;
+
+    font-weight:
+        900;
+}
+
+.modal-intro {
+
+    max-width:
+        760px;
+
+    margin-top:
+        24px;
+
+    color:
+        var(--muted);
+
+    line-height:
+        1.7;
+
+    font-size:
+        .95rem;
+}
+
+
+/* =========================================================
+   CONTACT MODAL
+========================================================= */
+
+.contact-grid {
+
+    margin-top:
+        50px;
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(2,minmax(0,1fr));
+
+    gap:
+        12px;
+}
+
+.contact-card {
+
+    min-height:
+        150px;
+
+    padding:
+        24px;
+
+    border:
+        1px solid
+        var(--line);
+
+    border-radius:
+        22px;
+
+    background:
+        var(--panel);
+
+    text-decoration:
+        none;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    justify-content:
+        space-between;
+
+    transition:
+        transform .3s ease,
+        border-color .3s ease;
+}
+
+.contact-card:hover {
+
+    transform:
+        translateY(-4px);
+
+    border-color:
+        rgba(134,220,145,.28);
+}
+
+.contact-card i {
+
+    color:
+        var(--green);
+
+    font-size:
+        1.25rem;
+}
+
+.contact-card-label {
+
+    color:
+        var(--muted);
+
+    font-size:
+        .68rem;
+
+    text-transform:
+        uppercase;
+
+    letter-spacing:
+        .12em;
+}
+
+.contact-card-value {
+
+    margin-top:
+        8px;
+
+    font-size:
+        clamp(.9rem,1.6vw,1.2rem);
+
+    font-weight:
+        750;
+
+    word-break:
+        break-word;
+}
+
+
+/* =========================================================
+   WORK MODAL
+========================================================= */
+
+.work-layout {
+
+    margin-top:
+        50px;
+
+    display:
+        grid;
+
+    grid-template-columns:
+        minmax(0,.8fr)
+        minmax(0,1.2fr);
+
+    gap:
+        45px;
+}
+
+.timeline {
+
+    display:
+        grid;
+
+    gap:
+        0;
+}
+
+.timeline-item {
+
+    position:
+        relative;
+
+    padding:
+        0 0 28px 26px;
+
+    border-left:
+        1px solid
+        rgba(134,220,145,.18);
+}
+
+.timeline-item::before {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    left:
+        -5px;
+
+    top:
+        4px;
+
+    width:
+        9px;
+
+    height:
+        9px;
+
+    border-radius:
+        50%;
+
+    background:
+        var(--green);
+}
+
+.timeline-year {
+
+    color:
+        var(--green);
+
+    font-size:
+        .66rem;
+
+    font-weight:
+        850;
+
+    letter-spacing:
+        .11em;
+}
+
+.timeline-item h3 {
+
+    margin:
+        7px 0 0;
+
+    font-size:
+        1rem;
+}
+
+.timeline-item strong {
+
+    display:
+        block;
+
+    margin-top:
+        4px;
+
+    color:
+        var(--muted);
+
+    font-size:
+        .75rem;
+}
+
+.timeline-item p {
+
+    margin:
+        10px 0 0;
+
+    color:
+        var(--muted);
+
+    font-size:
+        .76rem;
+
+    line-height:
+        1.6;
+}
+
+
+/* project list */
+
+.project-list {
+
+    display:
+        grid;
+
+    gap:
+        10px;
+}
+
+.project-item {
+
+    padding:
+        20px;
+
+    border:
+        1px solid
+        var(--line);
+
+    border-radius:
+        18px;
+
+    background:
+        var(--panel);
+
+    transition:
+        border-color .25s ease;
+}
+
+.project-item:hover {
+
+    border-color:
+        rgba(134,220,145,.25);
+}
+
+.project-item-tag {
+
+    color:
+        var(--green);
+
+    font-size:
+        .62rem;
+
+    font-weight:
+        850;
+
+    letter-spacing:
+        .11em;
+
+    text-transform:
+        uppercase;
+}
+
+.project-item h4 {
+
+    margin:
+        8px 0 0;
+
+    font-size:
+        .95rem;
+}
+
+.project-item p {
+
+    margin:
+        8px 0 0;
+
+    color:
+        var(--muted);
+
+    font-size:
+        .73rem;
+
+    line-height:
+        1.6;
+}
+
+
+/* =========================================================
+   SKILLS MODAL
+========================================================= */
+
+.skills-modal-grid {
+
+    margin-top:
+        50px;
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(2,minmax(0,1fr));
+
+    gap:
+        14px;
+}
+
+.skill-category {
+
+    padding:
+        25px;
+
+    border:
+        1px solid
+        var(--line);
+
+    border-radius:
+        22px;
+
+    background:
+        var(--panel);
+}
+
+.skill-category-icon {
+
+    width:
+        42px;
+
+    height:
+        42px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border-radius:
+        12px;
+
+    background:
+        rgba(134,220,145,.10);
+
+    color:
+        var(--green);
+}
+
+.skill-category h3 {
+
+    margin:
+        20px 0 0;
+
+    font-size:
+        1.1rem;
+}
+
+.skill-category p {
+
+    color:
+        var(--muted);
+
+    font-size:
+        .76rem;
+
+    line-height:
+        1.6;
+}
+
+.skill-tags {
+
+    margin-top:
+        16px;
+
+    display:
+        flex;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        6px;
+}
+
+.skill-tags span {
+
+    padding:
+        6px 9px;
+
+    border-radius:
+        999px;
+
+    background:
+        var(--panel-soft);
+
+    color:
+        #bdc7bf;
+
+    font-size:
+        .65rem;
+
+    font-weight:
+        700;
+}
+
+
+/* =========================================================
+   PORTFOLIO GALLERY
+========================================================= */
+
+.gallery-grid {
+
+    margin-top:
+        45px;
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(2,minmax(0,1fr));
+
+    gap:
+        16px;
+}
+
+.gallery-item {
+
+    position:
+        relative;
+
+    overflow:
+        hidden;
+
+    min-height:
+        300px;
+
+    border:
+        1px solid
+        var(--line);
+
+    border-radius:
+        22px;
+
+    background:
+        var(--panel);
+
+    cursor:
+        zoom-in;
+}
+
+.gallery-item img {
+
+    width:
+        100%;
+
+    height:
+        100%;
+
+    position:
+        absolute;
+
+    inset:
+        0;
+
+    object-fit:
+        contain;
+
+    padding:
+        12px;
+
+    transition:
+        transform .4s ease;
+}
+
+.gallery-item:hover img {
+
+    transform:
+        scale(1.025);
+}
+
+.gallery-caption {
+
+    position:
+        absolute;
+
+    left:
+        14px;
+
+    right:
+        14px;
+
+    bottom:
+        14px;
+
+    z-index:
+        3;
+
+    padding:
+        12px 14px;
+
+    border-radius:
+        14px;
+
+    background:
+        rgba(5,12,8,.72);
+
+    backdrop-filter:
+        blur(12px);
+
+    font-size:
+        .72rem;
+
+    font-weight:
+        700;
+}
+
+
+/* =========================================================
+   IMAGE LIGHTBOX
+========================================================= */
+
+.lightbox {
+
+    position:
+        fixed;
+
+    inset:
+        0;
+
+    z-index:
+        9000;
+
+    display:
+        none;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    padding:
+        24px;
+
+    background:
+        rgba(0,0,0,.93);
+
+    backdrop-filter:
+        blur(12px);
+}
+
+.lightbox.open {
+
+    display:
+        flex;
+}
+
+.lightbox img {
+
+    max-width:
+        94vw;
+
+    max-height:
+        90svh;
+
+    object-fit:
+        contain;
+
+    border-radius:
+        14px;
+}
+
+.lightbox-close {
+
+    position:
+        fixed;
+
+    top:
+        20px;
+
+    right:
+        20px;
+
+    z-index:
+        2;
+
+    width:
+        46px;
+
+    height:
+        46px;
+
+    border-radius:
+        50%;
+
+    border:
+        1px solid
+        rgba(255,255,255,.15);
+
+    background:
+        rgba(255,255,255,.07);
+
+    color:
+        white;
+
+    cursor:
+        pointer;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 800px) {
+
+    :root {
+
+        --radius:
+            22px;
     }
 
-    .page {
-      max-width: 1800px;
-      margin: 0 auto;
-      padding: 22px;
+
+    .app {
+
+        padding:
+            10px;
+
+        gap:
+            9px;
     }
 
-    .info {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px 20px;
-      margin-bottom: 18px;
-      box-shadow: 0 3px 12px rgba(25, 40, 70, 0.05);
+
+    .topbar {
+
+        min-height:
+            34px;
     }
 
-    .info strong {
-      color: #174b75;
+
+    .topbar-left {
+
+        font-size:
+            .55rem;
+
+        letter-spacing:
+            .11em;
     }
 
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px 18px;
-      margin-top: 12px;
-      font-size: 13px;
+
+    .topbar-right {
+
+        display:
+            none;
     }
 
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 7px;
+
+    .dashboard {
+
+        grid-template-columns:
+            1fr 1fr;
+
+        grid-template-rows:
+            1fr 1fr;
+
+        gap:
+            9px;
     }
 
-    .legend-color {
-      width: 15px;
-      height: 15px;
-      border-radius: 4px;
+
+    .panel-profile,
+    .panel-work,
+    .panel-skills,
+    .panel-portfolio {
+
+        grid-column:
+            span 1;
+
+        padding:
+            16px;
     }
 
-    #chart-wrapper {
-      position: relative;
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      box-shadow: 0 5px 20px rgba(30, 50, 80, 0.07);
-      overflow: auto;
-      min-height: 820px;
+
+    .panel {
+
+        border-radius:
+            20px;
     }
 
-    #chart {
-      width: 1750px;
-      height: 1050px;
-      display: block;
+
+    .panel-kicker {
+
+        font-size:
+            .49rem;
+
+        letter-spacing:
+            .09em;
     }
 
-    .node rect {
-      stroke: rgba(25, 35, 50, 0.5);
-      stroke-width: 1px;
-      rx: 5px;
-      ry: 5px;
-      cursor: pointer;
+
+    .panel-arrow {
+
+        top:
+            12px;
+
+        right:
+            12px;
+
+        width:
+            30px;
+
+        height:
+            30px;
+
+        font-size:
+            .7rem;
     }
 
-    .node text {
-      fill: #182230;
-      font-size: 13px;
-      font-weight: 600;
-      pointer-events: none;
+
+    .profile-name {
+
+        font-size:
+            clamp(2rem,11vw,3.6rem);
     }
 
-    .link {
-      fill: none;
-      stroke-opacity: 0.32;
-      transition: stroke-opacity 0.15s;
+
+    .profile-role {
+
+        margin-top:
+            9px;
+
+        font-size:
+            .66rem;
+
+        line-height:
+            1.4;
+
+        max-width:
+            90%;
     }
 
-    .link:hover {
-      stroke-opacity: 0.75;
+
+    .profile-bottom-label {
+
+        font-size:
+            .55rem;
     }
 
-    #tooltip {
-      position: fixed;
-      z-index: 10000;
 
-      max-width: 420px;
+    .profile-orbit {
 
-      background: rgba(20, 28, 40, 0.97);
-      color: white;
+        width:
+            120px;
 
-      padding: 14px 16px;
-      border-radius: 9px;
+        height:
+            120px;
 
-      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+        right:
+            -45px;
 
-      font-size: 13px;
-      line-height: 1.5;
-
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.12s;
+        bottom:
+            -50px;
     }
 
-    #tooltip h3 {
-      margin: 0 0 7px;
-      font-size: 15px;
-      color: white;
+
+    .profile-orbit::before {
+
+        width:
+            75px;
+
+        height:
+            75px;
+
+        left:
+            16px;
+
+        top:
+            16px;
     }
 
-    #tooltip p {
-      margin: 0;
+
+    .profile-orbit::after {
+
+        width:
+            7px;
+
+        height:
+            7px;
+
+        top:
+            49px;
+
+        left:
+            6px;
     }
 
-    #tooltip .type {
-      margin-top: 9px;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.7px;
-      opacity: 0.7;
+
+    .work-heading,
+    .skills-heading,
+    .portfolio-heading {
+
+        font-size:
+            clamp(1.6rem,9vw,2.8rem);
     }
 
-    .footer-note {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.6;
-      margin: 14px 4px 40px;
+
+    .work-mini {
+
+        font-size:
+            .52rem;
+
+        gap:
+            5px;
     }
 
-    @media (max-width: 900px) {
-      .page {
-        padding: 10px;
-      }
 
-      header {
-        padding: 25px 14px;
-      }
+    .work-mini:nth-child(n+3) {
+
+        display:
+            none;
     }
-  </style>
+
+
+    .skill-cloud {
+
+        gap:
+            4px;
+    }
+
+
+    .skill-cloud span {
+
+        font-size:
+            .5rem;
+
+        padding:
+            5px 7px;
+    }
+
+
+    .skill-cloud span:nth-child(n+6) {
+
+        display:
+            none;
+    }
+
+
+    .panel-portfolio {
+
+        display:
+            flex;
+
+        flex-direction:
+            column;
+
+        justify-content:
+            space-between;
+
+        padding:
+            16px;
+    }
+
+
+    .portfolio-preview {
+
+        height:
+            42%;
+
+        min-height:
+            80px;
+    }
+
+
+    .portfolio-caption {
+
+        font-size:
+            .52rem;
+    }
+
+
+    .contact-grid,
+    .skills-modal-grid,
+    .gallery-grid {
+
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .work-layout {
+
+        grid-template-columns:
+            1fr;
+
+        gap:
+            35px;
+    }
+
+
+    .modal {
+
+        padding:
+            7px;
+    }
+
+
+    .modal-shell {
+
+        max-height:
+            96svh;
+
+        padding:
+            24px 18px;
+
+        border-radius:
+            24px;
+    }
+
+
+    .modal-title {
+
+        font-size:
+            3rem;
+    }
+
+
+    .gallery-item {
+
+        min-height:
+            250px;
+    }
+
+}
+
+
+/* =========================================================
+   VERY SMALL PHONE
+========================================================= */
+
+@media (max-width: 390px) {
+
+    .profile-name {
+
+        font-size:
+            2rem;
+    }
+
+    .profile-role {
+
+        font-size:
+            .58rem;
+    }
+
+    .work-heading,
+    .skills-heading,
+    .portfolio-heading {
+
+        font-size:
+            1.5rem;
+    }
+
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+
+        animation-duration:
+            .001ms !important;
+
+        animation-iteration-count:
+            1 !important;
+
+        transition-duration:
+            .001ms !important;
+    }
+
+}
+
+</style>
+
 </head>
+
 
 <body>
 
-<header>
-  <h1>🇨🇭 Switzerland Pollinator ABM Workflow</h1>
 
-  <p>
-    From bee and butterfly biodiversity data and Swiss landscape information
-    to ecological response modelling, representative land-management units,
-    conservation-policy allocation, participation constraints, and final
-    habitat-connectivity outcomes.
-  </p>
-</header>
+<div class="background-glow"></div>
 
 
-<div class="page">
+<main class="app">
 
-  <section class="info">
 
-    <strong>How to read this diagram:</strong>
+    <!-- =====================================================
+         TOP BAR
+    ====================================================== -->
 
-    Follow the ribbons from left to right.
+    <header class="topbar">
 
-    Spatial landscape information, GBIF observations, and biological trait
-    information begin as separate data streams. They are combined only when
-    required by the ecological model.
+        <div class="topbar-left">
 
-    <div class="legend">
+            <i class="fa-solid fa-chart-line"></i>
 
-      <div class="legend-item">
-        <div class="legend-color" style="background:#4C9ED9"></div>
-        Observed spatial data
-      </div>
+            Environmental · Geospatial · Data
 
-      <div class="legend-item">
-        <div class="legend-color" style="background:#4EAD73"></div>
-        Biodiversity occurrence data
-      </div>
+        </div>
 
-      <div class="legend-item">
-        <div class="legend-color" style="background:#9066CC"></div>
-        Biological trait data
-      </div>
 
-      <div class="legend-item">
-        <div class="legend-color" style="background:#E08A54"></div>
-        Derived ecological model
-      </div>
+        <div class="topbar-right">
 
-      <div class="legend-item">
-        <div class="legend-color" style="background:#D9A632"></div>
-        Management layer
-      </div>
+            Click a panel to explore
 
-      <div class="legend-item">
-        <div class="legend-color" style="background:#D85B67"></div>
-        Policy / scenario parameters
-      </div>
+        </div>
 
-      <div class="legend-item">
-        <div class="legend-color" style="background:#367C69"></div>
-        Model outputs
-      </div>
+    </header>
+
+
+
+    <!-- =====================================================
+         DASHBOARD
+    ====================================================== -->
+
+    <section class="dashboard">
+
+
+        <!-- =================================================
+             PROFILE
+        ================================================== -->
+
+        <button
+            class="panel panel-profile"
+            data-modal="contactModal"
+        >
+
+            <div class="panel-arrow">
+
+                <i class="fa-solid fa-arrow-up-right"></i>
+
+            </div>
+
+
+            <div>
+
+                <div class="panel-kicker">
+
+                    <i class="fa-solid fa-user"></i>
+
+                    Profile
+
+                </div>
+
+
+                <h1 class="profile-name">
+
+                    John Paolo
+
+                    <span>
+                        Ramirez
+                    </span>
+
+                </h1>
+
+
+                <div class="profile-role">
+
+                    Environmental & Geospatial Data Analyst
+
+                    <br>
+
+                    GIS · Remote Sensing · Data Analysis · Research
+
+                </div>
+
+            </div>
+
+
+            <div class="profile-bottom">
+
+                <div class="profile-bottom-label">
+
+                    Click for contact details
+
+                </div>
+
+            </div>
+
+
+            <div class="profile-orbit"></div>
+
+        </button>
+
+
+
+        <!-- =================================================
+             WORK HISTORY
+        ================================================== -->
+
+        <button
+            class="panel panel-work"
+            data-modal="workModal"
+        >
+
+            <div class="panel-arrow">
+
+                <i class="fa-solid fa-arrow-up-right"></i>
+
+            </div>
+
+
+            <div>
+
+                <div class="panel-kicker">
+
+                    <i class="fa-solid fa-briefcase"></i>
+
+                    Work & Projects
+
+                </div>
+
+
+                <h2 class="work-heading">
+
+                    Research
+
+                    <br>
+
+                    meets
+
+                    <span>
+                        application.
+                    </span>
+
+                </h2>
+
+            </div>
+
+
+            <div class="work-mini-list">
+
+
+                <div class="work-mini">
+
+                    <strong>
+                        Urban Systems
+                    </strong>
+
+                    <span>
+                        Data harmonisation
+                    </span>
+
+                </div>
+
+
+                <div class="work-mini">
+
+                    <strong>
+                        Project NOAH
+                    </strong>
+
+                    <span>
+                        Climate & DRR
+                    </span>
+
+                </div>
+
+
+                <div class="work-mini">
+
+                    <strong>
+                        Environmental Research
+                    </strong>
+
+                    <span>
+                        Spatial + laboratory
+                    </span>
+
+                </div>
+
+            </div>
+
+        </button>
+
+
+
+        <!-- =================================================
+             SKILLS
+        ================================================== -->
+
+        <button
+            class="panel panel-skills"
+            data-modal="skillsModal"
+        >
+
+            <div class="panel-arrow">
+
+                <i class="fa-solid fa-arrow-up-right"></i>
+
+            </div>
+
+
+            <div>
+
+                <div class="panel-kicker">
+
+                    <i class="fa-solid fa-gears"></i>
+
+                    Skills
+
+                </div>
+
+
+                <h2 class="skills-heading">
+
+                    Data.
+
+                    <br>
+
+                    Space.
+
+                    <br>
+
+                    Environment.
+
+                </h2>
+
+            </div>
+
+
+            <div class="skill-cloud">
+
+                <span>
+                    Python
+                </span>
+
+                <span>
+                    R
+                </span>
+
+                <span>
+                    QGIS
+                </span>
+
+                <span>
+                    Google Earth Engine
+                </span>
+
+                <span>
+                    Remote Sensing
+                </span>
+
+                <span>
+                    Data Analysis
+                </span>
+
+                <span>
+                    PyQGIS
+                </span>
+
+                <span>
+                    Environmental Assessment
+                </span>
+
+            </div>
+
+        </button>
+
+
+
+        <!-- =================================================
+             SELECTED WORK
+        ================================================== -->
+
+        <button
+            class="panel panel-portfolio"
+            data-modal="portfolioModal"
+        >
+
+            <div class="panel-arrow">
+
+                <i class="fa-solid fa-arrow-up-right"></i>
+
+            </div>
+
+
+            <div class="portfolio-copy">
+
+                <div>
+
+                    <div class="panel-kicker">
+
+                        <i class="fa-solid fa-images"></i>
+
+                        Selected Work
+
+                    </div>
+
+
+                    <h2 class="portfolio-heading">
+
+                        Maps.
+
+                        <br>
+
+                        Models.
+
+                        <br>
+
+                        <span>
+                            Visuals.
+                        </span>
+
+                    </h2>
+
+                </div>
+
+
+                <div class="portfolio-caption">
+
+                    Click to open the gallery.
+
+                </div>
+
+            </div>
+
+
+
+            <div class="portfolio-preview">
+
+
+                <div class="preview-img preview-one">
+
+                    <img
+                        src="Picture2.png"
+                        alt=""
+                    >
+
+                </div>
+
+
+                <div class="preview-img preview-two">
+
+                    <img
+                        src="EVI and NDVI.png"
+                        alt=""
+                    >
+
+                </div>
+
+
+                <div class="preview-img preview-three">
+
+                    <img
+                        src="Network Model Diagram.png"
+                        alt=""
+                    >
+
+                </div>
+
+            </div>
+
+        </button>
+
+
+    </section>
+
+</main>
+
+
+
+<!-- =========================================================
+     CONTACT MODAL
+========================================================= -->
+
+<div
+    class="modal"
+    id="contactModal"
+>
+
+    <div class="modal-shell">
+
+
+        <button class="modal-close">
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+
+        <div class="modal-kicker">
+            Contact
+        </div>
+
+
+        <h2 class="modal-title">
+
+            John Paolo
+
+            <br>
+
+            Ramirez.
+
+        </h2>
+
+
+        <p class="modal-intro">
+
+            Environmental and geospatial data analyst
+            working across GIS, remote sensing,
+            environmental research, data analysis,
+            modelling and scientific computing.
+
+        </p>
+
+
+
+        <div class="contact-grid">
+
+
+            <a
+                class="contact-card"
+                href="mailto:jpaoloramirez@gmail.com"
+            >
+
+                <i class="fa-solid fa-envelope"></i>
+
+
+                <div>
+
+                    <div class="contact-card-label">
+                        Email
+                    </div>
+
+
+                    <div class="contact-card-value">
+
+                        jpaoloramirez@gmail.com
+
+                    </div>
+
+                </div>
+
+            </a>
+
+
+
+            <a
+                class="contact-card"
+                href="tel:+639275745752"
+            >
+
+                <i class="fa-solid fa-phone"></i>
+
+
+                <div>
+
+                    <div class="contact-card-label">
+                        Phone
+                    </div>
+
+
+                    <div class="contact-card-value">
+
+                        +63 927 574 5752
+
+                    </div>
+
+                </div>
+
+            </a>
+
+
+
+            <a
+                class="contact-card"
+                href="https://github.com/Johnny1996ornot"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+
+                <i class="fa-brands fa-github"></i>
+
+
+                <div>
+
+                    <div class="contact-card-label">
+                        GitHub
+                    </div>
+
+
+                    <div class="contact-card-value">
+
+                        Johnny1996ornot
+
+                    </div>
+
+                </div>
+
+            </a>
+
+
+
+            <a
+                class="contact-card"
+                href="https://www.linkedin.com/in/john-paolo-ramirez-a21165171/"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+
+                <i class="fa-brands fa-linkedin"></i>
+
+
+                <div>
+
+                    <div class="contact-card-label">
+                        LinkedIn
+                    </div>
+
+
+                    <div class="contact-card-value">
+
+                        John Paolo Ramirez
+
+                    </div>
+
+                </div>
+
+            </a>
+
+
+        </div>
 
     </div>
-
-  </section>
-
-
-  <div id="chart-wrapper">
-    <svg id="chart"></svg>
-  </div>
-
-
-  <div class="footer-note">
-
-    <strong>Important:</strong>
-    Sankey ribbon widths are used to visually organize the workflow and do not
-    represent record counts, probability, money, or ecological effect size.
-
-    The land-management units are synthetic representative units associated
-    with eligible agricultural 5-km cells; they are not individually observed
-    Swiss farmers.
-
-    Participation percentages are sensitivity scenarios rather than measured
-    Swiss farmer participation rates.
-
-  </div>
 
 </div>
 
 
-<div id="tooltip"></div>
+
+<!-- =========================================================
+     WORK MODAL
+========================================================= -->
+
+<div
+    class="modal"
+    id="workModal"
+>
+
+    <div class="modal-shell">
+
+
+        <button class="modal-close">
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+
+        <div class="modal-kicker">
+            Experience & Projects
+        </div>
+
+
+        <h2 class="modal-title">
+
+            Research.
+
+            <br>
+
+            Analysis.
+
+            <br>
+
+            Application.
+
+        </h2>
+
+
+
+        <div class="work-layout">
+
+
+            <!-- HISTORY -->
+
+            <div>
+
+
+                <div class="timeline">
+
+
+                    <div class="timeline-item">
+
+                        <div class="timeline-year">
+                            2025
+                        </div>
+
+                        <h3>
+                            Geospatial Research Aide
+                        </h3>
+
+                        <strong>
+                            International Urban Systems Project
+                        </strong>
+
+                        <p>
+
+                            Spatial database design,
+                            global-data harmonisation,
+                            hierarchical urban-zone modelling
+                            and automated Python workflows.
+
+                        </p>
+
+                    </div>
+
+
+
+                    <div class="timeline-item">
+
+                        <div class="timeline-year">
+                            2023–2026
+                        </div>
+
+                        <h3>
+                            Lecturer 5
+                        </h3>
+
+                        <strong>
+                            Far Eastern University
+                        </strong>
+
+                        <p>
+
+                            Biological sciences,
+                            research mentoring,
+                            environmental and
+                            computational methods.
+
+                        </p>
+
+                    </div>
+
+
+
+                    <div class="timeline-item">
+
+                        <div class="timeline-year">
+                            2024–2026
+                        </div>
+
+                        <h3>
+                            Part-time Faculty
+                        </h3>
+
+                        <strong>
+                            Philippine Women's University
+                        </strong>
+
+                        <p>
+
+                            Environmental science,
+                            sustainable management,
+                            aquatic ecosystems,
+                            environmental economics,
+                            QGIS, R and Python.
+
+                        </p>
+
+                    </div>
+
+
+
+                    <div class="timeline-item">
+
+                        <div class="timeline-year">
+                            2022
+                        </div>
+
+                        <h3>
+                            Senior Technical Aide
+                        </h3>
+
+                        <strong>
+                            UP Resilience Institute · Project NOAH
+                        </strong>
+
+                        <p>
+
+                            Climate-change adaptation,
+                            disaster-risk reduction,
+                            spatial-data processing
+                            and validation.
+
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+
+            <!-- PROJECTS -->
+
+            <div class="project-list">
+
+
+                <div class="project-item">
+
+                    <div class="project-item-tag">
+                        Data
+                    </div>
+
+                    <h4>
+                        International Urban Systems Project
+                    </h4>
+
+                    <p>
+
+                        Combined GHSL, WorldPop and
+                        conflict-related data into
+                        reproducible spatial datasets
+                        and automated analytical pipelines.
+
+                    </p>
+
+                </div>
+
+
+
+                <div class="project-item">
+
+                    <div class="project-item-tag">
+                        Environmental Analysis
+                    </div>
+
+                    <h4>
+                        Heavy Metal Spatial Distribution
+                    </h4>
+
+                    <p>
+
+                        Field sampling, AAS laboratory analysis,
+                        statistical modelling and spatial
+                        interpolation of lead contamination.
+
+                    </p>
+
+                </div>
+
+
+
+                <div class="project-item">
+
+                    <div class="project-item-tag">
+                        Research
+                    </div>
+
+                    <h4>
+                        Microplastic Bioindicator Study
+                    </h4>
+
+                    <p>
+
+                        Microplastic extraction,
+                        environmental statistics,
+                        bioindicator analysis and
+                        spatial hotspot mapping.
+
+                    </p>
+
+                </div>
+
+
+
+                <div class="project-item">
+
+                    <div class="project-item-tag">
+                        Climate
+                    </div>
+
+                    <h4>
+                        Project NOAH / SAFER-U
+                    </h4>
+
+                    <p>
+
+                        Climate-risk spatial data processing,
+                        validation and resilience planning
+                        for Philippine universities.
+
+                    </p>
+
+                </div>
+
+
+
+                <div class="project-item">
+
+                    <div class="project-item-tag">
+                        Spatial Modelling
+                    </div>
+
+                    <h4>
+                        Metro Manila Landscape Connectivity
+                    </h4>
+
+                    <p>
+
+                        GIS and R-based landscape analysis
+                        using raster processing and
+                        Grainscape modelling.
+
+                    </p>
+
+                </div>
+
+
+                <a
+                    href="https://johnny1996ornot.github.io/Experience-Timeline-Diagram/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="project-item"
+                    style="
+                        text-decoration:none;
+                    "
+                >
+
+                    <div class="project-item-tag">
+                        Interactive
+                    </div>
+
+                    <h4>
+
+                        Open Full Experience Timeline
+
+                        <i
+                            class="fa-solid fa-arrow-up-right-from-square"
+                            style="
+                                margin-left:6px;
+                                color:var(--green);
+                            "
+                        ></i>
+
+                    </h4>
+
+                </a>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     SKILLS MODAL
+========================================================= -->
+
+<div
+    class="modal"
+    id="skillsModal"
+>
+
+    <div class="modal-shell">
+
+
+        <button class="modal-close">
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+
+        <div class="modal-kicker">
+            Technical Toolkit
+        </div>
+
+
+        <h2 class="modal-title">
+
+            Data.
+
+            <br>
+
+            Space.
+
+            <br>
+
+            Environment.
+
+        </h2>
+
+
+
+        <div class="skills-modal-grid">
+
+
+            <article class="skill-category">
+
+                <div class="skill-category-icon">
+
+                    <i class="fa-solid fa-earth-asia"></i>
+
+                </div>
+
+                <h3>
+                    GIS & Geospatial Analysis
+                </h3>
+
+                <p>
+
+                    Spatial processing, mapping,
+                    database design, geoprocessing,
+                    interpolation and spatial modelling.
+
+                </p>
+
+                <div class="skill-tags">
+
+                    <span>QGIS</span>
+                    <span>PyQGIS</span>
+                    <span>Spatial Databases</span>
+                    <span>IDW</span>
+                    <span>Network Analysis</span>
+
+                </div>
+
+            </article>
+
+
+
+            <article class="skill-category">
+
+                <div class="skill-category-icon">
+
+                    <i class="fa-solid fa-satellite"></i>
+
+                </div>
+
+                <h3>
+                    Remote Sensing
+                </h3>
+
+                <p>
+
+                    Satellite imagery analysis,
+                    vegetation indices,
+                    environmental classification
+                    and large-scale monitoring.
+
+                </p>
+
+                <div class="skill-tags">
+
+                    <span>Google Earth Engine</span>
+                    <span>NDVI</span>
+                    <span>EVI</span>
+                    <span>TSS</span>
+                    <span>Supervised Classification</span>
+
+                </div>
+
+            </article>
+
+
+
+            <article class="skill-category">
+
+                <div class="skill-category-icon">
+
+                    <i class="fa-solid fa-code"></i>
+
+                </div>
+
+                <h3>
+                    Data & Programming
+                </h3>
+
+                <p>
+
+                    Statistical analysis,
+                    data cleaning,
+                    reproducible workflows
+                    and automated geospatial analysis.
+
+                </p>
+
+                <div class="skill-tags">
+
+                    <span>Python</span>
+                    <span>R</span>
+                    <span>Pandas</span>
+                    <span>Statistics</span>
+                    <span>Automation</span>
+
+                </div>
+
+            </article>
+
+
+
+            <article class="skill-category">
+
+                <div class="skill-category-icon">
+
+                    <i class="fa-solid fa-leaf"></i>
+
+                </div>
+
+                <h3>
+                    Environmental Analysis
+                </h3>
+
+                <p>
+
+                    Environmental assessment,
+                    climate adaptation,
+                    risk analysis,
+                    monitoring and scientific research.
+
+                </p>
+
+                <div class="skill-tags">
+
+                    <span>EIA</span>
+                    <span>DRR</span>
+                    <span>CCA</span>
+                    <span>Environmental Monitoring</span>
+                    <span>Ecotoxicology</span>
+
+                </div>
+
+            </article>
+
+
+
+            <article class="skill-category">
+
+                <div class="skill-category-icon">
+
+                    <i class="fa-solid fa-chart-column"></i>
+
+                </div>
+
+                <h3>
+                    Data Visualisation
+                </h3>
+
+                <p>
+
+                    Maps, network models,
+                    interactive web interfaces,
+                    dashboards and technical communication.
+
+                </p>
+
+                <div class="skill-tags">
+
+                    <span>HTML</span>
+                    <span>Interactive Visualisation</span>
+                    <span>Scientific Communication</span>
+
+                </div>
+
+            </article>
+
+
+
+            <article class="skill-category">
+
+                <div class="skill-category-icon">
+
+                    <i class="fa-solid fa-flask"></i>
+
+                </div>
+
+                <h3>
+                    Scientific Research
+                </h3>
+
+                <p>
+
+                    Field studies,
+                    laboratory research,
+                    environmental contamination
+                    and research project management.
+
+                </p>
+
+                <div class="skill-tags">
+
+                    <span>Heavy Metals</span>
+                    <span>Microplastics</span>
+                    <span>Fieldwork</span>
+                    <span>Research Design</span>
+
+                </div>
+
+            </article>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     PORTFOLIO MODAL
+========================================================= -->
+
+<div
+    class="modal"
+    id="portfolioModal"
+>
+
+    <div class="modal-shell">
+
+
+        <button class="modal-close">
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+
+        <div class="modal-kicker">
+            Selected Work
+        </div>
+
+
+        <h2 class="modal-title">
+
+            Maps.
+
+            <br>
+
+            Models.
+
+            <br>
+
+            Visuals.
+
+        </h2>
+
+
+        <p class="modal-intro">
+
+            Selected environmental,
+            geospatial and analytical work.
+
+            Click an image to enlarge it.
+
+        </p>
+
+
+
+        <div class="gallery-grid">
+
+
+            <div
+                class="gallery-item"
+                data-image="Picture2.png"
+            >
+
+                <img
+                    src="Picture2.png"
+                    alt="Supervised land cover classification"
+                >
+
+                <div class="gallery-caption">
+
+                    Supervised Land Cover Classification
+
+                </div>
+
+            </div>
+
+
+
+            <div
+                class="gallery-item"
+                data-image="EVI and NDVI.png"
+            >
+
+                <img
+                    src="EVI and NDVI.png"
+                    alt="NDVI and EVI analysis"
+                >
+
+                <div class="gallery-caption">
+
+                    NDVI & EVI Remote Sensing Analysis
+
+                </div>
+
+            </div>
+
+
+
+            <div
+                class="gallery-item"
+                data-image="Network Model Diagram.png"
+            >
+
+                <img
+                    src="Network Model Diagram.png"
+                    alt="Spatial network model"
+                >
+
+                <div class="gallery-caption">
+
+                    Spatial Network Modelling
+
+                </div>
+
+            </div>
+
+
+
+            <div
+                class="gallery-item"
+                data-image="TSS - LPP Wetland.png"
+            >
+
+                <img
+                    src="TSS - LPP Wetland.png"
+                    alt="Total suspended solids analysis"
+                >
+
+                <div class="gallery-caption">
+
+                    TSS Environmental Monitoring
+
+                </div>
+
+            </div>
+
+
+
+            <div
+                class="gallery-item"
+                data-image="Picture56.png"
+            >
+
+                <img
+                    src="Picture56.png"
+                    alt="Environmental systems visualisation"
+                >
+
+                <div class="gallery-caption">
+
+                    Environmental Systems Visualisation
+
+                </div>
+
+            </div>
+
+
+
+            <div
+                class="gallery-item"
+                data-image="Picture33.png"
+            >
+
+                <img
+                    src="Picture33.png"
+                    alt="Professional experience timeline"
+                >
+
+                <div class="gallery-caption">
+
+                    Interactive Professional Timeline
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     LIGHTBOX
+========================================================= -->
+
+<div
+    class="lightbox"
+    id="lightbox"
+>
+
+    <button
+        class="lightbox-close"
+        id="lightboxClose"
+    >
+
+        <i class="fa-solid fa-xmark"></i>
+
+    </button>
+
+
+    <img
+        id="lightboxImage"
+        src=""
+        alt="Expanded portfolio image"
+    >
+
+</div>
+
 
 
 <script>
 
-// ============================================================================
-// COLOR SYSTEM
-// ============================================================================
+/* =========================================================
+   PANEL → MODAL
+========================================================= */
 
-const colors = {
+const modalTriggers =
+    document.querySelectorAll(
+        "[data-modal]"
+    );
 
-  spatial: "#4C9ED9",
 
-  biodiversity: "#4EAD73",
+modalTriggers.forEach(
+    trigger => {
 
-  traits: "#9066CC",
+        trigger.addEventListener(
+            "click",
+            () => {
 
-  ecology: "#E08A54",
+                const modal =
+                    document.getElementById(
+                        trigger.dataset.modal
+                    );
 
-  management: "#D9A632",
+                if (!modal) return;
 
-  policy: "#D85B67",
+                modal.classList.add(
+                    "open"
+                );
 
-  output: "#367C69",
+            }
+        );
 
-  neutral: "#8391A8"
-
-};
-
-
-// ============================================================================
-// NODES
-// ============================================================================
-//
-// Each node has:
-//
-// name        = displayed label
-// category    = controls node color
-// description = explanation shown when hovering
-//
-// ============================================================================
-
-const nodes = [
-
-
-  // ------------------------------------------------------------------------
-  // DATA COLLECTION
-  // ------------------------------------------------------------------------
-
-  {
-    id: "spatial",
-    name: "Spatial landscape data",
-    category: "spatial",
-
-    description:
-      "Swiss ecological land-cover and habitat information used to describe " +
-      "the physical landscape. These data are separate from butterfly and bee " +
-      "trait reconstruction. Spatial information later provides habitat " +
-      "composition, agricultural eligibility, and the 5-km landscape framework."
-  },
-
-
-  {
-    id: "gbif",
-    name: "GBIF bee & butterfly occurrences",
-    category: "biodiversity",
-
-    description:
-      "Georeferenced occurrence records for bees and butterflies in Switzerland. " +
-      "The main modelling period was 2015–2021. Coordinates were used to place " +
-      "observations into the Swiss 5-km analytical grid."
-  },
-
-
-  {
-    id: "traits",
-    name: "Bee & butterfly trait sources",
-    category: "traits",
-
-    description:
-      "Independent biological trait sources containing butterfly morphology " +
-      "and movement information and bee body-size traits. These trait sources " +
-      "do not originate from the Swiss land-cover raster."
-  },
-
-
-  // ------------------------------------------------------------------------
-  // TRAIT RECONSTRUCTION
-  // ------------------------------------------------------------------------
-
-  {
-    id: "butterfly_traits",
-    name: "Butterfly morphology & movement reconstruction",
-    category: "traits",
-
-    description:
-      "Butterfly information included wing length, wing width, body length, " +
-      "body width, wingspan/form, and movement information where available. " +
-      "Species with direct movement evidence retained it. Species without direct " +
-      "movement labels were classified into five functional movement levels " +
-      "using the trait-based model. Migratory species were treated separately."
-  },
-
-
-  {
-    id: "bee_traits",
-    name: "Bee body size & mobility reconstruction",
-    category: "traits",
-
-    description:
-      "Intertegular distance (ITD) was used as the main bee body-size trait. " +
-      "Published allometric equations were used to estimate typical and maximum " +
-      "foraging/homing distances. Bees were then assigned to five relative " +
-      "functional mobility levels. Genus-level proxies were used only for a " +
-      "small number of missing species."
-  },
-
-
-  // ------------------------------------------------------------------------
-  // OCCURRENCE SPATIALIZATION
-  // ------------------------------------------------------------------------
-
-  {
-    id: "grid",
-    name: "Swiss 5-km analytical grid",
-    category: "spatial",
-
-    description:
-      "Switzerland was represented with 1,606 5-km landscape cells. " +
-      "The 5-km resolution is an observation and analysis scale chosen partly " +
-      "because GBIF coordinate uncertainty is often measured in kilometres. " +
-      "It is not interpreted as a biological movement radius."
-  },
-
-
-  {
-    id: "occurrence_cells",
-    name: "Species occurrences by 5-km cell",
-    category: "biodiversity",
-
-    description:
-      "Cleaned bee and butterfly GBIF observations were assigned to the 5-km " +
-      "landscape cells using their geographic coordinates."
-  },
-
-
-  {
-    id: "habitat_composition",
-    name: "Habitat composition by cell",
-    category: "spatial",
-
-    description:
-      "The land-cover raster was summarized inside each 5-km cell. Habitat " +
-      "classes included forest, shrubland, grassland, cropland, wetland, water, " +
-      "built-up/urban, bare/sparse land, and snow/ice."
-  },
-
-
-  {
-    id: "landscape_assoc",
-    name: "Species landscape associations",
-    category: "ecology",
-
-    description:
-      "Species occurrence patterns were compared with the habitat composition " +
-      "of occupied cells to derive empirical landscape-association profiles. " +
-      "These are associations in the observed data and should not be interpreted " +
-      "as experimentally demonstrated habitat preferences."
-  },
-
-
-  // ------------------------------------------------------------------------
-  // ECOLOGICAL PROFILES
-  // ------------------------------------------------------------------------
-
-  {
-    id: "profiles",
-    name: "Unified pollinator ecological profiles",
-    category: "ecology",
-
-    description:
-      "Trait information and empirical landscape associations were combined " +
-      "into standardized bee and butterfly ecological-response profiles. " +
-      "The final ABM-ready dataset contained 771 pollinator species: " +
-      "554 bees and 217 butterflies."
-  },
-
-
-  // ------------------------------------------------------------------------
-  // SPECIES × LANDSCAPE RESPONSE
-  // ------------------------------------------------------------------------
-
-  {
-    id: "suitability",
-    name: "Species × cell habitat suitability",
-    category: "ecology",
-
-    description:
-      "Each species' landscape-association profile was compared with the habitat " +
-      "composition of every 5-km cell. Local habitat match was calculated using " +
-      "histogram intersection. Mobility is not multiplied into local suitability."
-  },
-
-
-  {
-    id: "connectivity",
-    name: "Structural landscape connectivity",
-    category: "ecology",
-
-    description:
-      "The 5-km cells were represented as nodes in a landscape graph. " +
-      "Rook-adjacent cells were used as the primary structural-connectivity " +
-      "network. Connectivity reflects continuity of suitable neighbouring cells; " +
-      "it is not a literal species movement simulation."
-  },
-
-
-  // ------------------------------------------------------------------------
-  // MANAGEMENT LAYER
-  // ------------------------------------------------------------------------
-
-  {
-    id: "eligible",
-    name: "Eligible agricultural cells",
-    category: "management",
-
-    description:
-      "Cells containing relevant cropland and/or grassland were identified from " +
-      "the land-cover data. Agricultural structure determines whether a landscape " +
-      "cell can enter the management component of the model."
-  },
-
-
-  {
-    id: "manager",
-    name: "Representative land-management units",
-    category: "management",
-
-    description:
-      "One synthetic representative land-management unit was created for each " +
-      "eligible management cell. These are not observed individual farmers. " +
-      "Each unit represents the possibility of making a management decision " +
-      "within that 5-km agricultural landscape cell."
-  },
-
-
-  {
-    id: "capacity",
-    name: "Intervention capacity",
-    category: "management",
-
-    description:
-      "Maximum intervention capacity was derived from the cropland available in " +
-      "each eligible cell. The reference allocation experiments allowed up to " +
-      "3% of cropland within a cell to enter the beneficial-strip intervention. " +
-      "The 3% value is a modelling assumption, not a Swiss statutory requirement."
-  },
-
-
-  // ------------------------------------------------------------------------
-  // POLICY
-  // ------------------------------------------------------------------------
-
-  {
-    id: "policy",
-    name: "Beneficial-strip policy setup",
-    category: "policy",
-
-    description:
-      "The intervention represents beneficial strips on open cropland. " +
-      "The payment parameter used was CHF 3,300 per hectare per year. " +
-      "This payment rate was taken from the Swiss direct-payment framework."
-  },
-
-
-  {
-    id: "budget",
-    name: "Reference budget: CHF 9.22 million",
-    category: "policy",
-
-    description:
-      "The CHF 9,219,428.79 reference budget was constructed for the experiment. " +
-      "It represents 2,793.7663 ha of intervention multiplied by CHF 3,300/ha. " +
-      "The 2,793.7663 ha corresponds to 1% of the modelled total eligible cropland. " +
-      "It is not claimed to be the actual Swiss national programme budget."
-  },
-
-
-  // ------------------------------------------------------------------------
-  // POLICY OBJECTIVE SCENARIOS
-  // ------------------------------------------------------------------------
-
-  {
-    id: "objective",
-    name: "Ecological funding-priority scenarios",
-    category: "policy",
-
-    description:
-      "Eligible cells were ranked under alternative policy objectives: " +
-      "habitat-only, 75% habitat / 25% connectivity, 50/50, " +
-      "25% habitat / 75% connectivity, connectivity-only, and a random baseline."
-  },
-
-
-  {
-    id: "participation",
-    name: "Management availability scenarios",
-    category: "policy",
-
-    description:
-      "A separate implementation experiment held ecological prioritization at " +
-      "50% habitat / 50% connectivity while varying the proportion of eligible " +
-      "management units available to participate: 25%, 50%, 75%, and 100%. " +
-      "Availability was randomly sampled because observed Swiss farmer-level " +
-      "participation data were not available."
-  },
-
-
-  // ------------------------------------------------------------------------
-  // FUNDING ALLOCATION
-  // ------------------------------------------------------------------------
-
-  {
-    id: "allocation",
-    name: "Conservation funding allocation",
-    category: "output",
-
-    description:
-      "Among eligible and available management units, cells were ranked according " +
-      "to the relevant scenario and funded until the reference budget was exhausted " +
-      "or available intervention capacity was insufficient."
-  },
-
-
-  // ------------------------------------------------------------------------
-  // ECOLOGICAL RESPONSE
-  // ------------------------------------------------------------------------
-
-  {
-    id: "response",
-    name: "Habitat & connectivity response",
-    category: "output",
-
-    description:
-      "The model measured changes in mean local habitat match and structural " +
-      "rook connectivity resulting from the funded conservation intervention."
-  },
-
-
-  {
-    id: "robustness",
-    name: "Robustness & sensitivity analysis",
-    category: "output",
-
-    description:
-      "Targeting was tested across alternative budgets, intervention-effect " +
-      "strengths, participation constraints, and repeated random allocations. " +
-      "Targeted strategies consistently outperformed random allocation within " +
-      "the tested model structure."
-  },
-
-
-  {
-    id: "movement_diag",
-    name: "Movement-group diagnostic",
-    category: "output",
-
-    description:
-      "Bee and butterfly response patterns were compared among movement groups. " +
-      "Further analysis showed that the apparent movement-group differences were " +
-      "better explained by species habitat profiles than by movement rank itself. " +
-      "Movement level was therefore not used as an arbitrary local-response multiplier."
-  },
-
-
-  {
-    id: "consensus",
-    name: "Consensus conservation priorities",
-    category: "output",
-
-    description:
-      "Priority cells were compared across the five targeted habitat/connectivity " +
-      "weighting strategies. 75 cells were selected under all five strategies, " +
-      "forming a robust 5/5 consensus core under the tested objective weightings."
-  },
-
-
-  {
-    id: "results",
-    name: "Final policy results, maps & GIFs",
-    category: "output",
-
-    description:
-      "Final outputs include strategy comparisons, participation-budget frontiers, " +
-      "priority maps, consensus maps, and animated GIFs showing changes in spatial " +
-      "allocation under ecological-objective and management-availability scenarios."
-  }
-
-];
-
-
-// ============================================================================
-// LINKS
-// ============================================================================
-//
-// value only controls visual ribbon width.
-//
-// It does NOT represent sample size or ecological importance.
-//
-// ============================================================================
-
-const links = [
-
-
-  // ------------------------------------------------------------------------
-  // SPATIAL BRANCH
-  // ------------------------------------------------------------------------
-
-  {
-    source: "spatial",
-    target: "grid",
-    value: 8
-  },
-
-  {
-    source: "spatial",
-    target: "habitat_composition",
-    value: 10
-  },
-
-  {
-    source: "spatial",
-    target: "eligible",
-    value: 7
-  },
-
-
-  // ------------------------------------------------------------------------
-  // BIODIVERSITY OCCURRENCE BRANCH
-  // ------------------------------------------------------------------------
-
-  {
-    source: "gbif",
-    target: "occurrence_cells",
-    value: 10
-  },
-
-  {
-    source: "grid",
-    target: "occurrence_cells",
-    value: 5
-  },
-
-  {
-    source: "occurrence_cells",
-    target: "landscape_assoc",
-    value: 9
-  },
-
-  {
-    source: "habitat_composition",
-    target: "landscape_assoc",
-    value: 7
-  },
-
-
-  // ------------------------------------------------------------------------
-  // TRAIT BRANCH
-  // ------------------------------------------------------------------------
-
-  {
-    source: "traits",
-    target: "butterfly_traits",
-    value: 7
-  },
-
-  {
-    source: "traits",
-    target: "bee_traits",
-    value: 7
-  },
-
-
-  // ------------------------------------------------------------------------
-  // ECOLOGICAL PROFILE CONSTRUCTION
-  // ------------------------------------------------------------------------
-
-  {
-    source: "butterfly_traits",
-    target: "profiles",
-    value: 6
-  },
-
-  {
-    source: "bee_traits",
-    target: "profiles",
-    value: 6
-  },
-
-  {
-    source: "landscape_assoc",
-    target: "profiles",
-    value: 9
-  },
-
-
-  // ------------------------------------------------------------------------
-  // SPECIES × LANDSCAPE MODEL
-  // ------------------------------------------------------------------------
-
-  {
-    source: "profiles",
-    target: "suitability",
-    value: 12
-  },
-
-  {
-    source: "habitat_composition",
-    target: "suitability",
-    value: 8
-  },
-
-  {
-    source: "grid",
-    target: "connectivity",
-    value: 7
-  },
-
-  {
-    source: "suitability",
-    target: "connectivity",
-    value: 7
-  },
-
-
-  // ------------------------------------------------------------------------
-  // AGRICULTURAL MANAGEMENT
-  // ------------------------------------------------------------------------
-
-  {
-    source: "eligible",
-    target: "manager",
-    value: 8
-  },
-
-  {
-    source: "eligible",
-    target: "capacity",
-    value: 8
-  },
-
-  {
-    source: "manager",
-    target: "capacity",
-    value: 4
-  },
-
-
-  // ------------------------------------------------------------------------
-  // POLICY
-  // ------------------------------------------------------------------------
-
-  {
-    source: "capacity",
-    target: "policy",
-    value: 7
-  },
-
-  {
-    source: "policy",
-    target: "budget",
-    value: 7
-  },
-
-  {
-    source: "budget",
-    target: "objective",
-    value: 7
-  },
-
-  {
-    source: "budget",
-    target: "participation",
-    value: 6
-  },
-
-
-  // ------------------------------------------------------------------------
-  // ECOLOGICAL OBJECTIVES
-  // ------------------------------------------------------------------------
-
-  {
-    source: "suitability",
-    target: "objective",
-    value: 7
-  },
-
-  {
-    source: "connectivity",
-    target: "objective",
-    value: 7
-  },
-
-
-  // ------------------------------------------------------------------------
-  // MANAGEMENT AVAILABILITY
-  // ------------------------------------------------------------------------
-
-  {
-    source: "manager",
-    target: "participation",
-    value: 7
-  },
-
-
-  // ------------------------------------------------------------------------
-  // FUNDING ALLOCATION
-  // ------------------------------------------------------------------------
-
-  {
-    source: "objective",
-    target: "allocation",
-    value: 10
-  },
-
-  {
-    source: "participation",
-    target: "allocation",
-    value: 8
-  },
-
-  {
-    source: "capacity",
-    target: "allocation",
-    value: 6
-  },
-
-
-  // ------------------------------------------------------------------------
-  // RESPONSE
-  // ------------------------------------------------------------------------
-
-  {
-    source: "allocation",
-    target: "response",
-    value: 13
-  },
-
-  {
-    source: "suitability",
-    target: "response",
-    value: 4
-  },
-
-  {
-    source: "connectivity",
-    target: "response",
-    value: 4
-  },
-
-
-  // ------------------------------------------------------------------------
-  // ANALYSIS
-  // ------------------------------------------------------------------------
-
-  {
-    source: "response",
-    target: "robustness",
-    value: 8
-  },
-
-  {
-    source: "response",
-    target: "movement_diag",
-    value: 6
-  },
-
-  {
-    source: "objective",
-    target: "consensus",
-    value: 6
-  },
-
-  {
-    source: "allocation",
-    target: "consensus",
-    value: 5
-  },
-
-
-  // ------------------------------------------------------------------------
-  // FINAL RESULTS
-  // ------------------------------------------------------------------------
-
-  {
-    source: "response",
-    target: "results",
-    value: 8
-  },
-
-  {
-    source: "robustness",
-    target: "results",
-    value: 7
-  },
-
-  {
-    source: "movement_diag",
-    target: "results",
-    value: 5
-  },
-
-  {
-    source: "consensus",
-    target: "results",
-    value: 6
-  }
-
-];
-
-
-// ============================================================================
-// CHART SETUP
-// ============================================================================
-
-const width = 1750;
-const height = 1050;
-
-const margin = {
-  top: 45,
-  right: 250,
-  bottom: 45,
-  left: 30
-};
-
-
-const svg = d3
-  .select("#chart")
-  .attr("viewBox", [0, 0, width, height]);
-
-
-const sankey = d3
-  .sankey()
-  .nodeId(d => d.id)
-  .nodeWidth(24)
-  .nodePadding(18)
-  .nodeAlign(d3.sankeyJustify)
-  .extent([
-    [margin.left, margin.top],
-    [width - margin.right, height - margin.bottom]
-  ]);
-
-
-// Copy data so D3 can modify coordinates safely.
-
-const graph = sankey({
-
-  nodes: nodes.map(d => ({ ...d })),
-
-  links: links.map(d => ({ ...d }))
-
-});
-
-
-// ============================================================================
-// LINKS
-// ============================================================================
-
-const linkGroup = svg
-  .append("g")
-  .attr("fill", "none");
-
-
-const link = linkGroup
-  .selectAll("path")
-  .data(graph.links)
-  .join("path")
-
-  .attr("class", "link")
-
-  .attr(
-    "d",
-    d3.sankeyLinkHorizontal()
-  )
-
-  .attr(
-    "stroke",
-    d => colors[d.source.category] || colors.neutral
-  )
-
-  .attr(
-    "stroke-width",
-    d => Math.max(1, d.width)
-  );
-
-
-// ============================================================================
-// NODES
-// ============================================================================
-
-const node = svg
-  .append("g")
-
-  .selectAll("g")
-
-  .data(graph.nodes)
-
-  .join("g")
-
-  .attr("class", "node");
-
-
-node
-  .append("rect")
-
-  .attr("x", d => d.x0)
-
-  .attr("y", d => d.y0)
-
-  .attr("height", d => Math.max(4, d.y1 - d.y0))
-
-  .attr("width", d => d.x1 - d.x0)
-
-  .attr(
-    "fill",
-    d => colors[d.category] || colors.neutral
-  );
-
-
-// ============================================================================
-// NODE LABELS
-// ============================================================================
-
-node
-  .append("text")
-
-  .attr(
-    "x",
-    d => d.x0 < width / 2
-      ? d.x1 + 8
-      : d.x0 - 8
-  )
-
-  .attr(
-    "y",
-    d => (d.y0 + d.y1) / 2
-  )
-
-  .attr(
-    "dy",
-    "0.35em"
-  )
-
-  .attr(
-    "text-anchor",
-    d => d.x0 < width / 2
-      ? "start"
-      : "end"
-  )
-
-  .text(
-    d => d.name
-  )
-
-  .call(wrapText, 155);
-
-
-// ============================================================================
-// TOOLTIP
-// ============================================================================
-
-const tooltip =
-  document.getElementById("tooltip");
-
-
-function showTooltip(event, d) {
-
-  tooltip.innerHTML = `
-
-    <h3>${d.name}</h3>
-
-    <p>${d.description}</p>
-
-    <div class="type">
-      ${categoryLabel(d.category)}
-    </div>
-
-  `;
-
-  tooltip.style.opacity = 1;
-
-  moveTooltip(event);
-}
-
-
-function moveTooltip(event) {
-
-  const padding = 15;
-
-  let x =
-    event.clientX + padding;
-
-  let y =
-    event.clientY + padding;
-
-
-  const rect =
-    tooltip.getBoundingClientRect();
-
-
-  if (
-    x + rect.width >
-    window.innerWidth
-  ) {
-
-    x =
-      event.clientX -
-      rect.width -
-      padding;
-  }
-
-
-  if (
-    y + rect.height >
-    window.innerHeight
-  ) {
-
-    y =
-      event.clientY -
-      rect.height -
-      padding;
-  }
-
-
-  tooltip.style.left =
-    x + "px";
-
-  tooltip.style.top =
-    y + "px";
-}
-
-
-function hideTooltip() {
-
-  tooltip.style.opacity = 0;
-}
-
-
-// Node tooltip
-
-node
-  .on(
-    "mouseenter",
-    showTooltip
-  )
-
-  .on(
-    "mousemove",
-    moveTooltip
-  )
-
-  .on(
-    "mouseleave",
-    hideTooltip
-  );
-
-
-// Link tooltip
-
-link
-  .on(
-    "mouseenter",
-    function(event, d) {
-
-      tooltip.innerHTML = `
-
-        <h3>
-          ${d.source.name}
-          →
-          ${d.target.name}
-        </h3>
-
-        <p>
-          This ribbon indicates that information from
-          <strong>${d.source.name}</strong>
-          contributes to
-          <strong>${d.target.name}</strong>.
-        </p>
-
-        <div class="type">
-          Workflow connection
-        </div>
-
-      `;
-
-      tooltip.style.opacity = 1;
-
-      moveTooltip(event);
     }
-  )
-
-  .on(
-    "mousemove",
-    moveTooltip
-  )
-
-  .on(
-    "mouseleave",
-    hideTooltip
-  );
-
-
-// ============================================================================
-// CATEGORY LABEL
-// ============================================================================
-
-function categoryLabel(category) {
-
-  const labels = {
-
-    spatial:
-      "Observed / derived spatial landscape information",
-
-    biodiversity:
-      "GBIF biodiversity occurrence information",
-
-    traits:
-      "Biological trait information",
-
-    ecology:
-      "Derived ecological model",
-
-    management:
-      "Representative management layer",
-
-    policy:
-      "Policy parameter or scenario",
-
-    output:
-      "Model result / derived output"
-
-  };
-
-  return labels[category] || category;
-}
-
-
-// ============================================================================
-// TEXT WRAPPING
-// ============================================================================
-
-function wrapText(selection, width) {
-
-  selection.each(function() {
-
-    const text =
-      d3.select(this);
-
-    const words =
-      text
-        .text()
-        .split(/\s+/)
-        .reverse();
-
-    let word;
-
-    let line = [];
-
-    let lineNumber = 0;
-
-    const lineHeight = 1.05;
-
-    const y =
-      text.attr("y");
-
-    const x =
-      text.attr("x");
-
-    const dy =
-      parseFloat(text.attr("dy")) || 0;
-
-
-    let tspan = text
-      .text(null)
-
-      .append("tspan")
-
-      .attr("x", x)
-
-      .attr("y", y)
-
-      .attr("dy", dy + "em");
-
-
-    while (
-      word = words.pop()
-    ) {
-
-      line.push(word);
-
-      tspan.text(
-        line.join(" ")
-      );
-
-
-      if (
-        tspan.node()
-          .getComputedTextLength() >
-        width
-      ) {
-
-        line.pop();
-
-        tspan.text(
-          line.join(" ")
-        );
-
-        line = [word];
-
-        tspan = text
-          .append("tspan")
-
-          .attr(
-            "x",
-            x
-          )
-
-          .attr(
-            "y",
-            y
-          )
-
-          .attr(
-            "dy",
-            ++lineNumber *
-            lineHeight +
-            dy +
-            "em"
-          )
-
-          .text(word);
-      }
-    }
-  });
-}
-
-
-// ============================================================================
-// HEADING LABELS
-// ============================================================================
-
-const headings = [
-
-  {
-    x: 55,
-    y: 25,
-    text: "DATA INPUTS"
-  },
-
-  {
-    x: 350,
-    y: 25,
-    text: "BIOLOGICAL & SPATIAL PROCESSING"
-  },
-
-  {
-    x: 760,
-    y: 25,
-    text: "ECOLOGICAL MODEL"
-  },
-
-  {
-    x: 1050,
-    y: 25,
-    text: "POLICY & MANAGEMENT"
-  },
-
-  {
-    x: 1375,
-    y: 25,
-    text: "RESULTS"
-  }
-
-];
-
-
-svg
-  .append("g")
-
-  .selectAll("text")
-
-  .data(headings)
-
-  .join("text")
-
-  .attr(
-    "x",
-    d => d.x
-  )
-
-  .attr(
-    "y",
-    d => d.y
-  )
-
-  .attr(
-    "font-size",
-    14
-  )
-
-  .attr(
-    "font-weight",
-    800
-  )
-
-  .attr(
-    "fill",
-    "#526170"
-  )
-
-  .attr(
-    "letter-spacing",
-    "1px"
-  )
-
-  .text(
-    d => d.text
-  );
-
-
-// ============================================================================
-// OPTIONAL NODE HIGHLIGHTING
-// ============================================================================
-
-node.on(
-  "click",
-  function(event, selectedNode) {
-
-    event.stopPropagation();
-
-
-    const connectedIds =
-      new Set([
-        selectedNode.id
-      ]);
-
-
-    graph.links.forEach(l => {
-
-      if (
-        l.source.id === selectedNode.id
-      ) {
-
-        connectedIds.add(
-          l.target.id
-        );
-      }
-
-
-      if (
-        l.target.id === selectedNode.id
-      ) {
-
-        connectedIds.add(
-          l.source.id
-        );
-      }
-
-    });
-
-
-    node
-      .transition()
-      .duration(150)
-
-      .style(
-        "opacity",
-        d =>
-          connectedIds.has(d.id)
-            ? 1
-            : 0.18
-      );
-
-
-    link
-      .transition()
-      .duration(150)
-
-      .style(
-        "stroke-opacity",
-        d =>
-          d.source.id === selectedNode.id ||
-          d.target.id === selectedNode.id
-            ? 0.78
-            : 0.05
-      );
-
-  }
 );
 
 
-svg.on(
-  "click",
-  function() {
 
-    node
-      .transition()
-      .duration(150)
-      .style(
-        "opacity",
-        1
-      );
+/* =========================================================
+   CLOSE MODALS
+========================================================= */
+
+const modals =
+    document.querySelectorAll(
+        ".modal"
+    );
 
 
-    link
-      .transition()
-      .duration(150)
-      .style(
-        "stroke-opacity",
-        0.32
-      );
+modals.forEach(
+    modal => {
 
-  }
+        const closeButton =
+            modal.querySelector(
+                ".modal-close"
+            );
+
+
+        closeButton.addEventListener(
+            "click",
+            () => {
+
+                modal.classList.remove(
+                    "open"
+                );
+
+            }
+        );
+
+
+        modal.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target === modal
+                ) {
+
+                    modal.classList.remove(
+                        "open"
+                    );
+
+                }
+
+            }
+        );
+
+    }
+);
+
+
+
+/* =========================================================
+   ESCAPE KEY
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key !== "Escape"
+        ) {
+            return;
+        }
+
+
+        modals.forEach(
+            modal => {
+
+                modal.classList.remove(
+                    "open"
+                );
+
+            }
+        );
+
+
+        document
+            .getElementById(
+                "lightbox"
+            )
+            .classList
+            .remove(
+                "open"
+            );
+
+    }
+);
+
+
+
+/* =========================================================
+   PORTFOLIO IMAGE LIGHTBOX
+========================================================= */
+
+const galleryItems =
+    document.querySelectorAll(
+        ".gallery-item"
+    );
+
+const lightbox =
+    document.getElementById(
+        "lightbox"
+    );
+
+const lightboxImage =
+    document.getElementById(
+        "lightboxImage"
+    );
+
+const lightboxClose =
+    document.getElementById(
+        "lightboxClose"
+    );
+
+
+galleryItems.forEach(
+    item => {
+
+        item.addEventListener(
+            "click",
+            () => {
+
+                lightboxImage.src =
+                    item.dataset.image;
+
+                lightbox.classList.add(
+                    "open"
+                );
+
+            }
+        );
+
+    }
+);
+
+
+lightboxClose.addEventListener(
+    "click",
+    () => {
+
+        lightbox.classList.remove(
+            "open"
+        );
+
+    }
+);
+
+
+lightbox.addEventListener(
+    "click",
+    event => {
+
+        if (
+            event.target === lightbox
+        ) {
+
+            lightbox.classList.remove(
+                "open"
+            );
+
+        }
+
+    }
 );
 
 </script>
