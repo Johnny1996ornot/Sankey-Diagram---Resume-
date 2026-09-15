@@ -1,2362 +1,524 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
->
+<title>Switzerland Pollinator ABM Sankey Studio</title>
 
-<title>
-    John Paolo Ramirez | Environmental · Geospatial · Data
-</title>
-
-<meta
-    name="description"
-    content="Portfolio of John Paolo Ramirez — environmental, geospatial and data analyst working with GIS, remote sensing, Google Earth Engine, Python, R and environmental research."
->
-
-<link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
 
-/* =========================================================
-   ROOT
-========================================================= */
+:root{
+    --bg-main:#f8f9fa;
+    --toolbar-bg:#1e272e;
+    --text-light:#f1f2f6;
+    --accent-blue:#1e90ff;
+}
 
-:root {
+*{
+    box-sizing:border-box;
+}
 
-    --bg:
-        #070c09;
-
-    --panel:
-        #101713;
-
-    --panel-soft:
-        #151f19;
-
-    --panel-hover:
-        #18231d;
-
-    --text:
-        #f4f7f4;
-
-    --muted:
-        #95a199;
-
-    --line:
-        rgba(255,255,255,.09);
-
-    --green:
-        #86dc91;
-
-    --green-soft:
-        #5fbf73;
-
-    --blue:
-        #173f72;
-
-    --modal:
-        rgba(7,12,9,.86);
-
-    --radius:
-        30px;
-
+body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg-main);
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    overflow:hidden;
+    user-select:none;
 }
 
 
-/* =========================================================
-   RESET
-========================================================= */
+/* ============================================================
+   TOOLBAR
+============================================================ */
 
-* {
-    box-sizing:
-        border-box;
+#toolbar{
+    background:var(--toolbar-bg);
+    padding:10px 16px;
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    box-shadow:0 4px 12px rgba(0,0,0,.15);
+
+    z-index:10000;
+
+    overflow-x:auto;
+    white-space:nowrap;
 }
 
-html,
-body {
-    margin:
-        0;
+.toolbar-group{
+    display:flex;
+    align-items:center;
+    gap:6px;
 
-    width:
-        100%;
-
-    min-height:
-        100%;
-
-    overflow:
-        hidden;
+    border-right:1px solid #57606f;
+    padding-right:12px;
+    flex-shrink:0;
 }
 
-body {
-
-    background:
-        var(--bg);
-
-    color:
-        var(--text);
-
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Helvetica,
-        Arial,
-        sans-serif;
-
-    -webkit-font-smoothing:
-        antialiased;
-
-    text-rendering:
-        optimizeLegibility;
+.toolbar-group:last-child{
+    border-right:none;
+    margin-left:auto;
 }
 
-button,
-a {
-    font:
-        inherit;
+button{
+    padding:8px 12px;
+    border:none;
+    border-radius:6px;
+
+    background:#353b48;
+    color:white;
+
+    font-size:13px;
+    font-weight:500;
+
+    cursor:pointer;
+
+    display:flex;
+    align-items:center;
+    gap:5px;
 }
 
-button {
-    color:
-        inherit;
+button:hover{
+    background:#57606f;
 }
 
-
-/* =========================================================
-   BACKGROUND
-========================================================= */
-
-.background-glow {
-
-    position:
-        fixed;
-
-    inset:
-        0;
-
-    pointer-events:
-        none;
-
-    overflow:
-        hidden;
-
-    z-index:
-        0;
+button.active{
+    background:#1e90ff;
+    box-shadow:0 0 10px rgba(30,144,255,.4);
 }
 
-.background-glow::before {
-
-    content:
-        "";
-
-    position:
-        absolute;
-
-    width:
-        700px;
-
-    height:
-        700px;
-
-    left:
-        -220px;
-
-    top:
-        -230px;
-
-    border-radius:
-        50%;
-
-    background:
-        radial-gradient(
-            circle,
-            rgba(83,190,110,.13),
-            transparent 70%
-        );
-
-    filter:
-        blur(30px);
-
-    animation:
-        bgMoveOne 16s ease-in-out infinite alternate;
+.btn-danger{
+    background:#ff4757;
 }
 
-.background-glow::after {
-
-    content:
-        "";
-
-    position:
-        absolute;
-
-    width:
-        650px;
-
-    height:
-        650px;
-
-    right:
-        -230px;
-
-    bottom:
-        -260px;
-
-    border-radius:
-        50%;
-
-    background:
-        radial-gradient(
-            circle,
-            rgba(33,88,150,.18),
-            transparent 70%
-        );
-
-    filter:
-        blur(35px);
-
-    animation:
-        bgMoveTwo 18s ease-in-out infinite alternate;
+.btn-success{
+    background:#2ed573;
+    color:#17202a;
+    font-weight:700;
 }
 
-@keyframes bgMoveOne {
-
-    from {
-        transform:
-            translate(0,0);
-    }
-
-    to {
-        transform:
-            translate(100px,70px);
-    }
+.btn-copy{
+    background:#00a8ff;
+    color:white;
+    font-weight:700;
 }
 
-@keyframes bgMoveTwo {
-
-    from {
-        transform:
-            translate(0,0);
-    }
-
-    to {
-        transform:
-            translate(-120px,-80px);
-    }
+#workspace-status{
+    color:#a4b0be;
+    font-size:12px;
+    min-width:130px;
 }
 
 
-/* =========================================================
-   APP SHELL
-========================================================= */
+/* ============================================================
+   CANVAS
+============================================================ */
 
-.app {
+#canvas-container{
+    flex-grow:1;
+    position:relative;
+    overflow:auto;
 
-    position:
-        relative;
+    background:#e4e7eb;
+    outline:none;
+}
 
-    z-index:
-        2;
+#canvas-board{
+    position:absolute;
 
-    width:
-        100%;
+    left:0;
+    top:0;
 
-    height:
-        100svh;
+    width:7600px;
+    height:2600px;
 
-    padding:
-        clamp(14px,2vw,28px);
+    background:#ffffff;
 
-    display:
-        flex;
+    transform-origin:0 0;
+}
 
-    flex-direction:
-        column;
+.alignment-grid{
+    background-size:30px 30px;
 
-    gap:
-        clamp(12px,1.5vw,20px);
+    background-image:
+        linear-gradient(to right,#edf0f4 1px,transparent 1px),
+        linear-gradient(to bottom,#edf0f4 1px,transparent 1px);
 }
 
 
-/* =========================================================
-   TOP BAR
-========================================================= */
+/* ============================================================
+   SANKEY SVG
+============================================================ */
 
-.topbar {
+#sankey-svg{
+    position:absolute;
 
-    min-height:
-        44px;
+    left:0;
+    top:0;
 
-    display:
-        flex;
+    width:100%;
+    height:100%;
 
-    align-items:
-        center;
+    z-index:1;
 
-    justify-content:
-        space-between;
-
-    gap:
-        20px;
+    pointer-events:none;
 }
 
-.topbar-left {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        10px;
-
-    color:
-        var(--green);
-
-    font-size:
-        .72rem;
-
-    font-weight:
-        850;
-
-    letter-spacing:
-        .18em;
-
-    text-transform:
-        uppercase;
-}
-
-.topbar-right {
-
-    color:
-        var(--muted);
-
-    font-size:
-        .7rem;
-
-    font-weight:
-        650;
-}
-
-
-/* =========================================================
-   GRID
-========================================================= */
-
-.dashboard {
-
-    min-height:
-        0;
-
-    flex:
-        1;
-
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(12, minmax(0,1fr));
-
-    grid-template-rows:
-        repeat(2, minmax(0,1fr));
-
-    gap:
-        clamp(12px,1.4vw,20px);
-}
-
-
-/* =========================================================
-   PANEL BASE
-========================================================= */
-
-.panel {
-
-    position:
-        relative;
-
-    overflow:
-        hidden;
-
-    min-width:
-        0;
-
-    min-height:
-        0;
-
-    padding:
-        clamp(20px,2.2vw,34px);
-
-    border:
-        1px solid
-        var(--line);
-
-    border-radius:
-        var(--radius);
-
-    background:
-        linear-gradient(
-            145deg,
-            rgba(255,255,255,.025),
-            rgba(255,255,255,.007)
-        ),
-        var(--panel);
-
-    cursor:
-        pointer;
+#sankey-svg path{
+    pointer-events:auto;
+    cursor:pointer;
 
     transition:
-        transform .4s cubic-bezier(.2,.8,.2,1),
-        border-color .4s ease,
-        background .4s ease;
-
-    isolation:
-        isolate;
+        opacity .15s,
+        filter .15s;
 }
 
-.panel:hover {
-
-    transform:
-        translateY(-5px);
-
-    border-color:
-        rgba(134,220,145,.25);
-
-    background:
-        var(--panel-hover);
-}
-
-.panel:focus-visible {
-
-    outline:
-        2px solid
-        var(--green);
-
-    outline-offset:
-        3px;
+#sankey-svg path:hover{
+    filter:drop-shadow(0px 0px 4px rgba(0,0,0,.35));
 }
 
 
-/* =========================================================
-   PANEL GRID SIZES
-========================================================= */
+/* ============================================================
+   NODES
+============================================================ */
 
-.panel-profile {
+.sankey-node{
+    position:absolute;
 
-    grid-column:
-        span 7;
-}
+    cursor:move;
 
-.panel-work {
+    display:flex;
+    flex-direction:column;
 
-    grid-column:
-        span 5;
-}
+    padding:14px;
 
-.panel-skills {
+    border-radius:8px;
 
-    grid-column:
-        span 5;
-}
-
-.panel-portfolio {
-
-    grid-column:
-        span 7;
-}
-
-
-/* =========================================================
-   PANEL SHARED
-========================================================= */
-
-.panel-kicker {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        8px;
-
-    color:
-        var(--green);
-
-    font-size:
-        .66rem;
-
-    font-weight:
-        850;
-
-    text-transform:
-        uppercase;
-
-    letter-spacing:
-        .15em;
-}
-
-.panel-arrow {
-
-    position:
-        absolute;
-
-    top:
-        24px;
-
-    right:
-        26px;
-
-    width:
-        42px;
-
-    height:
-        42px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    border-radius:
-        50%;
-
-    border:
-        1px solid
-        var(--line);
-
-    color:
-        var(--muted);
-
-    transition:
-        transform .35s ease,
-        color .35s ease,
-        border-color .35s ease;
-}
-
-.panel:hover
-.panel-arrow {
-
-    transform:
-        rotate(45deg);
-
-    color:
-        var(--green);
-
-    border-color:
-        rgba(134,220,145,.25);
-}
-
-
-/* =========================================================
-   PROFILE PANEL
-========================================================= */
-
-.panel-profile {
-
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-    justify-content:
-        space-between;
-
-    background:
-        radial-gradient(
-            circle at 80% 10%,
-            rgba(134,220,145,.11),
-            transparent 38%
-        ),
-        var(--panel);
-}
-
-.profile-name {
-
-    margin:
-        0;
-
-    max-width:
-        700px;
-
-    font-size:
-        clamp(3rem,6vw,7rem);
-
-    line-height:
-        .86;
-
-    letter-spacing:
-        -.072em;
-
-    font-weight:
-        900;
-}
-
-.profile-name span {
-
-    color:
-        var(--green);
-}
-
-.profile-role {
-
-    margin-top:
-        18px;
-
-    max-width:
-        650px;
-
-    color:
-        var(--muted);
-
-    font-size:
-        clamp(.86rem,1.25vw,1.12rem);
-
-    line-height:
-        1.55;
-}
-
-.profile-bottom {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        space-between;
-
-    gap:
-        20px;
-}
-
-.profile-bottom-label {
-
-    color:
-        var(--muted);
-
-    font-size:
-        .72rem;
-}
-
-
-/* profile animated geometry */
-
-.profile-orbit {
-
-    position:
-        absolute;
-
-    right:
-        -40px;
-
-    bottom:
-        -75px;
-
-    width:
-        260px;
-
-    height:
-        260px;
-
-    border-radius:
-        50%;
-
-    border:
-        1px solid
-        rgba(134,220,145,.10);
-
-    animation:
-        orbitRotate 18s linear infinite;
-}
-
-.profile-orbit::before {
-
-    content:
-        "";
-
-    position:
-        absolute;
-
-    left:
-        30px;
-
-    top:
-        30px;
-
-    width:
-        160px;
-
-    height:
-        160px;
-
-    border-radius:
-        50%;
-
-    border:
-        1px solid
-        rgba(134,220,145,.12);
-}
-
-.profile-orbit::after {
-
-    content:
-        "";
-
-    position:
-        absolute;
-
-    width:
-        12px;
-
-    height:
-        12px;
-
-    left:
-        15px;
-
-    top:
-        112px;
-
-    border-radius:
-        50%;
-
-    background:
-        var(--green);
+    overflow:hidden;
 
     box-shadow:
-        0 0 22px
-        rgba(134,220,145,.45);
+        0 3px 8px rgba(0,0,0,.18);
+
+    z-index:20;
 }
 
-@keyframes orbitRotate {
+.sankey-node .rich-content{
+    pointer-events:none;
 
-    to {
-        transform:
-            rotate(360deg);
-    }
+    width:100%;
+    height:100%;
+
+    overflow:hidden;
+
+    line-height:1.45;
+
+    white-space:normal;
+    word-break:break-word;
 }
 
-
-/* =========================================================
-   WORK PANEL
-========================================================= */
-
-.panel-work {
-
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-    justify-content:
-        space-between;
+.sankey-node .rich-content ul{
+    margin:7px 0 0 17px;
+    padding:0;
 }
 
-.work-heading {
-
-    max-width:
-        360px;
-
-    margin:
-        0;
-
-    font-size:
-        clamp(2rem,3.8vw,4.5rem);
-
-    line-height:
-        .92;
-
-    letter-spacing:
-        -.055em;
-
-    font-weight:
-        850;
-}
-
-.work-heading span {
-
-    color:
-        var(--green);
-}
-
-.work-mini-list {
-
-    display:
-        grid;
-
-    gap:
-        8px;
-}
-
-.work-mini {
-
-    display:
-        flex;
-
-    justify-content:
-        space-between;
-
-    gap:
-        14px;
-
-    padding-top:
-        10px;
-
-    border-top:
-        1px solid
-        var(--line);
-
-    color:
-        var(--muted);
-
-    font-size:
-        .7rem;
-}
-
-.work-mini strong {
-
-    color:
-        var(--text);
-
-    font-weight:
-        750;
+.sankey-node .rich-content li{
+    margin-bottom:5px;
 }
 
 
-/* =========================================================
-   SKILLS PANEL
-========================================================= */
+.floating-text-node{
+    position:absolute;
 
-.panel-skills {
+    cursor:move;
 
-    display:
-        flex;
+    padding:5px;
 
-    flex-direction:
-        column;
+    overflow:hidden;
 
-    justify-content:
-        space-between;
-
-    background:
-        radial-gradient(
-            circle at 20% 90%,
-            rgba(23,63,114,.18),
-            transparent 40%
-        ),
-        var(--panel);
+    z-index:30;
 }
 
-.skills-heading {
-
-    margin:
-        0;
-
-    font-size:
-        clamp(2.4rem,4.7vw,5.6rem);
-
-    line-height:
-        .9;
-
-    letter-spacing:
-        -.06em;
-
-    font-weight:
-        850;
-}
-
-.skill-cloud {
-
-    display:
-        flex;
-
-    flex-wrap:
-        wrap;
-
-    gap:
-        7px;
-
-    max-width:
-        500px;
-}
-
-.skill-cloud span {
-
-    padding:
-        7px 10px;
-
-    border:
-        1px solid
-        var(--line);
-
-    border-radius:
-        999px;
-
-    color:
-        var(--muted);
-
-    font-size:
-        .68rem;
-
-    font-weight:
-        700;
+.floating-text-node .rich-content{
+    pointer-events:none;
+    white-space:normal;
+    line-height:1.4;
 }
 
 
-/* =========================================================
-   PORTFOLIO PANEL
-========================================================= */
+.group-node{
+    position:absolute;
 
-.panel-portfolio {
+    cursor:move;
 
-    display:
-        grid;
+    border-style:dashed;
+    border-radius:10px;
 
-    grid-template-columns:
-        minmax(0,.75fr)
-        minmax(0,1.25fr);
+    padding:14px;
 
-    gap:
-        20px;
+    overflow:hidden;
 
-    padding-right:
-        18px;
+    z-index:10;
 }
 
-.portfolio-copy {
-
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-    justify-content:
-        space-between;
-}
-
-.portfolio-heading {
-
-    margin:
-        14px 0 0;
-
-    font-size:
-        clamp(2.4rem,4.5vw,5.5rem);
-
-    line-height:
-        .9;
-
-    letter-spacing:
-        -.06em;
-
-    font-weight:
-        850;
-}
-
-.portfolio-heading span {
-
-    color:
-        var(--green);
-}
-
-.portfolio-caption {
-
-    color:
-        var(--muted);
-
-    font-size:
-        .72rem;
-
-    line-height:
-        1.55;
+.group-node .rich-content{
+    pointer-events:none;
 }
 
 
-/* image collage */
-
-.portfolio-preview {
-
-    position:
-        relative;
-
-    min-height:
-        0;
-
-    overflow:
-        hidden;
-
-    border-radius:
-        22px;
-
-    background:
-        #0c120f;
-}
-
-.preview-img {
-
-    position:
-        absolute;
-
-    overflow:
-        hidden;
-
-    border-radius:
-        16px;
-
-    border:
-        1px solid
-        rgba(255,255,255,.09);
-
-    background:
-        #121916;
+.sankey-node.selected,
+.floating-text-node.selected,
+.group-node.selected{
+    outline:3px solid #ffa502;
 
     box-shadow:
-        0 16px 30px
-        rgba(0,0,0,.28);
-
-    transition:
-        transform .4s ease;
+        0 0 16px rgba(255,165,2,.65);
 }
 
-.preview-img img {
-
-    width:
-        100%;
-
-    height:
-        100%;
-
-    display:
-        block;
-
-    object-fit:
-        cover;
-}
-
-.preview-one {
-
-    width:
-        58%;
-
-    height:
-        63%;
-
-    top:
-        8%;
-
-    left:
-        5%;
-
-    transform:
-        rotate(-3deg);
-
-    z-index:
-        3;
-}
-
-.preview-two {
-
-    width:
-        52%;
-
-    height:
-        56%;
-
-    top:
-        32%;
-
-    right:
-        4%;
-
-    transform:
-        rotate(4deg);
-
-    z-index:
-        4;
-}
-
-.preview-three {
-
-    width:
-        42%;
-
-    height:
-        42%;
-
-    top:
-        5%;
-
-    right:
-        7%;
-
-    transform:
-        rotate(6deg);
-
-    z-index:
-        2;
-}
-
-.panel-portfolio:hover
-.preview-one {
-
-    transform:
-        rotate(-5deg)
-        translate(-6px,-5px);
-}
-
-.panel-portfolio:hover
-.preview-two {
-
-    transform:
-        rotate(6deg)
-        translate(8px,5px);
-}
-
-.panel-portfolio:hover
-.preview-three {
-
-    transform:
-        rotate(9deg)
-        translate(5px,-6px);
-}
-
-
-/* =========================================================
-   MODAL BASE
-========================================================= */
-
-.modal {
-
-    position:
-        fixed;
-
-    inset:
-        0;
-
-    z-index:
-        5000;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    padding:
-        clamp(12px,2.4vw,34px);
-
-    background:
-        var(--modal);
-
-    backdrop-filter:
-        blur(24px);
-
-    -webkit-backdrop-filter:
-        blur(24px);
-
-    opacity:
-        0;
-
-    visibility:
-        hidden;
-
-    pointer-events:
-        none;
-
-    transition:
-        opacity .35s ease,
-        visibility .35s ease;
-}
-
-.modal.open {
-
-    opacity:
-        1;
-
-    visibility:
-        visible;
-
-    pointer-events:
-        auto;
-}
-
-.modal-shell {
-
-    position:
-        relative;
-
-    width:
-        min(1180px,100%);
-
-    max-height:
-        min(850px,94svh);
-
-    overflow:
-        auto;
-
-    padding:
-        clamp(28px,4vw,58px);
-
-    border:
-        1px solid
-        var(--line);
-
-    border-radius:
-        clamp(24px,3vw,38px);
-
-    background:
-        #0e1511;
+.sankey-node.selected-anchor,
+.floating-text-node.selected-anchor,
+.group-node.selected-anchor{
+    outline:4px solid #2ed573;
 
     box-shadow:
-        0 40px 100px
-        rgba(0,0,0,.55);
-
-    transform:
-        scale(.94)
-        translateY(25px);
-
-    transition:
-        transform .45s cubic-bezier(.2,.8,.2,1);
-}
-
-.modal.open
-.modal-shell {
-
-    transform:
-        scale(1)
-        translateY(0);
-}
-
-.modal-close {
-
-    position:
-        sticky;
-
-    top:
-        0;
-
-    float:
-        right;
-
-    z-index:
-        8;
-
-    width:
-        46px;
-
-    height:
-        46px;
-
-    border:
-        1px solid
-        var(--line);
-
-    border-radius:
-        50%;
-
-    background:
-        rgba(20,30,24,.9);
-
-    color:
-        white;
-
-    cursor:
-        pointer;
-
-    transition:
-        transform .25s ease;
-}
-
-.modal-close:hover {
-
-    transform:
-        rotate(90deg);
-}
-
-.modal-kicker {
-
-    color:
-        var(--green);
-
-    font-size:
-        .68rem;
-
-    font-weight:
-        850;
-
-    letter-spacing:
-        .16em;
-
-    text-transform:
-        uppercase;
-}
-
-.modal-title {
-
-    max-width:
-        900px;
-
-    margin:
-        18px 0 0;
-
-    font-size:
-        clamp(2.7rem,6vw,6.5rem);
-
-    line-height:
-        .9;
-
-    letter-spacing:
-        -.065em;
-
-    font-weight:
-        900;
-}
-
-.modal-intro {
-
-    max-width:
-        760px;
-
-    margin-top:
-        24px;
-
-    color:
-        var(--muted);
-
-    line-height:
-        1.7;
-
-    font-size:
-        .95rem;
+        0 0 20px rgba(46,213,115,.75);
 }
 
 
-/* =========================================================
-   CONTACT MODAL
-========================================================= */
+/* ============================================================
+   RESIZER
+============================================================ */
 
-.contact-grid {
+.custom-resizer{
+    position:absolute;
 
-    margin-top:
-        50px;
+    right:0;
+    bottom:0;
 
-    display:
-        grid;
+    width:26px;
+    height:26px;
 
-    grid-template-columns:
-        repeat(2,minmax(0,1fr));
+    cursor:se-resize;
 
-    gap:
-        12px;
+    display:flex;
+    justify-content:flex-end;
+    align-items:flex-end;
+
+    padding:3px;
+
+    z-index:100;
 }
 
-.contact-card {
-
-    min-height:
-        150px;
-
-    padding:
-        24px;
-
-    border:
-        1px solid
-        var(--line);
-
-    border-radius:
-        22px;
-
-    background:
-        var(--panel);
-
-    text-decoration:
-        none;
-
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-    justify-content:
-        space-between;
-
-    transition:
-        transform .3s ease,
-        border-color .3s ease;
-}
-
-.contact-card:hover {
-
-    transform:
-        translateY(-4px);
-
-    border-color:
-        rgba(134,220,145,.28);
-}
-
-.contact-card i {
-
-    color:
-        var(--green);
-
-    font-size:
-        1.25rem;
-}
-
-.contact-card-label {
-
-    color:
-        var(--muted);
-
-    font-size:
-        .68rem;
-
-    text-transform:
-        uppercase;
-
-    letter-spacing:
-        .12em;
-}
-
-.contact-card-value {
-
-    margin-top:
-        8px;
-
-    font-size:
-        clamp(.9rem,1.6vw,1.2rem);
-
-    font-weight:
-        750;
-
-    word-break:
-        break-word;
+.custom-resizer::after{
+    content:"↘";
+    font-size:14px;
+    opacity:.8;
 }
 
 
-/* =========================================================
-   WORK MODAL
-========================================================= */
+/* ============================================================
+   MARQUEE
+============================================================ */
 
-.work-layout {
+#marquee-box{
+    position:absolute;
 
-    margin-top:
-        50px;
+    display:none;
 
-    display:
-        grid;
+    border:1px dashed #1e90ff;
 
-    grid-template-columns:
-        minmax(0,.8fr)
-        minmax(0,1.2fr);
+    background:rgba(30,144,255,.12);
 
-    gap:
-        45px;
-}
+    pointer-events:none;
 
-.timeline {
-
-    display:
-        grid;
-
-    gap:
-        0;
-}
-
-.timeline-item {
-
-    position:
-        relative;
-
-    padding:
-        0 0 28px 26px;
-
-    border-left:
-        1px solid
-        rgba(134,220,145,.18);
-}
-
-.timeline-item::before {
-
-    content:
-        "";
-
-    position:
-        absolute;
-
-    left:
-        -5px;
-
-    top:
-        4px;
-
-    width:
-        9px;
-
-    height:
-        9px;
-
-    border-radius:
-        50%;
-
-    background:
-        var(--green);
-}
-
-.timeline-year {
-
-    color:
-        var(--green);
-
-    font-size:
-        .66rem;
-
-    font-weight:
-        850;
-
-    letter-spacing:
-        .11em;
-}
-
-.timeline-item h3 {
-
-    margin:
-        7px 0 0;
-
-    font-size:
-        1rem;
-}
-
-.timeline-item strong {
-
-    display:
-        block;
-
-    margin-top:
-        4px;
-
-    color:
-        var(--muted);
-
-    font-size:
-        .75rem;
-}
-
-.timeline-item p {
-
-    margin:
-        10px 0 0;
-
-    color:
-        var(--muted);
-
-    font-size:
-        .76rem;
-
-    line-height:
-        1.6;
+    z-index:9999;
 }
 
 
-/* project list */
+/* ============================================================
+   MODALS
+============================================================ */
 
-.project-list {
+.modal-mask{
+    display:none;
 
-    display:
-        grid;
+    position:fixed;
 
-    gap:
-        10px;
+    inset:0;
+
+    background:rgba(0,0,0,.12);
+
+    z-index:20000;
 }
 
-.project-item {
+.floating-panel{
+    display:none;
 
-    padding:
-        20px;
+    position:fixed;
 
-    border:
-        1px solid
-        var(--line);
+    top:50%;
+    left:50%;
 
-    border-radius:
-        18px;
+    transform:translate(-50%,-50%);
 
-    background:
-        var(--panel);
+    background:white;
 
-    transition:
-        border-color .25s ease;
+    width:500px;
+    max-height:90vh;
+
+    overflow-y:auto;
+
+    padding:24px;
+
+    border-radius:14px;
+
+    box-shadow:
+        0 18px 45px rgba(0,0,0,.3);
+
+    z-index:21000;
 }
 
-.project-item:hover {
+.floating-panel h3{
+    margin-top:0;
 
-    border-color:
-        rgba(134,220,145,.25);
+    padding-bottom:10px;
+
+    border-bottom:2px solid #f1f2f6;
 }
 
-.project-item-tag {
+.settings-grid{
+    display:grid;
 
-    color:
-        var(--green);
+    grid-template-columns:150px 1fr;
 
-    font-size:
-        .62rem;
+    gap:12px;
 
-    font-weight:
-        850;
+    align-items:center;
 
-    letter-spacing:
-        .11em;
-
-    text-transform:
-        uppercase;
+    margin-top:15px;
 }
 
-.project-item h4 {
+.settings-grid label{
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
 
-    margin:
-        8px 0 0;
-
-    font-size:
-        .95rem;
+    color:#57606f;
 }
 
-.project-item p {
-
-    margin:
-        8px 0 0;
-
-    color:
-        var(--muted);
-
-    font-size:
-        .73rem;
-
-    line-height:
-        1.6;
+.settings-grid input[type=color]{
+    width:100%;
+    height:36px;
 }
 
-
-/* =========================================================
-   SKILLS MODAL
-========================================================= */
-
-.skills-modal-grid {
-
-    margin-top:
-        50px;
-
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(2,minmax(0,1fr));
-
-    gap:
-        14px;
-}
-
-.skill-category {
-
-    padding:
-        25px;
-
-    border:
-        1px solid
-        var(--line);
-
-    border-radius:
-        22px;
-
-    background:
-        var(--panel);
-}
-
-.skill-category-icon {
-
-    width:
-        42px;
-
-    height:
-        42px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    border-radius:
-        12px;
-
-    background:
-        rgba(134,220,145,.10);
-
-    color:
-        var(--green);
-}
-
-.skill-category h3 {
-
-    margin:
-        20px 0 0;
-
-    font-size:
-        1.1rem;
-}
-
-.skill-category p {
-
-    color:
-        var(--muted);
-
-    font-size:
-        .76rem;
-
-    line-height:
-        1.6;
-}
-
-.skill-tags {
-
-    margin-top:
-        16px;
-
-    display:
-        flex;
-
-    flex-wrap:
-        wrap;
-
-    gap:
-        6px;
-}
-
-.skill-tags span {
-
-    padding:
-        6px 9px;
-
-    border-radius:
-        999px;
-
-    background:
-        var(--panel-soft);
-
-    color:
-        #bdc7bf;
-
-    font-size:
-        .65rem;
-
-    font-weight:
-        700;
+.settings-grid input[type=number],
+.settings-grid input[type=range]{
+    width:100%;
 }
 
 
-/* =========================================================
-   PORTFOLIO GALLERY
-========================================================= */
+.rt-toolbar{
+    display:flex;
+    gap:5px;
 
-.gallery-grid {
+    flex-wrap:wrap;
 
-    margin-top:
-        45px;
+    padding:5px;
 
-    display:
-        grid;
+    background:#f1f2f6;
 
-    grid-template-columns:
-        repeat(2,minmax(0,1fr));
+    margin-bottom:6px;
 
-    gap:
-        16px;
+    border-radius:5px;
 }
 
-.gallery-item {
+.rt-toolbar button{
+    background:white;
+    color:#2f3542;
 
-    position:
-        relative;
+    border:1px solid #bdc3c7;
 
-    overflow:
-        hidden;
-
-    min-height:
-        300px;
-
-    border:
-        1px solid
-        var(--line);
-
-    border-radius:
-        22px;
-
-    background:
-        var(--panel);
-
-    cursor:
-        zoom-in;
+    padding:5px 8px;
 }
 
-.gallery-item img {
+.rt-editor{
+    width:100%;
+    height:190px;
 
-    width:
-        100%;
+    overflow:auto;
 
-    height:
-        100%;
+    border:1px solid #ced6e0;
 
-    position:
-        absolute;
+    border-radius:6px;
 
-    inset:
-        0;
+    padding:10px;
 
-    object-fit:
-        contain;
-
-    padding:
-        12px;
-
-    transition:
-        transform .4s ease;
+    outline:none;
 }
 
-.gallery-item:hover img {
+.panel-actions{
+    display:flex;
+    justify-content:flex-end;
 
-    transform:
-        scale(1.025);
-}
+    gap:10px;
 
-.gallery-caption {
-
-    position:
-        absolute;
-
-    left:
-        14px;
-
-    right:
-        14px;
-
-    bottom:
-        14px;
-
-    z-index:
-        3;
-
-    padding:
-        12px 14px;
-
-    border-radius:
-        14px;
-
-    background:
-        rgba(5,12,8,.72);
-
-    backdrop-filter:
-        blur(12px);
-
-    font-size:
-        .72rem;
-
-    font-weight:
-        700;
+    margin-top:20px;
 }
 
 
-/* =========================================================
-   IMAGE LIGHTBOX
-========================================================= */
+/* ============================================================
+   HELP
+============================================================ */
 
-.lightbox {
+#help-box{
+    position:fixed;
 
-    position:
-        fixed;
+    right:20px;
+    bottom:20px;
 
-    inset:
-        0;
+    width:285px;
 
-    z-index:
-        9000;
+    background:rgba(255,255,255,.96);
 
-    display:
-        none;
+    padding:13px 15px;
 
-    align-items:
-        center;
+    border-radius:9px;
 
-    justify-content:
-        center;
+    box-shadow:0 5px 20px rgba(0,0,0,.15);
 
-    padding:
-        24px;
+    z-index:5000;
 
-    background:
-        rgba(0,0,0,.93);
+    font-size:11px;
 
-    backdrop-filter:
-        blur(12px);
-}
+    color:#57606f;
 
-.lightbox.open {
-
-    display:
-        flex;
-}
-
-.lightbox img {
-
-    max-width:
-        94vw;
-
-    max-height:
-        90svh;
-
-    object-fit:
-        contain;
-
-    border-radius:
-        14px;
-}
-
-.lightbox-close {
-
-    position:
-        fixed;
-
-    top:
-        20px;
-
-    right:
-        20px;
-
-    z-index:
-        2;
-
-    width:
-        46px;
-
-    height:
-        46px;
-
-    border-radius:
-        50%;
-
-    border:
-        1px solid
-        rgba(255,255,255,.15);
-
-    background:
-        rgba(255,255,255,.07);
-
-    color:
-        white;
-
-    cursor:
-        pointer;
-}
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (max-width: 800px) {
-
-    :root {
-
-        --radius:
-            22px;
-    }
-
-
-    .app {
-
-        padding:
-            10px;
-
-        gap:
-            9px;
-    }
-
-
-    .topbar {
-
-        min-height:
-            34px;
-    }
-
-
-    .topbar-left {
-
-        font-size:
-            .55rem;
-
-        letter-spacing:
-            .11em;
-    }
-
-
-    .topbar-right {
-
-        display:
-            none;
-    }
-
-
-    .dashboard {
-
-        grid-template-columns:
-            1fr 1fr;
-
-        grid-template-rows:
-            1fr 1fr;
-
-        gap:
-            9px;
-    }
-
-
-    .panel-profile,
-    .panel-work,
-    .panel-skills,
-    .panel-portfolio {
-
-        grid-column:
-            span 1;
-
-        padding:
-            16px;
-    }
-
-
-    .panel {
-
-        border-radius:
-            20px;
-    }
-
-
-    .panel-kicker {
-
-        font-size:
-            .49rem;
-
-        letter-spacing:
-            .09em;
-    }
-
-
-    .panel-arrow {
-
-        top:
-            12px;
-
-        right:
-            12px;
-
-        width:
-            30px;
-
-        height:
-            30px;
-
-        font-size:
-            .7rem;
-    }
-
-
-    .profile-name {
-
-        font-size:
-            clamp(2rem,11vw,3.6rem);
-    }
-
-
-    .profile-role {
-
-        margin-top:
-            9px;
-
-        font-size:
-            .66rem;
-
-        line-height:
-            1.4;
-
-        max-width:
-            90%;
-    }
-
-
-    .profile-bottom-label {
-
-        font-size:
-            .55rem;
-    }
-
-
-    .profile-orbit {
-
-        width:
-            120px;
-
-        height:
-            120px;
-
-        right:
-            -45px;
-
-        bottom:
-            -50px;
-    }
-
-
-    .profile-orbit::before {
-
-        width:
-            75px;
-
-        height:
-            75px;
-
-        left:
-            16px;
-
-        top:
-            16px;
-    }
-
-
-    .profile-orbit::after {
-
-        width:
-            7px;
-
-        height:
-            7px;
-
-        top:
-            49px;
-
-        left:
-            6px;
-    }
-
-
-    .work-heading,
-    .skills-heading,
-    .portfolio-heading {
-
-        font-size:
-            clamp(1.6rem,9vw,2.8rem);
-    }
-
-
-    .work-mini {
-
-        font-size:
-            .52rem;
-
-        gap:
-            5px;
-    }
-
-
-    .work-mini:nth-child(n+3) {
-
-        display:
-            none;
-    }
-
-
-    .skill-cloud {
-
-        gap:
-            4px;
-    }
-
-
-    .skill-cloud span {
-
-        font-size:
-            .5rem;
-
-        padding:
-            5px 7px;
-    }
-
-
-    .skill-cloud span:nth-child(n+6) {
-
-        display:
-            none;
-    }
-
-
-    .panel-portfolio {
-
-        display:
-            flex;
-
-        flex-direction:
-            column;
-
-        justify-content:
-            space-between;
-
-        padding:
-            16px;
-    }
-
-
-    .portfolio-preview {
-
-        height:
-            42%;
-
-        min-height:
-            80px;
-    }
-
-
-    .portfolio-caption {
-
-        font-size:
-            .52rem;
-    }
-
-
-    .contact-grid,
-    .skills-modal-grid,
-    .gallery-grid {
-
-        grid-template-columns:
-            1fr;
-    }
-
-
-    .work-layout {
-
-        grid-template-columns:
-            1fr;
-
-        gap:
-            35px;
-    }
-
-
-    .modal {
-
-        padding:
-            7px;
-    }
-
-
-    .modal-shell {
-
-        max-height:
-            96svh;
-
-        padding:
-            24px 18px;
-
-        border-radius:
-            24px;
-    }
-
-
-    .modal-title {
-
-        font-size:
-            3rem;
-    }
-
-
-    .gallery-item {
-
-        min-height:
-            250px;
-    }
-
-}
-
-
-/* =========================================================
-   VERY SMALL PHONE
-========================================================= */
-
-@media (max-width: 390px) {
-
-    .profile-name {
-
-        font-size:
-            2rem;
-    }
-
-    .profile-role {
-
-        font-size:
-            .58rem;
-    }
-
-    .work-heading,
-    .skills-heading,
-    .portfolio-heading {
-
-        font-size:
-            1.5rem;
-    }
-
-}
-
-
-/* =========================================================
-   REDUCED MOTION
-========================================================= */
-
-@media (prefers-reduced-motion: reduce) {
-
-    *,
-    *::before,
-    *::after {
-
-        animation-duration:
-            .001ms !important;
-
-        animation-iteration-count:
-            1 !important;
-
-        transition-duration:
-            .001ms !important;
-    }
-
+    line-height:1.45;
 }
 
 </style>
+
+
+<!-- ============================================================
+     SAVED STATE IS INJECTED HERE WHEN COPY HTML / SAVE HTML
+============================================================= -->
+
+<script id="injected-state">
+
+/*
+If this page is copied/exported after editing,
+window.INJECTED_APP_STATE will automatically
+be inserted here.
+*/
+
+</script>
 
 </head>
 
@@ -2364,549 +526,127 @@ button {
 <body>
 
 
-<div class="background-glow"></div>
+<!-- ============================================================
+     TOOLBAR
+============================================================= -->
 
+<div id="toolbar">
 
-<main class="app">
-
-
-    <!-- =====================================================
-         TOP BAR
-    ====================================================== -->
-
-    <header class="topbar">
-
-        <div class="topbar-left">
-
-            <i class="fa-solid fa-chart-line"></i>
-
-            Environmental · Geospatial · Data
-
-        </div>
-
-
-        <div class="topbar-right">
-
-            Click a panel to explore
-
-        </div>
-
-    </header>
-
-
-
-    <!-- =====================================================
-         DASHBOARD
-    ====================================================== -->
-
-    <section class="dashboard">
-
-
-        <!-- =================================================
-             PROFILE
-        ================================================== -->
+    <div class="toolbar-group">
 
         <button
-            class="panel panel-profile"
-            data-modal="contactModal"
-        >
-
-            <div class="panel-arrow">
-
-                <i class="fa-solid fa-arrow-up-right"></i>
-
-            </div>
-
-
-            <div>
-
-                <div class="panel-kicker">
-
-                    <i class="fa-solid fa-user"></i>
-
-                    Profile
-
-                </div>
-
-
-                <h1 class="profile-name">
-
-                    John Paolo
-
-                    <span>
-                        Ramirez
-                    </span>
-
-                </h1>
-
-
-                <div class="profile-role">
-
-                    Environmental & Geospatial Data Analyst
-
-                    <br>
-
-                    GIS · Remote Sensing · Data Analysis · Research
-
-                </div>
-
-            </div>
-
-
-            <div class="profile-bottom">
-
-                <div class="profile-bottom-label">
-
-                    Click for contact details
-
-                </div>
-
-            </div>
-
-
-            <div class="profile-orbit"></div>
-
+            id="mode-move"
+            class="active"
+            onclick="switchEngineMode('move')">
+            🖱 Select / Move
         </button>
 
+    </div>
 
 
-        <!-- =================================================
-             WORK HISTORY
-        ================================================== -->
+    <div class="toolbar-group">
+
+        <button onclick="spawnNewNode('structural')">
+            ➕ Box
+        </button>
+
+        <button onclick="spawnNewNode('floating')">
+            ➕ Text
+        </button>
+
+        <button onclick="spawnNewNode('group')">
+            🔲 Group
+        </button>
+
+    </div>
+
+
+    <div class="toolbar-group">
 
         <button
-            class="panel panel-work"
-            data-modal="workModal"
-        >
-
-            <div class="panel-arrow">
-
-                <i class="fa-solid fa-arrow-up-right"></i>
-
-            </div>
-
-
-            <div>
-
-                <div class="panel-kicker">
-
-                    <i class="fa-solid fa-briefcase"></i>
-
-                    Work & Projects
-
-                </div>
-
-
-                <h2 class="work-heading">
-
-                    Research
-
-                    <br>
-
-                    meets
-
-                    <span>
-                        application.
-                    </span>
-
-                </h2>
-
-            </div>
-
-
-            <div class="work-mini-list">
-
-
-                <div class="work-mini">
-
-                    <strong>
-                        Urban Systems
-                    </strong>
-
-                    <span>
-                        Data harmonisation
-                    </span>
-
-                </div>
-
-
-                <div class="work-mini">
-
-                    <strong>
-                        Project NOAH
-                    </strong>
-
-                    <span>
-                        Climate & DRR
-                    </span>
-
-                </div>
-
-
-                <div class="work-mini">
-
-                    <strong>
-                        Environmental Research
-                    </strong>
-
-                    <span>
-                        Spatial + laboratory
-                    </span>
-
-                </div>
-
-            </div>
-
+            id="mode-connect"
+            onclick="switchEngineMode('connect')">
+            🔗 Connect
         </button>
-
-
-
-        <!-- =================================================
-             SKILLS
-        ================================================== -->
 
         <button
-            class="panel panel-skills"
-            data-modal="skillsModal"
-        >
-
-            <div class="panel-arrow">
-
-                <i class="fa-solid fa-arrow-up-right"></i>
-
-            </div>
-
-
-            <div>
-
-                <div class="panel-kicker">
-
-                    <i class="fa-solid fa-gears"></i>
-
-                    Skills
-
-                </div>
-
-
-                <h2 class="skills-heading">
-
-                    Data.
-
-                    <br>
-
-                    Space.
-
-                    <br>
-
-                    Environment.
-
-                </h2>
-
-            </div>
-
-
-            <div class="skill-cloud">
-
-                <span>
-                    Python
-                </span>
-
-                <span>
-                    R
-                </span>
-
-                <span>
-                    QGIS
-                </span>
-
-                <span>
-                    Google Earth Engine
-                </span>
-
-                <span>
-                    Remote Sensing
-                </span>
-
-                <span>
-                    Data Analysis
-                </span>
-
-                <span>
-                    PyQGIS
-                </span>
-
-                <span>
-                    Environmental Assessment
-                </span>
-
-            </div>
-
+            id="mode-disconnect"
+            onclick="switchEngineMode('disconnect')">
+            ✂ Cut
         </button>
 
+    </div>
 
 
-        <!-- =================================================
-             SELECTED WORK
-        ================================================== -->
+    <div class="toolbar-group">
+
+        <button onclick="triggerUndo()">
+            ↩ Undo
+        </button>
 
         <button
-            class="panel panel-portfolio"
-            data-modal="portfolioModal"
-        >
+            class="btn-danger"
+            onclick="executeDeletion()">
+            🗑 Delete
+        </button>
 
-            <div class="panel-arrow">
-
-                <i class="fa-solid fa-arrow-up-right"></i>
-
-            </div>
+    </div>
 
 
-            <div class="portfolio-copy">
+    <div class="toolbar-group">
 
-                <div>
+        <button onclick="setZoom(.1)">
+            🔍+
+        </button>
 
-                    <div class="panel-kicker">
+        <button onclick="setZoom(-.1)">
+            🔍−
+        </button>
 
-                        <i class="fa-solid fa-images"></i>
+        <button onclick="resetZoom()">
+            100%
+        </button>
 
-                        Selected Work
+        <button onclick="toggleGridSystem()">
+            Grid
+        </button>
 
-                    </div>
-
-
-                    <h2 class="portfolio-heading">
-
-                        Maps.
-
-                        <br>
-
-                        Models.
-
-                        <br>
-
-                        <span>
-                            Visuals.
-                        </span>
-
-                    </h2>
-
-                </div>
+    </div>
 
 
-                <div class="portfolio-caption">
+    <div class="toolbar-group">
 
-                    Click to open the gallery.
+        <button
+            class="btn-copy"
+            onclick="copyCurrentHTML()">
 
-                </div>
-
-            </div>
-
-
-
-            <div class="portfolio-preview">
-
-
-                <div class="preview-img preview-one">
-
-                    <img
-                        src="Picture2.png"
-                        alt=""
-                    >
-
-                </div>
-
-
-                <div class="preview-img preview-two">
-
-                    <img
-                        src="EVI and NDVI.png"
-                        alt=""
-                    >
-
-                </div>
-
-
-                <div class="preview-img preview-three">
-
-                    <img
-                        src="Network Model Diagram.png"
-                        alt=""
-                    >
-
-                </div>
-
-            </div>
+            📋 Copy HTML
 
         </button>
 
 
-    </section>
+        <button
+            class="btn-success"
+            onclick="openExportPortal()">
 
-</main>
-
-
-
-<!-- =========================================================
-     CONTACT MODAL
-========================================================= -->
-
-<div
-    class="modal"
-    id="contactModal"
->
-
-    <div class="modal-shell">
-
-
-        <button class="modal-close">
-
-            <i class="fa-solid fa-xmark"></i>
+            💾 Export
 
         </button>
 
+    </div>
 
-        <div class="modal-kicker">
-            Contact
-        </div>
 
+    <div class="toolbar-group">
 
-        <h2 class="modal-title">
+        <span id="workspace-status"></span>
 
-            John Paolo
+        <button
+            onclick="resetProject()"
+            style="background:#c0392b">
 
-            <br>
+            Reset ABM
 
-            Ramirez.
-
-        </h2>
-
-
-        <p class="modal-intro">
-
-            Environmental and geospatial data analyst
-            working across GIS, remote sensing,
-            environmental research, data analysis,
-            modelling and scientific computing.
-
-        </p>
-
-
-
-        <div class="contact-grid">
-
-
-            <a
-                class="contact-card"
-                href="mailto:jpaoloramirez@gmail.com"
-            >
-
-                <i class="fa-solid fa-envelope"></i>
-
-
-                <div>
-
-                    <div class="contact-card-label">
-                        Email
-                    </div>
-
-
-                    <div class="contact-card-value">
-
-                        jpaoloramirez@gmail.com
-
-                    </div>
-
-                </div>
-
-            </a>
-
-
-
-            <a
-                class="contact-card"
-                href="tel:+639275745752"
-            >
-
-                <i class="fa-solid fa-phone"></i>
-
-
-                <div>
-
-                    <div class="contact-card-label">
-                        Phone
-                    </div>
-
-
-                    <div class="contact-card-value">
-
-                        +63 927 574 5752
-
-                    </div>
-
-                </div>
-
-            </a>
-
-
-
-            <a
-                class="contact-card"
-                href="https://github.com/Johnny1996ornot"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-
-                <i class="fa-brands fa-github"></i>
-
-
-                <div>
-
-                    <div class="contact-card-label">
-                        GitHub
-                    </div>
-
-
-                    <div class="contact-card-value">
-
-                        Johnny1996ornot
-
-                    </div>
-
-                </div>
-
-            </a>
-
-
-
-            <a
-                class="contact-card"
-                href="https://www.linkedin.com/in/john-paolo-ramirez-a21165171/"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-
-                <i class="fa-brands fa-linkedin"></i>
-
-
-                <div>
-
-                    <div class="contact-card-label">
-                        LinkedIn
-                    </div>
-
-
-                    <div class="contact-card-value">
-
-                        John Paolo Ramirez
-
-                    </div>
-
-                </div>
-
-            </a>
-
-
-        </div>
+        </button>
 
     </div>
 
@@ -2914,321 +654,21 @@ button {
 
 
 
-<!-- =========================================================
-     WORK MODAL
-========================================================= -->
+<!-- ============================================================
+     CANVAS
+============================================================= -->
 
 <div
-    class="modal"
-    id="workModal"
->
+    id="canvas-container"
+    tabindex="0">
 
-    <div class="modal-shell">
+    <div
+        id="canvas-board"
+        class="alignment-grid">
 
+        <svg id="sankey-svg"></svg>
 
-        <button class="modal-close">
-
-            <i class="fa-solid fa-xmark"></i>
-
-        </button>
-
-
-        <div class="modal-kicker">
-            Experience & Projects
-        </div>
-
-
-        <h2 class="modal-title">
-
-            Research.
-
-            <br>
-
-            Analysis.
-
-            <br>
-
-            Application.
-
-        </h2>
-
-
-
-        <div class="work-layout">
-
-
-            <!-- HISTORY -->
-
-            <div>
-
-
-                <div class="timeline">
-
-
-                    <div class="timeline-item">
-
-                        <div class="timeline-year">
-                            2025
-                        </div>
-
-                        <h3>
-                            Geospatial Research Aide
-                        </h3>
-
-                        <strong>
-                            International Urban Systems Project
-                        </strong>
-
-                        <p>
-
-                            Spatial database design,
-                            global-data harmonisation,
-                            hierarchical urban-zone modelling
-                            and automated Python workflows.
-
-                        </p>
-
-                    </div>
-
-
-
-                    <div class="timeline-item">
-
-                        <div class="timeline-year">
-                            2023–2026
-                        </div>
-
-                        <h3>
-                            Lecturer 5
-                        </h3>
-
-                        <strong>
-                            Far Eastern University
-                        </strong>
-
-                        <p>
-
-                            Biological sciences,
-                            research mentoring,
-                            environmental and
-                            computational methods.
-
-                        </p>
-
-                    </div>
-
-
-
-                    <div class="timeline-item">
-
-                        <div class="timeline-year">
-                            2024–2026
-                        </div>
-
-                        <h3>
-                            Part-time Faculty
-                        </h3>
-
-                        <strong>
-                            Philippine Women's University
-                        </strong>
-
-                        <p>
-
-                            Environmental science,
-                            sustainable management,
-                            aquatic ecosystems,
-                            environmental economics,
-                            QGIS, R and Python.
-
-                        </p>
-
-                    </div>
-
-
-
-                    <div class="timeline-item">
-
-                        <div class="timeline-year">
-                            2022
-                        </div>
-
-                        <h3>
-                            Senior Technical Aide
-                        </h3>
-
-                        <strong>
-                            UP Resilience Institute · Project NOAH
-                        </strong>
-
-                        <p>
-
-                            Climate-change adaptation,
-                            disaster-risk reduction,
-                            spatial-data processing
-                            and validation.
-
-                        </p>
-
-                    </div>
-
-
-                </div>
-
-            </div>
-
-
-
-            <!-- PROJECTS -->
-
-            <div class="project-list">
-
-
-                <div class="project-item">
-
-                    <div class="project-item-tag">
-                        Data
-                    </div>
-
-                    <h4>
-                        International Urban Systems Project
-                    </h4>
-
-                    <p>
-
-                        Combined GHSL, WorldPop and
-                        conflict-related data into
-                        reproducible spatial datasets
-                        and automated analytical pipelines.
-
-                    </p>
-
-                </div>
-
-
-
-                <div class="project-item">
-
-                    <div class="project-item-tag">
-                        Environmental Analysis
-                    </div>
-
-                    <h4>
-                        Heavy Metal Spatial Distribution
-                    </h4>
-
-                    <p>
-
-                        Field sampling, AAS laboratory analysis,
-                        statistical modelling and spatial
-                        interpolation of lead contamination.
-
-                    </p>
-
-                </div>
-
-
-
-                <div class="project-item">
-
-                    <div class="project-item-tag">
-                        Research
-                    </div>
-
-                    <h4>
-                        Microplastic Bioindicator Study
-                    </h4>
-
-                    <p>
-
-                        Microplastic extraction,
-                        environmental statistics,
-                        bioindicator analysis and
-                        spatial hotspot mapping.
-
-                    </p>
-
-                </div>
-
-
-
-                <div class="project-item">
-
-                    <div class="project-item-tag">
-                        Climate
-                    </div>
-
-                    <h4>
-                        Project NOAH / SAFER-U
-                    </h4>
-
-                    <p>
-
-                        Climate-risk spatial data processing,
-                        validation and resilience planning
-                        for Philippine universities.
-
-                    </p>
-
-                </div>
-
-
-
-                <div class="project-item">
-
-                    <div class="project-item-tag">
-                        Spatial Modelling
-                    </div>
-
-                    <h4>
-                        Metro Manila Landscape Connectivity
-                    </h4>
-
-                    <p>
-
-                        GIS and R-based landscape analysis
-                        using raster processing and
-                        Grainscape modelling.
-
-                    </p>
-
-                </div>
-
-
-                <a
-                    href="https://johnny1996ornot.github.io/Experience-Timeline-Diagram/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="project-item"
-                    style="
-                        text-decoration:none;
-                    "
-                >
-
-                    <div class="project-item-tag">
-                        Interactive
-                    </div>
-
-                    <h4>
-
-                        Open Full Experience Timeline
-
-                        <i
-                            class="fa-solid fa-arrow-up-right-from-square"
-                            style="
-                                margin-left:6px;
-                                color:var(--green);
-                            "
-                        ></i>
-
-                    </h4>
-
-                </a>
-
-
-            </div>
-
-        </div>
+        <div id="marquee-box"></div>
 
     </div>
 
@@ -3236,254 +676,144 @@ button {
 
 
 
-<!-- =========================================================
-     SKILLS MODAL
-========================================================= -->
+<div id="help-box">
+
+    <b>Editing</b><br>
+
+    • Drag boxes to move them.<br>
+    • Drag ↘ to resize.<br>
+    • Double-click a box to edit it.<br>
+    • Ctrl-click to select multiple nodes.<br>
+    • Connect mode: click source then target.<br>
+    • Cut mode: click a ribbon.<br>
+    • Double-click ribbon to edit it.<br>
+    • <b>Copy HTML</b> copies the entire current app state.
+
+</div>
+
+
 
 <div
-    class="modal"
-    id="skillsModal"
->
+    id="modal-mask"
+    class="modal-mask"
+    onclick="dismissModal()">
+</div>
 
-    <div class="modal-shell">
 
 
-        <button class="modal-close">
+<!-- ============================================================
+     NODE EDITOR
+============================================================= -->
 
-            <i class="fa-solid fa-xmark"></i>
+<div
+    id="node-editor-panel"
+    class="floating-panel">
+
+    <h3>Edit Box</h3>
+
+
+    <div class="rt-toolbar">
+
+        <button
+            onclick="document.execCommand('bold',false,null)">
+            <b>B</b>
+        </button>
+
+        <button
+            onclick="document.execCommand('italic',false,null)">
+            <i>I</i>
+        </button>
+
+        <button
+            onclick="document.execCommand('insertUnorderedList',false,null)">
+            • List
+        </button>
+
+        <button
+            onclick="document.execCommand('justifyLeft',false,null)">
+            Left
+        </button>
+
+        <button
+            onclick="document.execCommand('justifyCenter',false,null)">
+            Center
+        </button>
+
+    </div>
+
+
+    <div
+        id="edit-node-rich"
+        class="rt-editor"
+        contenteditable="true">
+    </div>
+
+
+    <div class="settings-grid">
+
+        <label>Background</label>
+        <input
+            type="color"
+            id="edit-node-color">
+
+
+        <label>Text Color</label>
+        <input
+            type="color"
+            id="edit-node-text-color">
+
+
+        <label>Opacity</label>
+        <input
+            type="range"
+            id="edit-node-opacity"
+            min="0"
+            max="1"
+            step=".05">
+
+
+        <label>Font Size</label>
+        <input
+            type="number"
+            id="edit-node-font-size"
+            min="8"
+            max="72">
+
+
+        <label>Border Color</label>
+        <input
+            type="color"
+            id="edit-node-border-color">
+
+
+        <label>Border Width</label>
+        <input
+            type="number"
+            id="edit-node-border-width"
+            min="0"
+            max="10">
+
+    </div>
+
+
+    <div class="panel-actions">
+
+        <button
+            onclick="dismissModal()"
+            style="background:#dfe4ea;color:#2f3542">
+
+            Cancel
 
         </button>
 
 
-        <div class="modal-kicker">
-            Technical Toolkit
-        </div>
+        <button
+            class="btn-success"
+            onclick="commitNodeChanges()">
 
+            Save
 
-        <h2 class="modal-title">
-
-            Data.
-
-            <br>
-
-            Space.
-
-            <br>
-
-            Environment.
-
-        </h2>
-
-
-
-        <div class="skills-modal-grid">
-
-
-            <article class="skill-category">
-
-                <div class="skill-category-icon">
-
-                    <i class="fa-solid fa-earth-asia"></i>
-
-                </div>
-
-                <h3>
-                    GIS & Geospatial Analysis
-                </h3>
-
-                <p>
-
-                    Spatial processing, mapping,
-                    database design, geoprocessing,
-                    interpolation and spatial modelling.
-
-                </p>
-
-                <div class="skill-tags">
-
-                    <span>QGIS</span>
-                    <span>PyQGIS</span>
-                    <span>Spatial Databases</span>
-                    <span>IDW</span>
-                    <span>Network Analysis</span>
-
-                </div>
-
-            </article>
-
-
-
-            <article class="skill-category">
-
-                <div class="skill-category-icon">
-
-                    <i class="fa-solid fa-satellite"></i>
-
-                </div>
-
-                <h3>
-                    Remote Sensing
-                </h3>
-
-                <p>
-
-                    Satellite imagery analysis,
-                    vegetation indices,
-                    environmental classification
-                    and large-scale monitoring.
-
-                </p>
-
-                <div class="skill-tags">
-
-                    <span>Google Earth Engine</span>
-                    <span>NDVI</span>
-                    <span>EVI</span>
-                    <span>TSS</span>
-                    <span>Supervised Classification</span>
-
-                </div>
-
-            </article>
-
-
-
-            <article class="skill-category">
-
-                <div class="skill-category-icon">
-
-                    <i class="fa-solid fa-code"></i>
-
-                </div>
-
-                <h3>
-                    Data & Programming
-                </h3>
-
-                <p>
-
-                    Statistical analysis,
-                    data cleaning,
-                    reproducible workflows
-                    and automated geospatial analysis.
-
-                </p>
-
-                <div class="skill-tags">
-
-                    <span>Python</span>
-                    <span>R</span>
-                    <span>Pandas</span>
-                    <span>Statistics</span>
-                    <span>Automation</span>
-
-                </div>
-
-            </article>
-
-
-
-            <article class="skill-category">
-
-                <div class="skill-category-icon">
-
-                    <i class="fa-solid fa-leaf"></i>
-
-                </div>
-
-                <h3>
-                    Environmental Analysis
-                </h3>
-
-                <p>
-
-                    Environmental assessment,
-                    climate adaptation,
-                    risk analysis,
-                    monitoring and scientific research.
-
-                </p>
-
-                <div class="skill-tags">
-
-                    <span>EIA</span>
-                    <span>DRR</span>
-                    <span>CCA</span>
-                    <span>Environmental Monitoring</span>
-                    <span>Ecotoxicology</span>
-
-                </div>
-
-            </article>
-
-
-
-            <article class="skill-category">
-
-                <div class="skill-category-icon">
-
-                    <i class="fa-solid fa-chart-column"></i>
-
-                </div>
-
-                <h3>
-                    Data Visualisation
-                </h3>
-
-                <p>
-
-                    Maps, network models,
-                    interactive web interfaces,
-                    dashboards and technical communication.
-
-                </p>
-
-                <div class="skill-tags">
-
-                    <span>HTML</span>
-                    <span>Interactive Visualisation</span>
-                    <span>Scientific Communication</span>
-
-                </div>
-
-            </article>
-
-
-
-            <article class="skill-category">
-
-                <div class="skill-category-icon">
-
-                    <i class="fa-solid fa-flask"></i>
-
-                </div>
-
-                <h3>
-                    Scientific Research
-                </h3>
-
-                <p>
-
-                    Field studies,
-                    laboratory research,
-                    environmental contamination
-                    and research project management.
-
-                </p>
-
-                <div class="skill-tags">
-
-                    <span>Heavy Metals</span>
-                    <span>Microplastics</span>
-                    <span>Fieldwork</span>
-                    <span>Research Design</span>
-
-                </div>
-
-            </article>
-
-
-        </div>
+        </button>
 
     </div>
 
@@ -3491,179 +821,81 @@ button {
 
 
 
-<!-- =========================================================
-     PORTFOLIO MODAL
-========================================================= -->
+<!-- ============================================================
+     EDGE EDITOR
+============================================================= -->
 
 <div
-    class="modal"
-    id="portfolioModal"
->
+    id="edge-editor-panel"
+    class="floating-panel">
 
-    <div class="modal-shell">
+    <h3>Edit Sankey Ribbon</h3>
 
 
-        <button class="modal-close">
+    <div class="settings-grid">
 
-            <i class="fa-solid fa-xmark"></i>
+        <label>Color</label>
+        <input
+            type="color"
+            id="edit-edge-color">
+
+
+        <label>Opacity</label>
+        <input
+            type="range"
+            id="edit-edge-opacity"
+            min=".1"
+            max="1"
+            step=".05">
+
+
+        <label>Curve</label>
+        <input
+            type="range"
+            id="edit-edge-curve"
+            min=".1"
+            max="1.5"
+            step=".05">
+
+
+        <label>Start Width</label>
+        <input
+            type="range"
+            id="edit-edge-thick-src"
+            min="2"
+            max="500"
+            step="2">
+
+
+        <label>End Width</label>
+        <input
+            type="range"
+            id="edit-edge-thick-tgt"
+            min="2"
+            max="500"
+            step="2">
+
+    </div>
+
+
+    <div class="panel-actions">
+
+        <button
+            onclick="dismissModal()"
+            style="background:#dfe4ea;color:#2f3542">
+
+            Cancel
 
         </button>
 
 
-        <div class="modal-kicker">
-            Selected Work
-        </div>
+        <button
+            class="btn-success"
+            onclick="commitEdgeChanges()">
 
+            Save
 
-        <h2 class="modal-title">
-
-            Maps.
-
-            <br>
-
-            Models.
-
-            <br>
-
-            Visuals.
-
-        </h2>
-
-
-        <p class="modal-intro">
-
-            Selected environmental,
-            geospatial and analytical work.
-
-            Click an image to enlarge it.
-
-        </p>
-
-
-
-        <div class="gallery-grid">
-
-
-            <div
-                class="gallery-item"
-                data-image="Picture2.png"
-            >
-
-                <img
-                    src="Picture2.png"
-                    alt="Supervised land cover classification"
-                >
-
-                <div class="gallery-caption">
-
-                    Supervised Land Cover Classification
-
-                </div>
-
-            </div>
-
-
-
-            <div
-                class="gallery-item"
-                data-image="EVI and NDVI.png"
-            >
-
-                <img
-                    src="EVI and NDVI.png"
-                    alt="NDVI and EVI analysis"
-                >
-
-                <div class="gallery-caption">
-
-                    NDVI & EVI Remote Sensing Analysis
-
-                </div>
-
-            </div>
-
-
-
-            <div
-                class="gallery-item"
-                data-image="Network Model Diagram.png"
-            >
-
-                <img
-                    src="Network Model Diagram.png"
-                    alt="Spatial network model"
-                >
-
-                <div class="gallery-caption">
-
-                    Spatial Network Modelling
-
-                </div>
-
-            </div>
-
-
-
-            <div
-                class="gallery-item"
-                data-image="TSS - LPP Wetland.png"
-            >
-
-                <img
-                    src="TSS - LPP Wetland.png"
-                    alt="Total suspended solids analysis"
-                >
-
-                <div class="gallery-caption">
-
-                    TSS Environmental Monitoring
-
-                </div>
-
-            </div>
-
-
-
-            <div
-                class="gallery-item"
-                data-image="Picture56.png"
-            >
-
-                <img
-                    src="Picture56.png"
-                    alt="Environmental systems visualisation"
-                >
-
-                <div class="gallery-caption">
-
-                    Environmental Systems Visualisation
-
-                </div>
-
-            </div>
-
-
-
-            <div
-                class="gallery-item"
-                data-image="Picture33.png"
-            >
-
-                <img
-                    src="Picture33.png"
-                    alt="Professional experience timeline"
-                >
-
-                <div class="gallery-caption">
-
-                    Interactive Professional Timeline
-
-                </div>
-
-            </div>
-
-
-        </div>
+        </button>
 
     </div>
 
@@ -3671,30 +903,70 @@ button {
 
 
 
-<!-- =========================================================
-     LIGHTBOX
-========================================================= -->
+<!-- ============================================================
+     EXPORT PANEL
+============================================================= -->
 
 <div
-    class="lightbox"
-    id="lightbox"
->
+    id="export-popup"
+    class="floating-panel"
+    style="width:370px">
 
-    <button
-        class="lightbox-close"
-        id="lightboxClose"
-    >
-
-        <i class="fa-solid fa-xmark"></i>
-
-    </button>
+    <h3>Export Workspace</h3>
 
 
-    <img
-        id="lightboxImage"
-        src=""
-        alt="Expanded portfolio image"
-    >
+    <div
+        style="
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+        ">
+
+
+        <button
+            class="btn-copy"
+            onclick="copyCurrentHTML()">
+
+            📋 Copy Current HTML
+
+        </button>
+
+
+        <button
+            class="btn-success"
+            onclick="downloadNativeHTML()">
+
+            💾 Download HTML
+
+        </button>
+
+
+        <button
+            onclick="triggerCroppedExport('png')">
+
+            📸 Export PNG
+
+        </button>
+
+
+        <button
+            onclick="triggerCroppedExport('pdf')"
+            style="background:#8e44ad">
+
+            📄 Export PDF
+
+        </button>
+
+
+        <button
+            onclick="dismissModal()"
+            style="background:#dfe4ea;color:#2f3542">
+
+            Cancel
+
+        </button>
+
+    </div>
 
 </div>
 
@@ -3702,211 +974,4832 @@ button {
 
 <script>
 
-/* =========================================================
-   PANEL → MODAL
-========================================================= */
+/* ============================================================
+   COLORS
+============================================================ */
 
-const modalTriggers =
-    document.querySelectorAll(
-        "[data-modal]"
+const COLOR = {
+
+    spatial:
+        "#2878B5",
+
+    gbif:
+        "#2E8B57",
+
+    trait:
+        "#7D4FA3",
+
+    ecology:
+        "#D97706",
+
+    management:
+        "#A66F00",
+
+    policy:
+        "#B9415A",
+
+    sensitivity:
+        "#6D5BD0",
+
+    result:
+        "#177E89",
+
+    final:
+        "#0F5D5E",
+
+    heading:
+        "#475569"
+
+};
+
+
+
+/* ============================================================
+   NODE HELPERS
+============================================================ */
+
+function node(
+    id,
+    x,
+    y,
+    w,
+    h,
+    color,
+    content,
+    fontSize = 14
+){
+
+    return {
+
+        id:id,
+
+        content:content,
+
+        type:"structural",
+
+        x:x,
+        y:y,
+
+        w:w,
+        h:h,
+
+        color:color,
+
+        textColor:"#ffffff",
+
+        borderColor:color,
+
+        borderWidth:2,
+
+        opacity:.96,
+
+        fontSize:fontSize,
+
+        zIndex:20
+
+    };
+}
+
+
+
+function textNode(
+    id,
+    x,
+    y,
+    w,
+    h,
+    content,
+    size = 18,
+    color = COLOR.heading
+){
+
+    return {
+
+        id:id,
+
+        content:content,
+
+        type:"floating",
+
+        x:x,
+        y:y,
+
+        w:w,
+        h:h,
+
+        color:"#ffffff",
+
+        textColor:color,
+
+        borderColor:"#ffffff",
+
+        borderWidth:0,
+
+        opacity:0,
+
+        fontSize:size,
+
+        zIndex:40
+
+    };
+}
+
+
+
+function edge(
+    id,
+    source,
+    target,
+    color,
+    thickSrc = 30,
+    thickTgt = 24
+){
+
+    return {
+
+        id:id,
+
+        source:source,
+
+        target:target,
+
+        color:color,
+
+        curvature:.45,
+
+        thickSrc:thickSrc,
+
+        thickTgt:thickTgt,
+
+        opacity:.48
+
+    };
+}
+
+
+
+/* ============================================================
+   DEFAULT ABM PROJECT
+============================================================ */
+
+const DEFAULT_ABM_STATE = {
+
+nodes:[
+
+
+/* ============================================================
+   TITLE
+============================================================ */
+
+textNode(
+    "title",
+    220,
+    45,
+    3100,
+    70,
+    "<b>Switzerland Pollinator Agent-Based Modelling Workflow</b>",
+    30,
+    "#16324f"
+),
+
+
+textNode(
+    "subtitle",
+    220,
+    115,
+    4300,
+    55,
+
+    "From biodiversity and landscape data → trait reconstruction → species–landscape modelling → representative management agents → conservation policy allocation → ecological and implementation results",
+
+    15,
+    "#52606d"
+),
+
+
+
+/* ============================================================
+   HEADINGS
+============================================================ */
+
+textNode(
+    "h1",
+    220,
+    210,
+    440,
+    40,
+    "<b>DATA COLLECTION</b>",
+    17
+),
+
+
+textNode(
+    "h2",
+    820,
+    210,
+    560,
+    40,
+    "<b>BIOLOGICAL PROCESSING</b>",
+    17
+),
+
+
+textNode(
+    "h3",
+    1480,
+    210,
+    520,
+    40,
+    "<b>SPATIAL ECOLOGY</b>",
+    17
+),
+
+
+textNode(
+    "h4",
+    2170,
+    210,
+    520,
+    40,
+    "<b>ECOLOGICAL MODEL</b>",
+    17
+),
+
+
+textNode(
+    "h5",
+    2860,
+    210,
+    620,
+    40,
+    "<b>MANAGEMENT & POLICY</b>",
+    17
+),
+
+
+textNode(
+    "h6",
+    3760,
+    210,
+    650,
+    40,
+    "<b>SCENARIOS & ALLOCATION</b>",
+    17
+),
+
+
+textNode(
+    "h7",
+    4750,
+    210,
+    650,
+    40,
+    "<b>MODEL RESPONSE</b>",
+    17
+),
+
+
+textNode(
+    "h8",
+    5750,
+    210,
+    650,
+    40,
+    "<b>FINAL ANALYSES</b>",
+    17
+),
+
+
+
+/* ============================================================
+   DATA COLLECTION
+============================================================ */
+
+node(
+    "spatial",
+    220,
+    330,
+    440,
+    245,
+    COLOR.spatial,
+
+    `<b>1A. Spatial / landscape data</b>
+
+    <ul>
+        <li>Swiss ecological land-cover raster</li>
+        <li>Habitat / land-cover classes</li>
+        <li>Forest, shrubland, grassland, cropland, wetland, water, urban, bare land, snow/ice</li>
+        <li>Projected Swiss LV95 spatial framework</li>
+    </ul>`
+),
+
+
+
+node(
+    "gbif",
+    220,
+    650,
+    440,
+    245,
+    COLOR.gbif,
+
+    `<b>1B. Biodiversity occurrence data</b>
+
+    <ul>
+        <li>GBIF bee records</li>
+        <li>GBIF butterfly records</li>
+        <li>Species names + geographic coordinates</li>
+        <li>Main contemporary modelling period: 2015–2021</li>
+        <li>Coordinates retained at a scale appropriate to their uncertainty</li>
+    </ul>`
+),
+
+
+
+node(
+    "trait_sources",
+    220,
+    980,
+    440,
+    245,
+    COLOR.trait,
+
+    `<b>1C. Biological trait data</b>
+
+    <ul>
+        <li>Butterfly morphology sources</li>
+        <li>Butterfly movement-reference information</li>
+        <li>Bee body-size / ITD trait database</li>
+        <li>Trait information collected independently from spatial land-cover data</li>
+    </ul>`
+),
+
+
+
+/* ============================================================
+   BIOLOGICAL PROCESSING
+============================================================ */
+
+node(
+    "butterfly_recon",
+    820,
+    890,
+    500,
+    330,
+    COLOR.trait,
+
+    `<b>2A. Butterfly trait reconstruction</b>
+
+    <ul>
+        <li>Wing length / width</li>
+        <li>Body length / width</li>
+        <li>Wingspan and wing-form information</li>
+        <li>Direct movement labels retained where available</li>
+        <li>Species without direct labels classified using trait-based modelling</li>
+        <li>Five functional movement levels</li>
+        <li>Migratory species kept as a separate strategy</li>
+    </ul>`
+),
+
+
+
+node(
+    "bee_recon",
+    820,
+    1280,
+    500,
+    300,
+    COLOR.trait,
+
+    `<b>2B. Bee body-size & mobility reconstruction</b>
+
+    <ul>
+        <li>Intertegular distance (ITD) used as body-size measure</li>
+        <li>Published allometric equations used to estimate typical and maximum movement distances</li>
+        <li>Five relative mobility levels</li>
+        <li>Direct traits preferred</li>
+        <li>Genus-level median proxy used only where necessary</li>
+    </ul>`
+),
+
+
+
+/* ============================================================
+   SPATIAL PROCESSING
+============================================================ */
+
+node(
+    "grid",
+    820,
+    310,
+    500,
+    210,
+    COLOR.spatial,
+
+    `<b>2C. Swiss 5-km analytical grid</b>
+
+    <ul>
+        <li>1,606 landscape cells</li>
+        <li>5-km grid used as observation / analysis scale</li>
+        <li>Chosen partly because GBIF coordinate uncertainty is measured in kilometres</li>
+        <li>Not interpreted as biological movement radius</li>
+    </ul>`
+),
+
+
+
+node(
+    "habitat_comp",
+    820,
+    570,
+    500,
+    230,
+    COLOR.spatial,
+
+    `<b>2D. Habitat composition per 5-km cell</b>
+
+    <ul>
+        <li>Land-cover raster summarized within every grid cell</li>
+        <li>Fraction of each habitat class calculated</li>
+        <li>Provides the environmental composition used by the species model</li>
+    </ul>`
+),
+
+
+
+node(
+    "occurrence_cells",
+    1480,
+    580,
+    470,
+    220,
+    COLOR.gbif,
+
+    `<b>3A. Species occurrences placed into the 5-km landscape</b>
+
+    <ul>
+        <li>Bee and butterfly GBIF coordinates assigned to grid cells</li>
+        <li>Species occupancy summarized by landscape cell</li>
+        <li>This is where biodiversity observations become spatially linked to the landscape</li>
+    </ul>`
+),
+
+
+
+node(
+    "landscape_assoc",
+    1480,
+    860,
+    470,
+    270,
+    COLOR.ecology,
+
+    `<b>3B. Species landscape-association profiles</b>
+
+    <ul>
+        <li>Occupied cells compared with their habitat composition</li>
+        <li>Species-level empirical landscape signatures generated</li>
+        <li>Association strength summarized across habitat classes</li>
+        <li>Interpreted as landscape association, not experimentally demonstrated preference</li>
+    </ul>`
+),
+
+
+
+node(
+    "eligible",
+    1480,
+    310,
+    470,
+    220,
+    COLOR.management,
+
+    `<b>3C. Agricultural eligibility</b>
+
+    <ul>
+        <li>Cropland and grassland quantified per 5-km cell</li>
+        <li>Cells containing relevant agricultural land entered the management layer</li>
+        <li>Land structure determines eligibility, not willingness to participate</li>
+    </ul>`
+),
+
+
+
+/* ============================================================
+   ECOLOGICAL PROFILE
+============================================================ */
+
+node(
+    "profiles",
+    2170,
+    800,
+    470,
+    285,
+    COLOR.ecology,
+
+    `<b>4. Unified pollinator ecological profiles</b>
+
+    <ul>
+        <li>Trait reconstruction + empirical landscape associations combined</li>
+        <li>554 ABM-ready bee species</li>
+        <li>217 ABM-ready butterfly species</li>
+        <li>771 pollinator species represented</li>
+        <li>Mobility kept as a functional trait</li>
+        <li>Evidence / support information preserved</li>
+    </ul>`
+),
+
+
+
+node(
+    "suitability",
+    2170,
+    470,
+    470,
+    250,
+    COLOR.ecology,
+
+    `<b>5A. Species × cell local habitat suitability</b>
+
+    <ul>
+        <li>Species habitat-association vector compared with each cell's habitat composition</li>
+        <li>Histogram-intersection habitat-match score</li>
+        <li>Local suitability = habitat match only</li>
+        <li>Mobility is not multiplied into local suitability</li>
+    </ul>`
+),
+
+
+
+node(
+    "graph",
+    2170,
+    1160,
+    470,
+    260,
+    COLOR.ecology,
+
+    `<b>5B. Structural landscape connectivity graph</b>
+
+    <ul>
+        <li>5-km cells represented as landscape nodes</li>
+        <li>Primary graph uses rook-adjacent neighbours</li>
+        <li>3,003 rook connections</li>
+        <li>Connectivity based on continuity of suitable neighbouring cells</li>
+        <li>Not a literal animal movement-step simulation</li>
+    </ul>`
+),
+
+
+
+/* ============================================================
+   MANAGEMENT
+============================================================ */
+
+node(
+    "manager",
+    2860,
+    320,
+    500,
+    250,
+    COLOR.management,
+
+    `<b>6A. Representative land-management units</b>
+
+    <ul>
+        <li>Synthetic representative decision-making units</li>
+        <li>Associated with eligible agricultural 5-km cells</li>
+        <li>Not actual identified Swiss farmers</li>
+        <li>Represent land-management opportunity within each cell</li>
+    </ul>`
+),
+
+
+
+node(
+    "capacity",
+    2860,
+    650,
+    500,
+    245,
+    COLOR.management,
+
+    `<b>6B. Intervention capacity</b>
+
+    <ul>
+        <li>Maximum intervention derived from cropland area</li>
+        <li>Reference allocation allows up to 3% of cropland in each cell</li>
+        <li>3% is a modelling assumption</li>
+        <li>Maximum available hectares constrain how much funding a cell can absorb</li>
+    </ul>`
+),
+
+
+
+/* ============================================================
+   POLICY SETUP
+============================================================ */
+
+node(
+    "policy",
+    2860,
+    980,
+    500,
+    270,
+    COLOR.policy,
+
+    `<b>6C. Conservation policy intervention</b>
+
+    <ul>
+        <li>Beneficial strips on open cropland</li>
+        <li>Swiss direct-payment policy used as intervention context</li>
+        <li>Payment parameter: CHF 3,300 per hectare per year</li>
+        <li>Payment rate is policy-derived rather than invented</li>
+    </ul>`
+),
+
+
+
+node(
+    "budget",
+    2860,
+    1330,
+    500,
+    280,
+    COLOR.policy,
+
+    `<b>6D. Reference funding scenario</b>
+
+    <ul>
+        <li>Total modelled eligible cropland: 279,376.63 ha</li>
+        <li>Reference intervention = 1% of total eligible cropland</li>
+        <li>Reference intervention area = 2,793.7663 ha</li>
+        <li>CHF 3,300 × 2,793.7663 ha</li>
+        <li>Reference annual model budget = CHF 9,219,428.79</li>
+        <li>This is a constructed experimental budget, not a reported Swiss national budget</li>
+    </ul>`
+),
+
+
+
+/* ============================================================
+   SCENARIOS
+============================================================ */
+
+node(
+    "objective",
+    3760,
+    430,
+    520,
+    320,
+    COLOR.policy,
+
+    `<b>7A. Ecological funding-priority scenarios</b>
+
+    <ul>
+        <li>Habitat only: 100 / 0</li>
+        <li>Habitat-dominant: 75 / 25</li>
+        <li>Equal-weight reference: 50 / 50</li>
+        <li>Connectivity-dominant: 25 / 75</li>
+        <li>Connectivity only: 0 / 100</li>
+        <li>Random allocation baseline</li>
+        <li>Weights rank locations; they do not mean half of each farm receives each intervention</li>
+    </ul>`
+),
+
+
+
+node(
+    "participation",
+    3760,
+    840,
+    520,
+    330,
+    COLOR.policy,
+
+    `<b>7B. Management availability scenarios</b>
+
+    <ul>
+        <li>50/50 ecological ranking held constant</li>
+        <li>25%, 50%, 75%, and 100% of eligible units available to participate</li>
+        <li>Availability assigned randomly because observed farmer-participation behaviour was unavailable</li>
+        <li>Random availability is separated from ecological importance</li>
+        <li>Available units are not automatically funded</li>
+    </ul>`
+),
+
+
+
+node(
+    "dynamic",
+    3760,
+    1260,
+    520,
+    305,
+    COLOR.sensitivity,
+
+    `<b>7C. Exploratory dynamic ABM sensitivity experiment</b>
+
+    <ul>
+        <li>10-year land-manager adoption experiment</li>
+        <li>Low, moderate, and high assumed adoption behaviour</li>
+        <li>Used to test possible behavioural dynamics</li>
+        <li>Not calibrated from observed Swiss farmer behaviour</li>
+        <li>Retained as exploratory sensitivity analysis rather than the core policy result</li>
+    </ul>`
+),
+
+
+
+/* ============================================================
+   ALLOCATION
+============================================================ */
+
+node(
+    "allocation",
+    4650,
+    650,
+    500,
+    330,
+    COLOR.result,
+
+    `<b>8. Conservation funding allocation</b>
+
+    <ul>
+        <li>Start with intervention-eligible management cells</li>
+        <li>Apply management-availability constraint where relevant</li>
+        <li>Rank available cells according to scenario objective</li>
+        <li>Allocate CHF 3,300 for each funded intervention hectare</li>
+        <li>Continue until the budget is exhausted or available capacity is insufficient</li>
+        <li>Colored GIF cells = funded locations</li>
+        <li>Yellow = more funded hectares, not higher biodiversity</li>
+    </ul>`
+),
+
+
+
+/* ============================================================
+   RESPONSE
+============================================================ */
+
+node(
+    "response",
+    5270,
+    650,
+    470,
+    280,
+    COLOR.result,
+
+    `<b>9. Ecological policy response</b>
+
+    <ul>
+        <li>Change in mean local habitat-match score</li>
+        <li>Change in structural rook connectivity</li>
+        <li>Same intervention budget allows direct comparison among allocation strategies</li>
+        <li>Targeted allocation compared with random allocation</li>
+    </ul>`
+),
+
+
+
+/* ============================================================
+   FINAL ANALYSES
+============================================================ */
+
+node(
+    "robustness",
+    5880,
+    330,
+    470,
+    300,
+    COLOR.result,
+
+    `<b>10A. Robustness & sensitivity analysis</b>
+
+    <ul>
+        <li>Alternative intervention-effect strengths</li>
+        <li>Alternative budget levels</li>
+        <li>100 repeated random allocations per tested condition</li>
+        <li>Targeted strategies consistently outperformed random allocation inside the tested model structure</li>
+        <li>Participation × budget implementation frontier analysed separately</li>
+    </ul>`
+),
+
+
+
+node(
+    "movement_diag",
+    5880,
+    720,
+    470,
+    330,
+    COLOR.result,
+
+    `<b>10B. Movement & morphology diagnostics</b>
+
+    <ul>
+        <li>Bee responses compared across five relative mobility groups</li>
+        <li>Butterfly responses compared across five movement levels and migratory strategy</li>
+        <li>Butterfly morphology / body-size patterns retained as functional information</li>
+        <li>Habitat-profile differences explained policy-response patterns better than movement rank</li>
+        <li>No arbitrary movement multiplier was added to local suitability</li>
+    </ul>`
+),
+
+
+
+node(
+    "consensus",
+    5880,
+    1140,
+    470,
+    305,
+    COLOR.result,
+
+    `<b>10C. Consensus conservation priorities</b>
+
+    <ul>
+        <li>Compare cells selected across all five targeted ecological weightings</li>
+        <li>177 cells selected by at least one targeted strategy</li>
+        <li>117 cells selected by at least three strategies</li>
+        <li>97 cells selected by at least four strategies</li>
+        <li>75 cells selected under all five targeted strategies</li>
+    </ul>`
+),
+
+
+
+node(
+    "final",
+    6510,
+    690,
+    500,
+    350,
+    COLOR.final,
+
+    `<b>11. Final model outputs</b>
+
+    <ul>
+        <li>Habitat vs connectivity allocation comparison</li>
+        <li>Targeted vs random conservation funding</li>
+        <li>Participation × budget implementation constraint</li>
+        <li>Consensus priority maps</li>
+        <li>Habitat / connectivity weighting GIF</li>
+        <li>Management-availability GIF</li>
+        <li>Policy interpretation: ecological targeting works best when enough management units are available to provide spatial choice</li>
+    </ul>`
+),
+
+
+
+textNode(
+    "legend",
+    220,
+    1710,
+    3300,
+    150,
+
+    `<b>Interpretation of information sources:</b><br>
+    <span style="color:${COLOR.spatial}">■ Spatial / landscape data</span>
+    &nbsp;&nbsp;
+    <span style="color:${COLOR.gbif}">■ Biodiversity occurrence data</span>
+    &nbsp;&nbsp;
+    <span style="color:${COLOR.trait}">■ Biological trait information</span>
+    &nbsp;&nbsp;
+    <span style="color:${COLOR.ecology}">■ Derived ecological model</span>
+    &nbsp;&nbsp;
+    <span style="color:${COLOR.management}">■ Representative management layer</span>
+    &nbsp;&nbsp;
+    <span style="color:${COLOR.policy}">■ Policy/scenario input</span>
+    &nbsp;&nbsp;
+    <span style="color:${COLOR.result}">■ Derived result</span>`,
+
+    14,
+    "#334155"
+)
+
+],
+
+
+
+connections:[
+
+
+/* Spatial stream */
+
+edge(
+    "e1",
+    "spatial",
+    "grid",
+    COLOR.spatial,
+    42,
+    34
+),
+
+
+edge(
+    "e2",
+    "spatial",
+    "habitat_comp",
+    COLOR.spatial,
+    42,
+    34
+),
+
+
+edge(
+    "e3",
+    "spatial",
+    "eligible",
+    COLOR.spatial,
+    32,
+    26
+),
+
+
+
+/* GBIF stream */
+
+edge(
+    "e4",
+    "gbif",
+    "occurrence_cells",
+    COLOR.gbif,
+    46,
+    36
+),
+
+
+edge(
+    "e5",
+    "grid",
+    "occurrence_cells",
+    COLOR.spatial,
+    28,
+    22
+),
+
+
+
+/* Trait stream */
+
+edge(
+    "e6",
+    "trait_sources",
+    "butterfly_recon",
+    COLOR.trait,
+    38,
+    32
+),
+
+
+edge(
+    "e7",
+    "trait_sources",
+    "bee_recon",
+    COLOR.trait,
+    38,
+    32
+),
+
+
+
+/* Landscape association */
+
+edge(
+    "e8",
+    "occurrence_cells",
+    "landscape_assoc",
+    COLOR.gbif,
+    38,
+    30
+),
+
+
+edge(
+    "e9",
+    "habitat_comp",
+    "landscape_assoc",
+    COLOR.spatial,
+    34,
+    27
+),
+
+
+
+/* Unified profiles */
+
+edge(
+    "e10",
+    "butterfly_recon",
+    "profiles",
+    COLOR.trait,
+    34,
+    28
+),
+
+
+edge(
+    "e11",
+    "bee_recon",
+    "profiles",
+    COLOR.trait,
+    34,
+    28
+),
+
+
+edge(
+    "e12",
+    "landscape_assoc",
+    "profiles",
+    COLOR.ecology,
+    42,
+    34
+),
+
+
+
+/* Habitat suitability */
+
+edge(
+    "e13",
+    "profiles",
+    "suitability",
+    COLOR.ecology,
+    46,
+    38
+),
+
+
+edge(
+    "e14",
+    "habitat_comp",
+    "suitability",
+    COLOR.spatial,
+    28,
+    22
+),
+
+
+
+/* Connectivity */
+
+edge(
+    "e15",
+    "grid",
+    "graph",
+    COLOR.spatial,
+    30,
+    25
+),
+
+
+edge(
+    "e16",
+    "suitability",
+    "graph",
+    COLOR.ecology,
+    34,
+    28
+),
+
+
+
+/* Management */
+
+edge(
+    "e17",
+    "eligible",
+    "manager",
+    COLOR.management,
+    42,
+    34
+),
+
+
+edge(
+    "e18",
+    "eligible",
+    "capacity",
+    COLOR.management,
+    35,
+    28
+),
+
+
+edge(
+    "e19",
+    "manager",
+    "capacity",
+    COLOR.management,
+    22,
+    18
+),
+
+
+
+/* Policy */
+
+edge(
+    "e20",
+    "capacity",
+    "policy",
+    COLOR.management,
+    32,
+    26
+),
+
+
+edge(
+    "e21",
+    "policy",
+    "budget",
+    COLOR.policy,
+    42,
+    34
+),
+
+
+
+/* Objective weighting */
+
+edge(
+    "e22",
+    "budget",
+    "objective",
+    COLOR.policy,
+    35,
+    28
+),
+
+
+edge(
+    "e23",
+    "suitability",
+    "objective",
+    COLOR.ecology,
+    30,
+    24
+),
+
+
+edge(
+    "e24",
+    "graph",
+    "objective",
+    COLOR.ecology,
+    30,
+    24
+),
+
+
+
+/* Participation */
+
+edge(
+    "e25",
+    "manager",
+    "participation",
+    COLOR.management,
+    34,
+    27
+),
+
+
+edge(
+    "e26",
+    "budget",
+    "participation",
+    COLOR.policy,
+    24,
+    19
+),
+
+
+
+/* Dynamic exploratory branch */
+
+edge(
+    "e27",
+    "manager",
+    "dynamic",
+    COLOR.management,
+    18,
+    15
+),
+
+
+edge(
+    "e28",
+    "policy",
+    "dynamic",
+    COLOR.policy,
+    18,
+    15
+),
+
+
+
+/* Allocation */
+
+edge(
+    "e29",
+    "objective",
+    "allocation",
+    COLOR.policy,
+    46,
+    36
+),
+
+
+edge(
+    "e30",
+    "participation",
+    "allocation",
+    COLOR.policy,
+    38,
+    30
+),
+
+
+edge(
+    "e31",
+    "capacity",
+    "allocation",
+    COLOR.management,
+    32,
+    25
+),
+
+
+edge(
+    "e32",
+    "budget",
+    "allocation",
+    COLOR.policy,
+    28,
+    22
+),
+
+
+
+/* Response */
+
+edge(
+    "e33",
+    "allocation",
+    "response",
+    COLOR.result,
+    48,
+    40
+),
+
+
+edge(
+    "e34",
+    "suitability",
+    "response",
+    COLOR.ecology,
+    20,
+    16
+),
+
+
+edge(
+    "e35",
+    "graph",
+    "response",
+    COLOR.ecology,
+    20,
+    16
+),
+
+
+
+/* Diagnostics */
+
+edge(
+    "e36",
+    "response",
+    "robustness",
+    COLOR.result,
+    30,
+    24
+),
+
+
+edge(
+    "e37",
+    "dynamic",
+    "robustness",
+    COLOR.sensitivity,
+    22,
+    18
+),
+
+
+edge(
+    "e38",
+    "response",
+    "movement_diag",
+    COLOR.result,
+    28,
+    22
+),
+
+
+edge(
+    "e39",
+    "allocation",
+    "consensus",
+    COLOR.result,
+    25,
+    20
+),
+
+
+edge(
+    "e40",
+    "response",
+    "consensus",
+    COLOR.result,
+    22,
+    17
+),
+
+
+
+/* Final */
+
+edge(
+    "e41",
+    "robustness",
+    "final",
+    COLOR.result,
+    28,
+    22
+),
+
+
+edge(
+    "e42",
+    "movement_diag",
+    "final",
+    COLOR.result,
+    27,
+    21
+),
+
+
+edge(
+    "e43",
+    "consensus",
+    "final",
+    COLOR.result,
+    28,
+    22
+),
+
+
+edge(
+    "e44",
+    "response",
+    "final",
+    COLOR.result,
+    28,
+    22
+)
+
+]
+
+};
+
+
+
+/* ============================================================
+   APP STATE
+============================================================ */
+
+const STORAGE_KEY =
+    "switzerland_pollinator_abm_sankey_v3";
+
+
+let appState = {
+
+    nodes:[],
+    connections:[]
+
+};
+
+
+let undoStack = [];
+
+
+let selectedNodeIds =
+    new Set();
+
+
+let selectedEdgeIds =
+    new Set();
+
+
+let operationalMode =
+    "move";
+
+
+let connectionSourceNode =
+    null;
+
+
+let activeEditorTarget =
+    null;
+
+
+let zoomLevel =
+    1;
+
+
+const container =
+    document.getElementById(
+        "canvas-container"
     );
 
 
-modalTriggers.forEach(
-    trigger => {
+const board =
+    document.getElementById(
+        "canvas-board"
+    );
 
-        trigger.addEventListener(
-            "click",
-            () => {
 
-                const modal =
-                    document.getElementById(
-                        trigger.dataset.modal
-                    );
+const svg =
+    document.getElementById(
+        "sankey-svg"
+    );
 
-                if (!modal) return;
 
-                modal.classList.add(
-                    "open"
-                );
+const marqueeBox =
+    document.getElementById(
+        "marquee-box"
+    );
 
-            }
-        );
+
+
+/* ============================================================
+   CLONE
+============================================================ */
+
+function cloneObject(obj){
+
+    return JSON.parse(
+        JSON.stringify(obj)
+    );
+
+}
+
+
+
+/* ============================================================
+   INITIALIZE
+============================================================ */
+
+function bootstrapStudio(){
+
+    if(
+        window.INJECTED_APP_STATE
+    ){
+
+        appState =
+            cloneObject(
+                window.INJECTED_APP_STATE
+            );
 
     }
-);
+    else{
 
-
-
-/* =========================================================
-   CLOSE MODALS
-========================================================= */
-
-const modals =
-    document.querySelectorAll(
-        ".modal"
-    );
-
-
-modals.forEach(
-    modal => {
-
-        const closeButton =
-            modal.querySelector(
-                ".modal-close"
+        const saved =
+            localStorage.getItem(
+                STORAGE_KEY
             );
 
 
-        closeButton.addEventListener(
-            "click",
-            () => {
+        if(saved){
 
-                modal.classList.remove(
-                    "open"
-                );
+            try{
+
+                appState =
+                    JSON.parse(
+                        saved
+                    );
 
             }
+            catch(err){
+
+                appState =
+                    cloneObject(
+                        DEFAULT_ABM_STATE
+                    );
+
+            }
+
+        }
+        else{
+
+            appState =
+                cloneObject(
+                    DEFAULT_ABM_STATE
+                );
+
+        }
+
+    }
+
+
+    rebuildCanvasFromState();
+
+
+    centerInitialView();
+
+
+    container.focus();
+
+}
+
+
+
+/* ============================================================
+   CENTER INITIAL VIEW
+============================================================ */
+
+function centerInitialView(){
+
+    zoomLevel =
+        .82;
+
+
+    board.style.transform =
+        `scale(${zoomLevel})`;
+
+
+    setTimeout(
+        ()=>{
+
+            container.scrollLeft =
+                120;
+
+            container.scrollTop =
+                40;
+
+        },
+        50
+    );
+
+}
+
+
+
+/* ============================================================
+   HISTORY
+============================================================ */
+
+function pushToHistory(){
+
+    undoStack.push(
+        JSON.stringify(appState)
+    );
+
+
+    if(
+        undoStack.length >
+        50
+    ){
+
+        undoStack.shift();
+
+    }
+
+}
+
+
+
+function triggerUndo(){
+
+    if(
+        undoStack.length ===
+        0
+    ){
+
+        return;
+
+    }
+
+
+    appState =
+        JSON.parse(
+            undoStack.pop()
         );
 
 
-        modal.addEventListener(
-            "click",
-            event => {
+    saveStateToBrowser();
 
-                if (
-                    event.target === modal
-                ) {
 
-                    modal.classList.remove(
-                        "open"
-                    );
+    rebuildCanvasFromState();
+
+}
+
+
+
+/* ============================================================
+   SAVE
+============================================================ */
+
+function syncNodePositions(){
+
+    appState.nodes.forEach(
+
+        nodeData => {
+
+            const el =
+                document.getElementById(
+                    nodeData.id
+                );
+
+
+            if(!el){
+
+                return;
+
+            }
+
+
+            nodeData.x =
+                el.offsetLeft;
+
+
+            nodeData.y =
+                el.offsetTop;
+
+
+            nodeData.w =
+                el.offsetWidth;
+
+
+            nodeData.h =
+                el.offsetHeight;
+
+        }
+
+    );
+
+}
+
+
+
+function saveStateToBrowser(){
+
+    syncNodePositions();
+
+
+    localStorage.setItem(
+
+        STORAGE_KEY,
+
+        JSON.stringify(
+            appState
+        )
+
+    );
+
+}
+
+
+
+/* ============================================================
+   REBUILD
+============================================================ */
+
+function rebuildCanvasFromState(){
+
+    board
+        .querySelectorAll(
+            ".sankey-node,.floating-text-node,.group-node"
+        )
+        .forEach(
+            el => el.remove()
+        );
+
+
+    appState.nodes.forEach(
+        buildNodeDOM
+    );
+
+
+    recalculateSankeyCurves();
+
+
+    clearAllSelections();
+
+}
+
+
+
+/* ============================================================
+   CREATE NODE DOM
+============================================================ */
+
+function buildNodeDOM(data){
+
+    const el =
+        document.createElement(
+            "div"
+        );
+
+
+    el.id =
+        data.id;
+
+
+    if(
+        data.type ===
+        "structural"
+    ){
+
+        el.className =
+            "sankey-node";
+
+    }
+    else if(
+        data.type ===
+        "group"
+    ){
+
+        el.className =
+            "group-node";
+
+    }
+    else{
+
+        el.className =
+            "floating-text-node";
+
+    }
+
+
+    el.style.left =
+        data.x + "px";
+
+
+    el.style.top =
+        data.y + "px";
+
+
+    el.style.width =
+        data.w + "px";
+
+
+    el.style.height =
+        data.h + "px";
+
+
+    el.style.zIndex =
+        data.zIndex || 20;
+
+
+    el.style.color =
+        data.textColor ||
+        "#ffffff";
+
+
+    el.style.fontSize =
+        (
+            data.fontSize ||
+            14
+        )
+        +
+        "px";
+
+
+    if(
+        data.type !==
+        "floating"
+    ){
+
+        el.style.backgroundColor =
+            hexToRGBA(
+
+                data.color,
+
+                data.opacity ??
+                1
+
+            );
+
+
+        el.style.border =
+
+            (
+                data.borderWidth ??
+                0
+            )
+
+            +
+
+            "px solid "
+
+            +
+
+            (
+                data.borderColor ||
+                data.color
+            );
+
+    }
+
+
+    el.innerHTML =
+
+        `<div class="rich-content">
+            ${data.content}
+        </div>
+
+        <div class="custom-resizer"></div>`;
+
+
+    attachDraggingController(
+        el
+    );
+
+
+    el.addEventListener(
+
+        "dblclick",
+
+        e => {
+
+            e.stopPropagation();
+
+
+            if(
+                operationalMode !==
+                "move"
+            ){
+
+                return;
+
+            }
+
+
+            activeEditorTarget =
+                data;
+
+
+            openNodeEditor(
+                data
+            );
+
+        }
+
+    );
+
+
+    board.appendChild(
+        el
+    );
+
+}
+
+
+
+/* ============================================================
+   NODE SELECTION
+============================================================ */
+
+function handleSelectionLogic(
+    el,
+    ctrl
+){
+
+    if(ctrl){
+
+        if(
+            selectedNodeIds.has(
+                el.id
+            )
+        ){
+
+            selectedNodeIds.delete(
+                el.id
+            );
+
+
+            el.classList.remove(
+                "selected",
+                "selected-anchor"
+            );
+
+        }
+        else{
+
+            const first =
+                selectedNodeIds.size ===
+                0;
+
+
+            selectedNodeIds.add(
+                el.id
+            );
+
+
+            el.classList.add(
+                "selected"
+            );
+
+
+            if(first){
+
+                el.classList.add(
+                    "selected-anchor"
+                );
+
+            }
+
+        }
+
+    }
+    else{
+
+        if(
+            !selectedNodeIds.has(
+                el.id
+            )
+        ){
+
+            clearAllSelections();
+
+
+            selectedNodeIds.add(
+                el.id
+            );
+
+
+            el.classList.add(
+                "selected",
+                "selected-anchor"
+            );
+
+        }
+
+    }
+
+}
+
+
+
+/* ============================================================
+   DRAG + RESIZE
+============================================================ */
+
+function attachDraggingController(
+    el
+){
+
+    let dragging =
+        false;
+
+
+    let resizing =
+        false;
+
+
+    let moved =
+        false;
+
+
+    let startX =
+        0;
+
+
+    let startY =
+        0;
+
+
+    let startW =
+        0;
+
+
+    let startH =
+        0;
+
+
+    const initialPositions =
+        new Map();
+
+
+    const resizer =
+        el.querySelector(
+            ".custom-resizer"
+        );
+
+
+    resizer.addEventListener(
+
+        "mousedown",
+
+        e => {
+
+            if(
+                operationalMode !==
+                "move"
+            ){
+
+                return;
+
+            }
+
+
+            e.stopPropagation();
+
+
+            pushToHistory();
+
+
+            resizing =
+                true;
+
+
+            startX =
+                e.clientX;
+
+
+            startY =
+                e.clientY;
+
+
+            startW =
+                el.offsetWidth;
+
+
+            startH =
+                el.offsetHeight;
+
+        }
+
+    );
+
+
+    el.addEventListener(
+
+        "mousedown",
+
+        e => {
+
+            if(
+                operationalMode ===
+                "connect"
+            ){
+
+                e.stopPropagation();
+
+
+                executeFlowWiring(
+                    el,
+                    el.id
+                );
+
+
+                return;
+
+            }
+
+
+            if(
+                operationalMode !==
+                "move"
+            ){
+
+                return;
+
+            }
+
+
+            e.stopPropagation();
+
+
+            handleSelectionLogic(
+
+                el,
+
+                e.ctrlKey ||
+                e.metaKey
+
+            );
+
+
+            pushToHistory();
+
+
+            dragging =
+                true;
+
+
+            moved =
+                false;
+
+
+            const rect =
+                board.getBoundingClientRect();
+
+
+            startX =
+
+                (
+                    e.clientX -
+                    rect.left
+                )
+
+                /
+
+                zoomLevel;
+
+
+            startY =
+
+                (
+                    e.clientY -
+                    rect.top
+                )
+
+                /
+
+                zoomLevel;
+
+
+            initialPositions.clear();
+
+
+            selectedNodeIds.forEach(
+
+                id => {
+
+                    const n =
+                        document.getElementById(
+                            id
+                        );
+
+
+                    if(n){
+
+                        initialPositions.set(
+
+                            id,
+
+                            {
+
+                                x:
+                                    n.offsetLeft,
+
+                                y:
+                                    n.offsetTop
+
+                            }
+
+                        );
+
+                    }
+
+                }
+
+            );
+
+        }
+
+    );
+
+
+    document.addEventListener(
+
+        "mousemove",
+
+        e => {
+
+            if(resizing){
+
+                const dx =
+
+                    (
+                        e.clientX -
+                        startX
+                    )
+
+                    /
+
+                    zoomLevel;
+
+
+                const dy =
+
+                    (
+                        e.clientY -
+                        startY
+                    )
+
+                    /
+
+                    zoomLevel;
+
+
+                el.style.width =
+
+                    Math.max(
+                        80,
+                        startW + dx
+                    )
+
+                    +
+
+                    "px";
+
+
+                el.style.height =
+
+                    Math.max(
+                        35,
+                        startH + dy
+                    )
+
+                    +
+
+                    "px";
+
+
+                recalculateSankeyCurves();
+
+
+                return;
+
+            }
+
+
+            if(!dragging){
+
+                return;
+
+            }
+
+
+            moved =
+                true;
+
+
+            const rect =
+                board.getBoundingClientRect();
+
+
+            const currentX =
+
+                (
+                    e.clientX -
+                    rect.left
+                )
+
+                /
+
+                zoomLevel;
+
+
+            const currentY =
+
+                (
+                    e.clientY -
+                    rect.top
+                )
+
+                /
+
+                zoomLevel;
+
+
+            const dx =
+                currentX -
+                startX;
+
+
+            const dy =
+                currentY -
+                startY;
+
+
+            selectedNodeIds.forEach(
+
+                id => {
+
+                    const nodeEl =
+                        document.getElementById(
+                            id
+                        );
+
+
+                    const init =
+                        initialPositions.get(
+                            id
+                        );
+
+
+                    if(
+                        nodeEl &&
+                        init
+                    ){
+
+                        nodeEl.style.left =
+
+                            Math.max(
+                                0,
+                                init.x + dx
+                            )
+
+                            +
+
+                            "px";
+
+
+                        nodeEl.style.top =
+
+                            Math.max(
+                                0,
+                                init.y + dy
+                            )
+
+                            +
+
+                            "px";
+
+                    }
+
+                }
+
+            );
+
+
+            recalculateSankeyCurves();
+
+        }
+
+    );
+
+
+    document.addEventListener(
+
+        "mouseup",
+
+        ()=>{
+
+            if(resizing){
+
+                resizing =
+                    false;
+
+
+                saveStateToBrowser();
+
+            }
+
+
+            if(dragging){
+
+                dragging =
+                    false;
+
+
+                if(moved){
+
+                    saveStateToBrowser();
 
                 }
 
             }
+
+        }
+
+    );
+
+}
+
+
+
+/* ============================================================
+   SANKEY CURVES
+============================================================ */
+
+function recalculateSankeyCurves(){
+
+    svg.innerHTML =
+        "";
+
+
+    const stats =
+        {};
+
+
+    appState.nodes.forEach(
+
+        n => {
+
+            stats[n.id] = {
+
+                totalOut:0,
+                totalIn:0,
+
+                currentOut:0,
+                currentIn:0
+
+            };
+
+        }
+
+    );
+
+
+    appState.connections.forEach(
+
+        c => {
+
+            if(
+                stats[c.source]
+            ){
+
+                stats[c.source]
+                    .totalOut +=
+
+                    c.thickSrc ||
+                    10;
+
+            }
+
+
+            if(
+                stats[c.target]
+            ){
+
+                stats[c.target]
+                    .totalIn +=
+
+                    c.thickTgt ||
+                    10;
+
+            }
+
+        }
+
+    );
+
+
+    appState.connections.forEach(
+
+        conn => {
+
+            const src =
+                document.getElementById(
+                    conn.source
+                );
+
+
+            const tgt =
+                document.getElementById(
+                    conn.target
+                );
+
+
+            if(
+                !src ||
+                !tgt
+            ){
+
+                return;
+
+            }
+
+
+            const srcStats =
+                stats[
+                    conn.source
+                ];
+
+
+            const tgtStats =
+                stats[
+                    conn.target
+                ];
+
+
+            let scaleOut =
+                1;
+
+
+            let scaleIn =
+                1;
+
+
+            if(
+                srcStats.totalOut >
+                src.offsetHeight
+            ){
+
+                scaleOut =
+
+                    src.offsetHeight
+
+                    /
+
+                    srcStats.totalOut;
+
+            }
+
+
+            if(
+                tgtStats.totalIn >
+                tgt.offsetHeight
+            ){
+
+                scaleIn =
+
+                    tgt.offsetHeight
+
+                    /
+
+                    tgtStats.totalIn;
+
+            }
+
+
+            const tSrc =
+
+                (
+                    conn.thickSrc ||
+                    10
+                )
+
+                *
+
+                scaleOut;
+
+
+            const tTgt =
+
+                (
+                    conn.thickTgt ||
+                    10
+                )
+
+                *
+
+                scaleIn;
+
+
+            const srcBase =
+                src.offsetTop +
+                src.offsetHeight /
+                2;
+
+
+            const tgtBase =
+                tgt.offsetTop +
+                tgt.offsetHeight /
+                2;
+
+
+            const y0Center =
+
+                srcBase
+
+                -
+
+                (
+                    srcStats.totalOut *
+                    scaleOut
+                )
+
+                /
+
+                2
+
+                +
+
+                srcStats.currentOut
+
+                +
+
+                tSrc /
+                2;
+
+
+            const y1Center =
+
+                tgtBase
+
+                -
+
+                (
+                    tgtStats.totalIn *
+                    scaleIn
+                )
+
+                /
+
+                2
+
+                +
+
+                tgtStats.currentIn
+
+                +
+
+                tTgt /
+                2;
+
+
+            srcStats.currentOut +=
+                tSrc;
+
+
+            tgtStats.currentIn +=
+                tTgt;
+
+
+            const x0 =
+                src.offsetLeft +
+                src.offsetWidth;
+
+
+            const x1 =
+                tgt.offsetLeft;
+
+
+            const y0Top =
+                y0Center -
+                tSrc /
+                2;
+
+
+            const y0Bottom =
+                y0Center +
+                tSrc /
+                2;
+
+
+            const y1Top =
+                y1Center -
+                tTgt /
+                2;
+
+
+            const y1Bottom =
+                y1Center +
+                tTgt /
+                2;
+
+
+            const curve =
+                conn.curvature ??
+                .45;
+
+
+            const dx =
+
+                Math.abs(
+                    x1 -
+                    x0
+                )
+
+                *
+
+                curve;
+
+
+            const pathData =
+
+                `M ${x0} ${y0Top}
+                 C ${x0+dx} ${y0Top},
+                   ${x1-dx} ${y1Top},
+                   ${x1} ${y1Top}
+
+                 L ${x1} ${y1Bottom}
+
+                 C ${x1-dx} ${y1Bottom},
+                   ${x0+dx} ${y0Bottom},
+                   ${x0} ${y0Bottom}
+
+                 Z`;
+
+
+            const path =
+                document.createElementNS(
+
+                    "http://www.w3.org/2000/svg",
+
+                    "path"
+
+                );
+
+
+            path.id =
+                "edge_path_" +
+                conn.id;
+
+
+            path.setAttribute(
+                "d",
+                pathData
+            );
+
+
+            path.setAttribute(
+
+                "fill",
+
+                selectedEdgeIds.has(
+                    conn.id
+                )
+
+                    ?
+
+                    "#ff4757"
+
+                    :
+
+                    (
+                        conn.color ||
+                        "#ced6e0"
+                    )
+
+            );
+
+
+            path.setAttribute(
+
+                "opacity",
+
+                selectedEdgeIds.has(
+                    conn.id
+                )
+
+                    ?
+
+                    ".9"
+
+                    :
+
+                    (
+                        conn.opacity ??
+                        .55
+                    )
+
+            );
+
+
+            path.addEventListener(
+
+                "mousedown",
+
+                e => {
+
+                    e.stopPropagation();
+
+
+                    if(
+                        operationalMode ===
+                        "disconnect"
+                    ){
+
+                        pushToHistory();
+
+
+                        appState.connections =
+                            appState.connections.filter(
+
+                                x =>
+                                    x.id !==
+                                    conn.id
+
+                            );
+
+
+                        recalculateSankeyCurves();
+
+
+                        saveStateToBrowser();
+
+
+                        return;
+
+                    }
+
+
+                    if(
+                        operationalMode ===
+                        "move"
+                    ){
+
+                        if(
+                            !e.ctrlKey &&
+                            !e.metaKey
+                        ){
+
+                            selectedEdgeIds.clear();
+
+                        }
+
+
+                        if(
+                            selectedEdgeIds.has(
+                                conn.id
+                            )
+                        ){
+
+                            selectedEdgeIds.delete(
+                                conn.id
+                            );
+
+                        }
+                        else{
+
+                            selectedEdgeIds.add(
+                                conn.id
+                            );
+
+                        }
+
+
+                        recalculateSankeyCurves();
+
+                    }
+
+                }
+
+            );
+
+
+            path.addEventListener(
+
+                "dblclick",
+
+                e => {
+
+                    e.stopPropagation();
+
+
+                    if(
+                        operationalMode !==
+                        "move"
+                    ){
+
+                        return;
+
+                    }
+
+
+                    activeEditorTarget =
+                        conn;
+
+
+                    openEdgeEditor(
+                        conn
+                    );
+
+                }
+
+            );
+
+
+            svg.appendChild(
+                path
+            );
+
+        }
+
+    );
+
+}
+
+
+
+/* ============================================================
+   CONNECT
+============================================================ */
+
+function executeFlowWiring(
+    domEl,
+    targetId
+){
+
+    if(
+        !connectionSourceNode
+    ){
+
+        connectionSourceNode =
+            domEl;
+
+
+        domEl.classList.add(
+            "selected"
+        );
+
+
+        showStatus(
+            "Select target box..."
+        );
+
+
+        return;
+
+    }
+
+
+    if(
+        connectionSourceNode.id ===
+        targetId
+    ){
+
+        connectionSourceNode =
+            null;
+
+
+        clearAllSelections();
+
+
+        return;
+
+    }
+
+
+    pushToHistory();
+
+
+    const sourceId =
+        connectionSourceNode.id;
+
+
+    const sourceData =
+        appState.nodes.find(
+
+            n =>
+                n.id ===
+                sourceId
+
+        );
+
+
+    appState.connections.push({
+
+        id:
+            "edge_" +
+            Date.now(),
+
+        source:
+            sourceId,
+
+        target:
+            targetId,
+
+        color:
+            sourceData?.color ||
+            "#95a5a6",
+
+        curvature:
+            .45,
+
+        thickSrc:
+            25,
+
+        thickTgt:
+            18,
+
+        opacity:
+            .5
+
+    });
+
+
+    connectionSourceNode.classList.remove(
+        "selected"
+    );
+
+
+    connectionSourceNode =
+        null;
+
+
+    recalculateSankeyCurves();
+
+
+    saveStateToBrowser();
+
+
+    showStatus(
+        "Connection created."
+    );
+
+}
+
+
+
+/* ============================================================
+   MODES
+============================================================ */
+
+function switchEngineMode(
+    mode
+){
+
+    operationalMode =
+        mode;
+
+
+    connectionSourceNode =
+        null;
+
+
+    document
+        .querySelectorAll(
+            "#toolbar button"
+        )
+        .forEach(
+
+            b =>
+                b.classList.remove(
+                    "active"
+                )
+
+        );
+
+
+    const active =
+        document.getElementById(
+            "mode-" + mode
+        );
+
+
+    if(active){
+
+        active.classList.add(
+            "active"
         );
 
     }
-);
+
+
+    clearAllSelections();
+
+}
 
 
 
-/* =========================================================
-   ESCAPE KEY
-========================================================= */
+/* ============================================================
+   CLEAR
+============================================================ */
 
-document.addEventListener(
-    "keydown",
-    event => {
+function clearAllSelections(){
 
-        if (
-            event.key !== "Escape"
-        ) {
-            return;
-        }
+    board
+        .querySelectorAll(
+            ".sankey-node,.floating-text-node,.group-node"
+        )
+        .forEach(
 
+            el =>
+                el.classList.remove(
+                    "selected",
+                    "selected-anchor"
+                )
 
-        modals.forEach(
-            modal => {
-
-                modal.classList.remove(
-                    "open"
-                );
-
-            }
         );
 
+
+    selectedNodeIds.clear();
+
+
+    selectedEdgeIds.clear();
+
+
+    recalculateSankeyCurves();
+
+}
+
+
+
+/* ============================================================
+   ADD NODE
+============================================================ */
+
+function spawnNewNode(
+    type
+){
+
+    pushToHistory();
+
+
+    const id =
+        "node_" +
+        Date.now();
+
+
+    const newNode = {
+
+        id:id,
+
+        type:type,
+
+        content:
+
+            type ===
+            "floating"
+
+            ?
+
+            "<b>New Text</b>"
+
+            :
+
+            type ===
+            "group"
+
+            ?
+
+            "<b>New Group</b>"
+
+            :
+
+            "<b>New Box</b><ul><li>Edit this content.</li></ul>",
+
+        x:
+            500,
+
+        y:
+            400,
+
+        w:
+
+            type ===
+            "group"
+
+            ?
+
+            500
+
+            :
+
+            280,
+
+        h:
+
+            type ===
+            "floating"
+
+            ?
+
+            55
+
+            :
+
+            type ===
+            "group"
+
+            ?
+
+            350
+
+            :
+
+            130,
+
+        color:
+
+            type ===
+            "group"
+
+            ?
+
+            "#a55eea"
+
+            :
+
+            "#34495e",
+
+        textColor:
+
+            type ===
+            "floating"
+
+            ?
+
+            "#2f3542"
+
+            :
+
+            "#ffffff",
+
+        borderColor:
+            "#34495e",
+
+        borderWidth:
+
+            type ===
+            "group"
+
+            ?
+
+            2
+
+            :
+
+            0,
+
+        opacity:
+
+            type ===
+            "group"
+
+            ?
+
+            .05
+
+            :
+
+            1,
+
+        fontSize:
+
+            type ===
+            "floating"
+
+            ?
+
+            18
+
+            :
+
+            13,
+
+        zIndex:
+
+            type ===
+            "group"
+
+            ?
+
+            10
+
+            :
+
+            20
+
+    };
+
+
+    appState.nodes.push(
+        newNode
+    );
+
+
+    buildNodeDOM(
+        newNode
+    );
+
+
+    saveStateToBrowser();
+
+}
+
+
+
+/* ============================================================
+   DELETE
+============================================================ */
+
+function executeDeletion(){
+
+    if(
+        selectedNodeIds.size ===
+        0
+        &&
+        selectedEdgeIds.size ===
+        0
+    ){
+
+        return;
+
+    }
+
+
+    pushToHistory();
+
+
+    selectedNodeIds.forEach(
+
+        id => {
+
+            appState.nodes =
+                appState.nodes.filter(
+
+                    n =>
+                        n.id !==
+                        id
+
+                );
+
+
+            appState.connections =
+                appState.connections.filter(
+
+                    c =>
+                        c.source !==
+                        id
+                        &&
+                        c.target !==
+                        id
+
+                );
+
+        }
+
+    );
+
+
+    selectedEdgeIds.forEach(
+
+        id => {
+
+            appState.connections =
+                appState.connections.filter(
+
+                    c =>
+                        c.id !==
+                        id
+
+                );
+
+        }
+
+    );
+
+
+    saveStateToBrowser();
+
+
+    rebuildCanvasFromState();
+
+}
+
+
+
+/* ============================================================
+   NODE EDITOR
+============================================================ */
+
+function openNodeEditor(
+    data
+){
+
+    document
+        .getElementById(
+            "edit-node-rich"
+        )
+        .innerHTML =
+        data.content;
+
+
+    document
+        .getElementById(
+            "edit-node-color"
+        )
+        .value =
+        data.color ||
+        "#34495e";
+
+
+    document
+        .getElementById(
+            "edit-node-text-color"
+        )
+        .value =
+        data.textColor ||
+        "#ffffff";
+
+
+    document
+        .getElementById(
+            "edit-node-opacity"
+        )
+        .value =
+        data.opacity ??
+        1;
+
+
+    document
+        .getElementById(
+            "edit-node-font-size"
+        )
+        .value =
+        data.fontSize ||
+        14;
+
+
+    document
+        .getElementById(
+            "edit-node-border-color"
+        )
+        .value =
+        data.borderColor ||
+        data.color ||
+        "#34495e";
+
+
+    document
+        .getElementById(
+            "edit-node-border-width"
+        )
+        .value =
+        data.borderWidth ??
+        0;
+
+
+    document
+        .getElementById(
+            "modal-mask"
+        )
+        .style.display =
+        "block";
+
+
+    document
+        .getElementById(
+            "node-editor-panel"
+        )
+        .style.display =
+        "block";
+
+}
+
+
+
+function commitNodeChanges(){
+
+    if(
+        !activeEditorTarget
+    ){
+
+        return;
+
+    }
+
+
+    pushToHistory();
+
+
+    activeEditorTarget.content =
 
         document
             .getElementById(
-                "lightbox"
+                "edit-node-rich"
             )
-            .classList
-            .remove(
-                "open"
+            .innerHTML;
+
+
+    activeEditorTarget.color =
+
+        document
+            .getElementById(
+                "edit-node-color"
+            )
+            .value;
+
+
+    activeEditorTarget.textColor =
+
+        document
+            .getElementById(
+                "edit-node-text-color"
+            )
+            .value;
+
+
+    activeEditorTarget.opacity =
+
+        parseFloat(
+
+            document
+                .getElementById(
+                    "edit-node-opacity"
+                )
+                .value
+
+        );
+
+
+    activeEditorTarget.fontSize =
+
+        parseInt(
+
+            document
+                .getElementById(
+                    "edit-node-font-size"
+                )
+                .value
+
+        );
+
+
+    activeEditorTarget.borderColor =
+
+        document
+            .getElementById(
+                "edit-node-border-color"
+            )
+            .value;
+
+
+    activeEditorTarget.borderWidth =
+
+        parseInt(
+
+            document
+                .getElementById(
+                    "edit-node-border-width"
+                )
+                .value
+
+        );
+
+
+    saveStateToBrowser();
+
+
+    rebuildCanvasFromState();
+
+
+    dismissModal();
+
+}
+
+
+
+/* ============================================================
+   EDGE EDITOR
+============================================================ */
+
+function openEdgeEditor(
+    data
+){
+
+    document
+        .getElementById(
+            "edit-edge-color"
+        )
+        .value =
+        data.color ||
+        "#95a5a6";
+
+
+    document
+        .getElementById(
+            "edit-edge-opacity"
+        )
+        .value =
+        data.opacity ??
+        .5;
+
+
+    document
+        .getElementById(
+            "edit-edge-curve"
+        )
+        .value =
+        data.curvature ??
+        .45;
+
+
+    document
+        .getElementById(
+            "edit-edge-thick-src"
+        )
+        .value =
+        data.thickSrc ||
+        25;
+
+
+    document
+        .getElementById(
+            "edit-edge-thick-tgt"
+        )
+        .value =
+        data.thickTgt ||
+        18;
+
+
+    document
+        .getElementById(
+            "modal-mask"
+        )
+        .style.display =
+        "block";
+
+
+    document
+        .getElementById(
+            "edge-editor-panel"
+        )
+        .style.display =
+        "block";
+
+}
+
+
+
+function commitEdgeChanges(){
+
+    if(
+        !activeEditorTarget
+    ){
+
+        return;
+
+    }
+
+
+    pushToHistory();
+
+
+    activeEditorTarget.color =
+
+        document
+            .getElementById(
+                "edit-edge-color"
+            )
+            .value;
+
+
+    activeEditorTarget.opacity =
+
+        parseFloat(
+
+            document
+                .getElementById(
+                    "edit-edge-opacity"
+                )
+                .value
+
+        );
+
+
+    activeEditorTarget.curvature =
+
+        parseFloat(
+
+            document
+                .getElementById(
+                    "edit-edge-curve"
+                )
+                .value
+
+        );
+
+
+    activeEditorTarget.thickSrc =
+
+        parseInt(
+
+            document
+                .getElementById(
+                    "edit-edge-thick-src"
+                )
+                .value
+
+        );
+
+
+    activeEditorTarget.thickTgt =
+
+        parseInt(
+
+            document
+                .getElementById(
+                    "edit-edge-thick-tgt"
+                )
+                .value
+
+        );
+
+
+    saveStateToBrowser();
+
+
+    recalculateSankeyCurves();
+
+
+    dismissModal();
+
+}
+
+
+
+/* ============================================================
+   MODAL
+============================================================ */
+
+function dismissModal(){
+
+    document
+        .getElementById(
+            "modal-mask"
+        )
+        .style.display =
+        "none";
+
+
+    document
+        .querySelectorAll(
+            ".floating-panel"
+        )
+        .forEach(
+
+            p =>
+                p.style.display =
+                "none"
+
+        );
+
+
+    activeEditorTarget =
+        null;
+
+}
+
+
+
+function openExportPortal(){
+
+    document
+        .getElementById(
+            "modal-mask"
+        )
+        .style.display =
+        "block";
+
+
+    document
+        .getElementById(
+            "export-popup"
+        )
+        .style.display =
+        "block";
+
+}
+
+
+
+/* ============================================================
+   ZOOM
+============================================================ */
+
+function setZoom(
+    amount
+){
+
+    zoomLevel +=
+        amount;
+
+
+    zoomLevel =
+        Math.max(
+            .1,
+            Math.min(
+                3,
+                zoomLevel
+            )
+        );
+
+
+    board.style.transform =
+        `scale(${zoomLevel})`;
+
+}
+
+
+
+function resetZoom(){
+
+    zoomLevel =
+        1;
+
+
+    board.style.transform =
+        "scale(1)";
+
+}
+
+
+
+/* ============================================================
+   GRID
+============================================================ */
+
+function toggleGridSystem(){
+
+    board.classList.toggle(
+        "alignment-grid"
+    );
+
+}
+
+
+
+/* ============================================================
+   RESET
+============================================================ */
+
+function resetProject(){
+
+    const ok =
+        confirm(
+
+            "Reset the workspace to the original Switzerland Pollinator ABM diagram?"
+
+        );
+
+
+    if(!ok){
+
+        return;
+
+    }
+
+
+    localStorage.removeItem(
+        STORAGE_KEY
+    );
+
+
+    appState =
+        cloneObject(
+            DEFAULT_ABM_STATE
+        );
+
+
+    undoStack =
+        [];
+
+
+    rebuildCanvasFromState();
+
+
+    centerInitialView();
+
+
+    showStatus(
+        "ABM workspace reset."
+    );
+
+}
+
+
+
+/* ============================================================
+   BUILD SELF-CONTAINED HTML STRING
+============================================================ */
+
+function buildCurrentHTML(){
+
+    saveStateToBrowser();
+
+
+    const clone =
+        document.documentElement.cloneNode(
+            true
+        );
+
+
+    /*
+    Remove current rendered nodes from the cloned HTML.
+    They will be rebuilt from injected state.
+    */
+
+    const clonedBoard =
+        clone.querySelector(
+            "#canvas-board"
+        );
+
+
+    clonedBoard.innerHTML =
+
+        `<svg id="sankey-svg"></svg>
+         <div id="marquee-box"></div>`;
+
+
+    /*
+    Remove previous injected state.
+    */
+
+    const existing =
+        clone.querySelector(
+            "#injected-state"
+        );
+
+
+    if(existing){
+
+        existing.remove();
+
+    }
+
+
+    /*
+    Insert the CURRENT edited app state.
+    */
+
+    const stateScript =
+        document.createElement(
+            "script"
+        );
+
+
+    stateScript.id =
+        "injected-state";
+
+
+    stateScript.textContent =
+
+        "window.INJECTED_APP_STATE = "
+
+        +
+
+        JSON.stringify(
+            appState
+        )
+
+        +
+
+        ";";
+
+
+    clone
+        .querySelector(
+            "head"
+        )
+        .appendChild(
+            stateScript
+        );
+
+
+    return (
+
+        "<!DOCTYPE html>\n"
+
+        +
+
+        clone.outerHTML
+
+    );
+
+}
+
+
+
+/* ============================================================
+   COPY HTML
+============================================================ */
+
+async function copyCurrentHTML(){
+
+    const html =
+        buildCurrentHTML();
+
+
+    try{
+
+        await navigator.clipboard.writeText(
+            html
+        );
+
+
+        dismissModal();
+
+
+        showStatus(
+            "✓ Full HTML copied to clipboard."
+        );
+
+    }
+    catch(err){
+
+        /*
+        Fallback for browsers where clipboard permission
+        is unavailable.
+        */
+
+        const textArea =
+            document.createElement(
+                "textarea"
             );
 
+
+        textArea.value =
+            html;
+
+
+        textArea.style.position =
+            "fixed";
+
+
+        textArea.style.left =
+            "-999999px";
+
+
+        document.body.appendChild(
+            textArea
+        );
+
+
+        textArea.focus();
+
+
+        textArea.select();
+
+
+        document.execCommand(
+            "copy"
+        );
+
+
+        textArea.remove();
+
+
+        dismissModal();
+
+
+        showStatus(
+            "✓ Full HTML copied to clipboard."
+        );
+
     }
-);
+
+}
 
 
 
-/* =========================================================
-   PORTFOLIO IMAGE LIGHTBOX
-========================================================= */
+/* ============================================================
+   DOWNLOAD HTML
+============================================================ */
 
-const galleryItems =
-    document.querySelectorAll(
-        ".gallery-item"
+function downloadNativeHTML(){
+
+    const html =
+        buildCurrentHTML();
+
+
+    const blob =
+        new Blob(
+
+            [html],
+
+            {
+                type:
+                    "text/html"
+            }
+
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const a =
+        document.createElement(
+            "a"
+        );
+
+
+    a.href =
+        url;
+
+
+    a.download =
+        "Switzerland_Pollinator_ABM_Sankey.html";
+
+
+    a.click();
+
+
+    URL.revokeObjectURL(
+        url
     );
 
-const lightbox =
-    document.getElementById(
-        "lightbox"
-    );
 
-const lightboxImage =
-    document.getElementById(
-        "lightboxImage"
-    );
+    dismissModal();
 
-const lightboxClose =
-    document.getElementById(
-        "lightboxClose"
-    );
+}
 
 
-galleryItems.forEach(
-    item => {
 
-        item.addEventListener(
-            "click",
-            () => {
+/* ============================================================
+   EXPORT PNG / PDF
+============================================================ */
 
-                lightboxImage.src =
-                    item.dataset.image;
+function triggerCroppedExport(
+    format
+){
 
-                lightbox.classList.add(
-                    "open"
+    dismissModal();
+
+
+    clearAllSelections();
+
+
+    syncNodePositions();
+
+
+    let minX =
+        Infinity;
+
+
+    let minY =
+        Infinity;
+
+
+    let maxX =
+        0;
+
+
+    let maxY =
+        0;
+
+
+    appState.nodes.forEach(
+
+        n => {
+
+            const el =
+                document.getElementById(
+                    n.id
                 );
 
+
+            if(!el){
+
+                return;
+
             }
+
+
+            minX =
+                Math.min(
+                    minX,
+                    el.offsetLeft
+                );
+
+
+            minY =
+                Math.min(
+                    minY,
+                    el.offsetTop
+                );
+
+
+            maxX =
+                Math.max(
+
+                    maxX,
+
+                    el.offsetLeft +
+                    el.offsetWidth
+
+                );
+
+
+            maxY =
+                Math.max(
+
+                    maxY,
+
+                    el.offsetTop +
+                    el.offsetHeight
+
+                );
+
+        }
+
+    );
+
+
+    const pad =
+        80;
+
+
+    minX =
+        Math.max(
+            0,
+            minX -
+            pad
         );
 
-    }
-);
 
-
-lightboxClose.addEventListener(
-    "click",
-    () => {
-
-        lightbox.classList.remove(
-            "open"
+    minY =
+        Math.max(
+            0,
+            minY -
+            pad
         );
 
-    }
-);
+
+    maxX +=
+        pad;
 
 
-lightbox.addEventListener(
-    "click",
-    event => {
+    maxY +=
+        pad;
 
-        if (
-            event.target === lightbox
-        ) {
 
-            lightbox.classList.remove(
-                "open"
+    const width =
+        maxX -
+        minX;
+
+
+    const height =
+        maxY -
+        minY;
+
+
+    const exportDiv =
+        document.createElement(
+            "div"
+        );
+
+
+    exportDiv.style.position =
+        "fixed";
+
+
+    exportDiv.style.left =
+        "0";
+
+
+    exportDiv.style.top =
+        "0";
+
+
+    exportDiv.style.width =
+        width +
+        "px";
+
+
+    exportDiv.style.height =
+        height +
+        "px";
+
+
+    exportDiv.style.background =
+        "white";
+
+
+    exportDiv.style.zIndex =
+        "-99999";
+
+
+    exportDiv.style.overflow =
+        "hidden";
+
+
+    const svgClone =
+        svg.cloneNode(
+            true
+        );
+
+
+    svgClone.style.position =
+        "absolute";
+
+
+    svgClone.style.left =
+        "0";
+
+
+    svgClone.style.top =
+        "0";
+
+
+    svgClone.style.width =
+        width +
+        "px";
+
+
+    svgClone.style.height =
+        height +
+        "px";
+
+
+    svgClone.setAttribute(
+
+        "viewBox",
+
+        `${minX} ${minY} ${width} ${height}`
+
+    );
+
+
+    exportDiv.appendChild(
+        svgClone
+    );
+
+
+    appState.nodes.forEach(
+
+        n => {
+
+            const el =
+                document.getElementById(
+                    n.id
+                );
+
+
+            if(!el){
+
+                return;
+
+            }
+
+
+            const copy =
+                el.cloneNode(
+                    true
+                );
+
+
+            copy.classList.remove(
+                "selected",
+                "selected-anchor"
+            );
+
+
+            copy.style.left =
+
+                (
+                    el.offsetLeft -
+                    minX
+                )
+
+                +
+
+                "px";
+
+
+            copy.style.top =
+
+                (
+                    el.offsetTop -
+                    minY
+                )
+
+                +
+
+                "px";
+
+
+            const resize =
+                copy.querySelector(
+                    ".custom-resizer"
+                );
+
+
+            if(resize){
+
+                resize.style.display =
+                    "none";
+
+            }
+
+
+            exportDiv.appendChild(
+                copy
             );
 
         }
 
+    );
+
+
+    document.body.appendChild(
+        exportDiv
+    );
+
+
+    html2canvas(
+
+        exportDiv,
+
+        {
+
+            scale:
+                1.5,
+
+            backgroundColor:
+                "#ffffff",
+
+            logging:
+                false
+
+        }
+
+    )
+    .then(
+
+        canvas => {
+
+            exportDiv.remove();
+
+
+            if(
+                format ===
+                "png"
+            ){
+
+                canvas.toBlob(
+
+                    blob => {
+
+                        const url =
+                            URL.createObjectURL(
+                                blob
+                            );
+
+
+                        const a =
+                            document.createElement(
+                                "a"
+                            );
+
+
+                        a.href =
+                            url;
+
+
+                        a.download =
+                            "Switzerland_Pollinator_ABM_Workflow.png";
+
+
+                        a.click();
+
+
+                        URL.revokeObjectURL(
+                            url
+                        );
+
+                    },
+
+                    "image/png"
+
+                );
+
+            }
+            else{
+
+                const imgData =
+                    canvas.toDataURL(
+                        "image/png"
+                    );
+
+
+                const pdf =
+                    new window.jspdf.jsPDF(
+
+                        width >
+                        height
+
+                        ?
+
+                        "l"
+
+                        :
+
+                        "p",
+
+                        "px",
+
+                        [
+                            width,
+                            height
+                        ]
+
+                    );
+
+
+                pdf.addImage(
+
+                    imgData,
+
+                    "PNG",
+
+                    0,
+                    0,
+
+                    width,
+                    height
+
+                );
+
+
+                pdf.save(
+                    "Switzerland_Pollinator_ABM_Workflow.pdf"
+                );
+
+            }
+
+        }
+
+    );
+
+}
+
+
+
+/* ============================================================
+   HEX → RGBA
+============================================================ */
+
+function hexToRGBA(
+    hex,
+    alpha
+){
+
+    let clean =
+        hex.replace(
+            "#",
+            ""
+        );
+
+
+    if(
+        clean.length ===
+        3
+    ){
+
+        clean =
+            clean
+                .split("")
+                .map(
+                    c =>
+                        c + c
+                )
+                .join("");
+
     }
+
+
+    const bigint =
+        parseInt(
+            clean,
+            16
+        );
+
+
+    const r =
+        (
+            bigint >>
+            16
+        )
+        &
+        255;
+
+
+    const g =
+        (
+            bigint >>
+            8
+        )
+        &
+        255;
+
+
+    const b =
+        bigint &
+        255;
+
+
+    return (
+
+        `rgba(${r},${g},${b},${alpha})`
+
+    );
+
+}
+
+
+
+/* ============================================================
+   STATUS
+============================================================ */
+
+function showStatus(
+    text
+){
+
+    const el =
+        document.getElementById(
+            "workspace-status"
+        );
+
+
+    el.textContent =
+        text;
+
+
+    setTimeout(
+
+        ()=>{
+
+            if(
+                el.textContent ===
+                text
+            ){
+
+                el.textContent =
+                    "";
+
+            }
+
+        },
+
+        3000
+
+    );
+
+}
+
+
+
+/* ============================================================
+   CANVAS CLICK
+============================================================ */
+
+board.addEventListener(
+
+    "mousedown",
+
+    e => {
+
+        if(
+            operationalMode !==
+            "move"
+        ){
+
+            return;
+
+        }
+
+
+        if(
+            e.target ===
+            board
+            ||
+            e.target ===
+            svg
+        ){
+
+            clearAllSelections();
+
+        }
+
+    }
+
+);
+
+
+
+/* ============================================================
+   KEYBOARD
+============================================================ */
+
+document.addEventListener(
+
+    "keydown",
+
+    e => {
+
+        if(
+            e.target.tagName ===
+            "INPUT"
+            ||
+            e.target.tagName ===
+            "TEXTAREA"
+            ||
+            e.target.isContentEditable
+        ){
+
+            return;
+
+        }
+
+
+        const ctrl =
+            e.ctrlKey ||
+            e.metaKey;
+
+
+        if(
+            ctrl
+            &&
+            e.key.toLowerCase() ===
+            "z"
+        ){
+
+            e.preventDefault();
+
+
+            triggerUndo();
+
+        }
+
+
+        if(
+            e.key ===
+            "Delete"
+            ||
+            e.key ===
+            "Backspace"
+        ){
+
+            e.preventDefault();
+
+
+            executeDeletion();
+
+        }
+
+    }
+
+);
+
+
+
+/* ============================================================
+   MOUSE WHEEL ZOOM
+============================================================ */
+
+container.addEventListener(
+
+    "wheel",
+
+    e => {
+
+        if(
+            e.ctrlKey ||
+            e.metaKey
+        ){
+
+            e.preventDefault();
+
+
+            setZoom(
+
+                e.deltaY <
+                0
+
+                ?
+
+                .08
+
+                :
+
+                -.08
+
+            );
+
+        }
+
+    },
+
+    {
+        passive:false
+    }
+
+);
+
+
+
+/* ============================================================
+   START
+============================================================ */
+
+window.addEventListener(
+
+    "load",
+
+    bootstrapStudio
+
 );
 
 </script>
+
 
 </body>
 </html>
